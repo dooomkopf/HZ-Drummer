@@ -3,6 +3,7 @@
 #include "app/Library.h"
 #include "app/Text.h"
 #include "app/arranger/ArrangerStyle.h"
+#include "app/views/InWindowDialog.h"
 #include "app/views/PlaybackView.h"
 
 #include <algorithm>
@@ -431,7 +432,7 @@ void ArrangerPanel::askRange()
     const int from = part.numBars > 0 ? part.firstBar + 1 : 1;
     const int to = part.numBars > 0 ? part.firstBar + part.numBars : total;
 
-    auto* w = new juce::AlertWindow ("Takte eingrenzen", "Welche Takte von \""_u + juce::String (part.copy->name) + "\" sollen gespielt werden? (1 bis "
+    auto* w = new InWindowDialog ("Takte eingrenzen", "Welche Takte von \""_u + juce::String (part.copy->name) + "\" sollen gespielt werden? (1 bis "
                                      + juce::String (total) + ")", juce::MessageBoxIconType::NoIcon, this);
     w->addTextEditor ("from", juce::String (from), "von Takt:");
     w->addTextEditor ("to", juce::String (to), "bis Takt:");
@@ -578,7 +579,7 @@ void ArrangerPanel::updateFromSource()
         text << "\n\nAchtung: Die Änderungen, die du an diesem Block im Song gemacht hast, gehen dabei verloren."_u;
     text << "\n\n(Strg+Z macht es rückgängig.)"_u;
 
-    auto* w = new juce::AlertWindow ("Aus Quelle aktualisieren", text, juce::MessageBoxIconType::WarningIcon, this);
+    auto* w = new InWindowDialog ("Aus Quelle aktualisieren", text, juce::MessageBoxIconType::WarningIcon, this);
     w->addButton ("Nur diesen Block", 1, juce::KeyPress (juce::KeyPress::returnKey));
     if (all.size() > 1)
         w->addButton ("Alle " + juce::String ((int) all.size()) + " Bl" + juce::String (juce::CharPointer_UTF8 ("\xc3\xb6")) + "cke dieser Quelle", 2);
@@ -606,7 +607,7 @@ void ArrangerPanel::askRename (int p)
         if (sp.part == p) { origin = sp.label; break; }
     const juce::String sourceName = part.copy ? juce::String (part.copy->name) : juce::String (part.sourceId);
 
-    auto* w = new juce::AlertWindow ("Block umbenennen",
+    auto* w = new InWindowDialog ("Block umbenennen",
                                      "Name dieses Blocks im Ablauf. Das Pattern selbst (\"" + sourceName + "\") wird nicht umbenannt.\n"
                                      "Leer lassen = Pattern-Name anzeigen. Strg+Z macht es rückgängig."_u,
                                      juce::MessageBoxIconType::NoIcon, this);
@@ -633,7 +634,7 @@ void ArrangerPanel::save (bool asNew)
     Song copy = model.song();
     if (asNew || copy.id.empty())
     {
-        auto* w = new juce::AlertWindow ("Song speichern", "Name des Songs:", juce::MessageBoxIconType::NoIcon, this);
+        auto* w = new InWindowDialog ("Song speichern", "Name des Songs:", juce::MessageBoxIconType::NoIcon, this);
         w->addTextEditor ("name", juce::String (copy.name), "Name:");
         w->addButton ("Speichern", 1, juce::KeyPress (juce::KeyPress::returnKey));
         w->addButton ("Abbrechen", 0, juce::KeyPress (juce::KeyPress::escapeKey));

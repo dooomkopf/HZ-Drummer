@@ -222,6 +222,25 @@ public:
     bool isDragging() const { return drag.active; }
     void cancelDrag() { drag.active = false; }
 
+    // A mouse-up can get lost (desktop glitch, another window grabbing the pointer). The drag would
+    // then stay open for good and the editor would report unsaved changes forever. Once the button
+    // has been up for a few timer ticks, keep what the drag changed; a plain click is not completed.
+    void finishLostDrag()
+    {
+        if (! drag.active)
+            return;
+        if (juce::ModifierKeys::getCurrentModifiersRealtime().isAnyMouseButtonDown())
+        {
+            drag.upTicks = 0;
+            return;
+        }
+        if (++drag.upTicks < 3)
+            return;   // the mouse-up may still be on its way
+        drag.active = false;
+        owner.changed (drag.before);
+        repaint();
+    }
+
     void mouseDown (const juce::MouseEvent& e) override
     {
         drag = {};
@@ -334,6 +353,7 @@ private:
         hz::Rational pos;
         int startY = 0;
         float startVel = normalVel;
+        int upTicks = 0;   // timer ticks without a held button, see finishLostDrag()
     };
 
     PatternEditor& owner;

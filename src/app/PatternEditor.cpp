@@ -2,6 +2,7 @@
 
 #include "app/EditorGrid.h"
 #include "app/Text.h"
+#include "app/views/InWindowDialog.h"
 #include "engine/MeterCatalog.h"
 #include "engine/PatternEdit.h"
 
@@ -318,7 +319,7 @@ void PatternEditor::askRename()
 {
     if (pattern.bars.empty() || blockMode)
         return;
-    auto* w = new juce::AlertWindow ("Pattern umbenennen", "Neuer Name:", juce::MessageBoxIconType::NoIcon, this);
+    auto* w = new InWindowDialog ("Pattern umbenennen", "Neuer Name:", juce::MessageBoxIconType::NoIcon, this);
     w->addTextEditor ("name", juce::String (pattern.name), "Name");
     w->addButton ("OK", 1, juce::KeyPress (juce::KeyPress::returnKey));
     w->addButton ("Abbrechen", 0, juce::KeyPress (juce::KeyPress::escapeKey));
@@ -405,7 +406,7 @@ void PatternEditor::redo()
 
 void PatternEditor::askName (std::function<void (juce::String)> onOk)
 {
-    auto* w = new juce::AlertWindow ("Speichern unter", "Name für das neue Pattern:"_u, juce::MessageBoxIconType::NoIcon, this);
+    auto* w = new InWindowDialog ("Speichern unter", "Name für das neue Pattern:"_u, juce::MessageBoxIconType::NoIcon, this);
     const auto suggestion = userPattern ? juce::String (pattern.name) : juce::String (pattern.name) + " (eigen)";
     w->addTextEditor ("name", suggestion, "Name");
     w->addButton ("Speichern", 1, juce::KeyPress (juce::KeyPress::returnKey));
@@ -564,6 +565,8 @@ void PatternEditor::timerCallback()
         lastPlayhead = ph;
         grid->repaint();
     }
+
+    grid->finishLostDrag();
 
     // take the keyboard back when the window is active and nobody else needs it
     if (auto* peer = getPeer(); peer != nullptr && peer->isFocused() && ! hasKeyboardFocus (true)

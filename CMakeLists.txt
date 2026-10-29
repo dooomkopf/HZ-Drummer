@@ -62,6 +62,7 @@ target_sources(HZDrummer PRIVATE
     src/app/views/SongLayout.cpp
     src/app/views/SourceBadge.cpp
     src/app/views/HZLook.cpp
+    src/app/views/InWindowDialog.cpp
     src/app/views/BeatDisplay.cpp)
 
 target_compile_definitions(HZDrummer PRIVATE

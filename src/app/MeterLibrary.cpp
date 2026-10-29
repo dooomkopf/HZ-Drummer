@@ -1,5 +1,6 @@
 #include "app/MeterLibrary.h"
 #include "app/Text.h"
+#include "app/views/InWindowDialog.h"
 
 #include "engine/MeterCatalog.h"
 
@@ -243,7 +244,7 @@ void MeterLibrary::load (juce::PropertiesFile& props)
 
 void MeterLibrary::askCustomMeter (juce::Component* parent, int current, std::function<void (int)> onSelected)
 {
-    auto* w = new juce::AlertWindow ("Eigene Taktart",
+    auto* w = new InWindowDialog ("Eigene Taktart",
                                      "Zähler/Nenner und optional die Gruppierung, z.B.  17/16 4+4+4+5  oder  7/4"_u,
                                      juce::MessageBoxIconType::NoIcon, parent);
     w->addTextEditor ("meter", key (get (juce::jmax (0, current))).replace (":", " "), "Taktart");

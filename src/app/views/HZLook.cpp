@@ -1,5 +1,7 @@
 #include "app/views/HZLook.h"
 
+#include "app/views/InWindowDialog.h"
+
 const juce::Colour HZLook::buttonFill  { 0xff34343d };
 const juce::Colour HZLook::buttonOn    { 0xff2e7a4a };
 const juce::Colour HZLook::textColour  { 0xffeeeeee };
@@ -54,4 +56,44 @@ void HZLook::drawButtonText (juce::Graphics& g, juce::TextButton& button, bool, 
 juce::Font HZLook::getTextButtonFont (juce::TextButton&, int buttonHeight)
 {
     return juce::Font (juce::FontOptions (juce::jmin (16.0f, (float) buttonHeight * 0.45f), juce::Font::bold));
+}
+
+juce::AlertWindow* HZLook::createAlertWindow (const juce::String& title, const juce::String& message,
+                                              const juce::String& button1, const juce::String& button2, const juce::String& button3,
+                                              juce::MessageBoxIconType iconType, int numButtons,
+                                              juce::Component* associatedComponent)
+{
+    // the buttons and margins of LookAndFeel_V2/V4, only the dialog is an InWindowDialog
+    auto* aw = new InWindowDialog (title, message, iconType, associatedComponent);
+
+    if (numButtons == 1)
+    {
+        aw->addButton (button1, 0, juce::KeyPress (juce::KeyPress::escapeKey), juce::KeyPress (juce::KeyPress::returnKey));
+    }
+    else
+    {
+        const juce::KeyPress shortcut1 ((int) juce::CharacterFunctions::toLowerCase (button1[0]), 0, 0);
+        juce::KeyPress shortcut2 ((int) juce::CharacterFunctions::toLowerCase (button2[0]), 0, 0);
+        if (shortcut1 == shortcut2)
+            shortcut2 = juce::KeyPress();
+
+        if (numButtons == 2)
+        {
+            aw->addButton (button1, 1, juce::KeyPress (juce::KeyPress::returnKey), shortcut1);
+            aw->addButton (button2, 0, juce::KeyPress (juce::KeyPress::escapeKey), shortcut2);
+        }
+        else if (numButtons == 3)
+        {
+            aw->addButton (button1, 1, shortcut1);
+            aw->addButton (button2, 2, shortcut2);
+            aw->addButton (button3, 0, juce::KeyPress (juce::KeyPress::escapeKey));
+        }
+    }
+
+    const int margin = 50;
+    aw->setBounds (aw->getBounds().withSizeKeepingCentre (aw->getWidth() + margin, aw->getHeight() + margin));
+    for (auto* child : aw->getChildren())
+        if (auto* button = dynamic_cast<juce::TextButton*> (child))
+            button->setBounds (button->getBounds() + juce::Point<int> (margin / 2, 40));
+    return aw;
 }
