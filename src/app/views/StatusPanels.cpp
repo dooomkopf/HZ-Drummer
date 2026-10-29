@@ -8,7 +8,7 @@ namespace
 {
     void drawPanel (juce::Graphics& g, juce::Rectangle<int> r, const juce::String& big, const juce::String& caption)
     {
-        g.setColour (theme::panel);
+        g.setColour (theme::panelGlass);
         g.fillRoundedRectangle (r.reduced (6).toFloat(), 10.0f);
         auto inner = r.reduced (16);
         g.setColour (theme::textDim);

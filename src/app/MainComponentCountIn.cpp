@@ -24,10 +24,15 @@ void MainComponent::updateCountInButton()
                                                            : juce::Colour (0xff2e7a4a));
 }
 
-bool MainComponent::startWithCountIn()
+bool MainComponent::countInWillClick() const
 {
     // main player only: not while the raster, the arranger or a menu preview plays something else
-    if (countIn == CountIn::Off || audition != Audition::None || arranging.has_value() || ! patternMode())
+    return countIn != CountIn::Off && audition == Audition::None && ! arranging.has_value() && patternMode();
+}
+
+bool MainComponent::startWithCountIn()
+{
+    if (! countInWillClick())
         return false;
     const auto* info = view.plan;   // the selection, or the plan we are paused in
     if (info == nullptr || info->bars.empty())

@@ -19,6 +19,7 @@
 #include "app/views/PlaybackView.h"
 #include "app/views/SongStrip.h"
 #include "app/views/StatusPanels.h"
+#include "app/views/Watermark.h"
 
 #include <juce_audio_utils/juce_audio_utils.h>
 
@@ -117,6 +118,7 @@ private:
     void showHelp (bool show);
     void showMixer();
     void setMix (int channel, mix::Setting);
+    bool channelInUse (int channel) const;   // mixer: does this channel sound in what is selected?
     void showAudioSettings();
     void showDataTools (int tab);
     void seekToBar (int bar);        // within the playing song/pattern
@@ -148,6 +150,7 @@ private:
     enum class CountIn { Off, AtStart, Always };
     void cycleCountIn();
     void updateCountInButton();
+    bool countInWillClick() const;
     bool startWithCountIn();     // true: the clicks run instead of the plan (togglePlay returns)
     void followCountIn();        // timer: queues the selection once the clicks sound
     CountIn countIn = CountIn::Off;
@@ -171,7 +174,9 @@ private:
         int tempoTenths = 1200;
         int bar = -1;
     } beforePreview;
+    Watermark watermark;
     mix::Settings mixSettings {};
+    std::array<bool, mix::NumChannels> channelsInUse {};   // by the plan sent last (count-in aside)
     std::vector<double> tapTimes;
 
     // display state (filled from the engine's display events)

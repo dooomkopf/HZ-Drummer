@@ -1,6 +1,8 @@
 #include "app/MixerPanel.h"
 #include "app/Text.h"
 
+#include <cmath>
+
 namespace
 {
     constexpr float minDb = -48.0f, maxDb = 6.0f;
@@ -12,6 +14,13 @@ namespace
     const juce::Colour fillHot   { 0xffe89a2c };   // above 0 dB
     const juce::Colour muteOn    { 0xffe0443a };
     const juce::Colour soloOn    { 0xffe8c547 };
+    const juce::Colour meterOk   { 0xff3fbf6a };
+    const juce::Colour meterWarm { 0xffe8c547 };   // close to full scale
+    const juce::Colour meterHot  { 0xffe0443a };
+
+    constexpr int meterHz = 15;            // a calm display is enough to see where there is signal
+    constexpr float meterFallDb = 1.5f;    // per tick: about 22 dB per second
+    constexpr float paleAlpha = 0.35f;     // fader of a channel that does not sound
 }
 
 // Classic fader: narrow track, lit (coloured) below the thumb, scale ticks on both sides
@@ -55,8 +64,10 @@ public:
     }
 };
 
-MixerPanel::MixerPanel (const mix::Settings& initial, std::function<void (int, Setting)> callback)
-    : look (std::make_unique<FaderLook>()), onChange (std::move (callback))
+MixerPanel::MixerPanel (const mix::Settings& initial, std::function<void (int, Setting)> callback,
+                        std::function<float (int)> levelSource, std::function<bool (int)> usedSource)
+    : look (std::make_unique<FaderLook>()), onChange (std::move (callback)),
+      takeLevel (std::move (levelSource)), inUse (std::move (usedSource))
 {
     for (int ch = 0; ch < mix::NumChannels; ++ch)
     {
@@ -109,10 +120,12 @@ MixerPanel::MixerPanel (const mix::Settings& initial, std::function<void (int, S
     };
 
     setSize (8 * 100 + 40, 520);
+    startTimerHz (meterHz);
 }
 
 MixerPanel::~MixerPanel()
 {
+    stopTimer();
     for (auto& s : strips)
         s.slider.setLookAndFeel (nullptr);
 }
@@ -124,9 +137,58 @@ void MixerPanel::notify (int ch)
         onChange (ch, { (float) s.slider.getValue(), s.mute.getToggleState(), s.solo.getToggleState() });
 }
 
+void MixerPanel::timerCallback()
+{
+    if (! isShowing())
+        return;
+
+    for (int ch = 0; ch < mix::NumChannels; ++ch)
+    {
+        auto& s = strips[(size_t) ch];
+
+        const bool used = inUse == nullptr || inUse (ch);
+        if (used != s.inUse)
+        {
+            s.inUse = used;
+            s.slider.setAlpha (used ? 1.0f : paleAlpha);
+            s.name.setAlpha (used ? 1.0f : paleAlpha);
+        }
+
+        const float level = takeLevel != nullptr ? takeLevel (ch) : 0.0f;
+        const float db = level > 0.0f ? 20.0f * std::log10 (level) : minDb - 1.0f;
+        const float next = juce::jmax (db, s.meterDb - meterFallDb);
+        if (std::abs (next - s.meterDb) > 0.05f && (next >= minDb || s.meterDb >= minDb))
+            repaint (meterArea (ch));
+        s.meterDb = juce::jmax (next, minDb - 1.0f);
+    }
+}
+
+juce::Rectangle<int> MixerPanel::meterArea (int ch) const
+{
+    // right of the fader's scale ticks, spanning the same dB range as the fader
+    const auto& slider = strips[(size_t) ch].slider;
+    const int x = slider.getX() + slider.getWidth() / 2 + 27;
+    const int top = slider.getY() + (int) slider.getPositionOfValue (maxDb);
+    const int bottom = slider.getY() + (int) slider.getPositionOfValue (minDb);
+    return { x, top, 5, juce::jmax (0, bottom - top) };
+}
+
 void MixerPanel::paint (juce::Graphics& g)
 {
     g.fillAll (panelBg);
+
+    for (int ch = 0; ch < mix::NumChannels; ++ch)
+    {
+        const auto& s = strips[(size_t) ch];
+        const auto area = meterArea (ch).toFloat();
+        g.setColour (trackBg.withAlpha (s.inUse ? 1.0f : paleAlpha));
+        g.fillRoundedRectangle (area, 2.0f);
+        if (s.meterDb < minDb)
+            continue;
+        const auto y = (float) s.slider.getY() + (float) s.slider.getPositionOfValue (juce::jmin ((double) s.meterDb, (double) maxDb));
+        g.setColour (s.meterDb > -1.0f ? meterHot : s.meterDb > -9.0f ? meterWarm : meterOk);
+        g.fillRoundedRectangle (area.withTop (y), 2.0f);
+    }
 
     // Visually set off the total
     const auto master = strips[mix::Master].name.getBounds().getUnion (strips[mix::Master].mute.getBounds()).expanded (8, 8);
@@ -135,7 +197,7 @@ void MixerPanel::paint (juce::Graphics& g)
 
     g.setColour (textDim);
     g.setFont (juce::FontOptions (15.0f));
-    g.drawText ("Doppelklick auf einen Regler: 0 dB   ·   M = stumm   ·   S = solo"_u,
+    g.drawText ("Doppelklick auf einen Regler: 0 dB   ·   M = stumm   ·   S = solo   ·   blass = spielt hier nicht"_u,
                 getLocalBounds().reduced (20, 14).removeFromBottom (32), juce::Justification::centredLeft);
 }
 

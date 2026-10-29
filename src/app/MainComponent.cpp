@@ -421,12 +421,14 @@ void MainComponent::sendCurrentPlan()
     if (plan == nullptr)
         plan = makeMetronomePlan (meters.get (currentMeter), sound);
 
+    channelsInUse = mix::channelsUsedBy (*plan);
     plans.registerPlan (*plan, meters, std::move (info));
     engine.sendPlan (std::move (plan));
     if (! control.play)
         hasShown = false;   // a new plan starts from its beginning
 
     control.click = ! editing.has_value() && ! patternMode() && sound == MetronomeSound::Click;
+    channelsInUse[mix::Click] = channelsInUse[mix::Click] || control.click;
     publishControl();
     updateView();
 }
@@ -542,6 +544,7 @@ void MainComponent::timerCallback()
 void MainComponent::paint (juce::Graphics& g)
 {
     g.fillAll (theme::background);
+    watermark.draw (g, getLocalBounds());
 }
 
 void MainComponent::resized()

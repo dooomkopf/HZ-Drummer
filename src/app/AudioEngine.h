@@ -1,5 +1,6 @@
 #pragma once
 
+#include "app/MixState.h"
 #include "engine/ClickSynth.h"
 #include "engine/PatternPlayer.h"
 #include "engine/OutputGuard.h"
@@ -18,7 +19,8 @@
 // Threading contract
 //  - Methods marked [UI] must only be called on the message thread, [Audio] only from the audio callback.
 //  - UI -> audio: one atomic control snapshot, one atomic mixer snapshot, one atomic kit pointer,
-//    and a bounded plan queue. Audio -> UI: a display-event FIFO and a retire FIFO for plans.
+//    and a bounded plan queue. Audio -> UI: a display-event FIFO, a retire FIFO for plans and one
+//    atomic level per mixer channel.
 //  - Plans are owned by the engine's UI side. The audio thread only borrows them and hands
 //    replaced plans back through the retire FIFO; only then are they freed (on the UI thread).
 //  - Kits are owned by KitManager; kitInUse() tells it when the audio thread has let go of one.
@@ -57,6 +59,7 @@ public:
     void sendPlan (std::unique_ptr<hz::PatternPlan>);
     void collectRetiredPlans();                   // frees plans the audio thread has released
     void popDisplayEvents (std::vector<DisplayEvent>& out);
+    float takeLevel (int channel) { return levels[(size_t) channel].exchange (0.0f); }   // peak since the last call, linear
 
     // [Audio]
     void prepare (double sampleRate, int outputLatencySamples);
@@ -87,6 +90,8 @@ private:
     std::array<DisplayEvent, 256> displayBuffer {};
     juce::AbstractFifo retireFifo { 64 };
     std::array<const hz::PatternPlan*, 64> retireQueue {};
+    std::array<std::atomic<float>, mix::NumChannels> levels {};
+    static_assert (std::atomic<float>::is_always_lock_free);
 
     // audio thread only
     hz::PatternPlayer player;

@@ -27,6 +27,17 @@ int channelFor (hz::Voice v)
     return Cymbals;
 }
 
+std::array<bool, NumChannels> channelsUsedBy (const hz::PatternPlan& plan)
+{
+    std::array<bool, NumChannels> used {};
+    for (const auto& e : plan.events)
+        used[(size_t) channelFor (e.voice)] = true;
+    for (const auto& b : plan.bars)
+        used[Click] = used[Click] || b.click;
+    used[Master] = true;
+    return used;
+}
+
 std::uint64_t pack (const Settings& m)
 {
     // solo: as soon as one channel is soloed, all others (except master) are silent

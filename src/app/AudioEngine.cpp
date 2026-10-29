@@ -145,6 +145,9 @@ void AudioEngine::process (float* left, float* right, int numSamples)
     click.setGain (0.5f * masterNow * clickNow);
 
     const double blockStartMs = juce::Time::getMillisecondCounterHiRes();
+    sampler.resetPeaks();
+    click.resetPeak();
+    float masterPeak = 0.0f;
 
     for (int done = 0; done < numSamples; )
     {
@@ -173,6 +176,8 @@ void AudioEngine::process (float* left, float* right, int numSamples)
         click.render (l, r, len, clickEvents.data(), numClicks);   // also lets a click ring out
         sampler.render (l, r, len);
         guard.process (l, r, len);   // speaker protection: limiter + NaN guard + hard clamp
+        for (int i = 0; i < len; ++i)
+            masterPeak = std::max (masterPeak, std::max (std::abs (l[i]), r != nullptr ? std::abs (r[i]) : 0.0f));
 
         for (int i = 0; i < numPulse; ++i)
         {
@@ -186,6 +191,17 @@ void AudioEngine::process (float* left, float* right, int numSamples)
         done += len;
     }
     audioClock += numSamples;
+
+    // level meters: the UI takes the highest value since it last looked
+    auto publish = [this] (int ch, float level)
+    {
+        auto& slot = levels[(size_t) ch];
+        for (float seen = slot.load(); level > seen && ! slot.compare_exchange_weak (seen, level);) {}
+    };
+    for (int ch = 0; ch < mix::Click; ++ch)
+        publish (ch, sampler.peak (ch));
+    publish (mix::Click, click.peak());
+    publish (mix::Master, masterPeak);
 
     returnRetiredPlans();
 }

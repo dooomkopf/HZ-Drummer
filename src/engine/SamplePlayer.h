@@ -89,6 +89,10 @@ public:
     void setGain (float g) { gain = g; }
     int getNumActiveVoices() const;
 
+    // Highest output level per mixer channel since the last resetPeaks() (for the level meters)
+    float peak (int channel) const { return channelPeak[(std::size_t) channel]; }
+    void resetPeaks() { channelPeak.fill (0.0f); }
+
 private:
     struct Voice
     {
@@ -115,6 +119,7 @@ private:
     float gain = 0.8f;
     float fadeStep = 1.0f / 144.0f;   // approx. 3 ms at 48 kHz
     std::array<float, maxChannels> channelTarget {}, channelPrevious {};
+    std::array<float, maxChannels> channelPeak {};
 };
 
 } // namespace hz

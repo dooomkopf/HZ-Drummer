@@ -13,6 +13,7 @@ namespace theme
 {
     const juce::Colour background   { 0xff121214 };
     const juce::Colour panel        { 0xff1c1c20 };
+    const juce::Colour panelGlass   { 0xb3202025 };   // looks like 'panel' on the background, lets the watermark through a little (status panels)
     const juce::Colour textMain     { 0xffeeeeee };
     const juce::Colour textDim      { 0xff8a8a92 };
     const juce::Colour downbeat     { 0xffe0443a };

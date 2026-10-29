@@ -19,6 +19,10 @@ public:
 
     void setGain (float g) { gain = g; }
 
+    // Highest output level since the last resetPeak() (for the level meter)
+    float peak() const { return peakLevel; }
+    void resetPeak() { peakLevel = 0.0f; }
+
 private:
     struct Voice
     {
@@ -35,6 +39,7 @@ private:
     double sampleRate = 48000.0;
     float decay = 0.999f;
     float gain = 0.5f;
+    float peakLevel = 0.0f;
 };
 
 } // namespace hz

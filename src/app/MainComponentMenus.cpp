@@ -234,16 +234,22 @@ void MainComponent::setMix (int channel, mix::Setting setting)
     props.setValue ("mix_" + k + "_mute", setting.muted);
 }
 
+bool MainComponent::channelInUse (int channel) const
+{
+    // the count-in clicks before a pattern that never clicks itself
+    return channelsInUse[(size_t) channel] || (channel == mix::Click && countInWillClick());
+}
+
 void MainComponent::showMixer()
 {
     if (mixerWindow == nullptr)
     {
         juce::DialogWindow::LaunchOptions o;
-        o.content.setOwned (new GlowFrame (new MixerPanel (mixSettings, [safe = juce::Component::SafePointer<MainComponent> (this)] (int ch, mix::Setting st)
-        {
-            if (safe != nullptr)
-                safe->setMix (ch, st);
-        })));
+        const juce::Component::SafePointer<MainComponent> safe (this);
+        o.content.setOwned (new GlowFrame (new MixerPanel (mixSettings,
+            [safe] (int ch, mix::Setting st) { if (safe != nullptr) safe->setMix (ch, st); },
+            [safe] (int ch) { return safe != nullptr ? safe->engine.takeLevel (ch) : 0.0f; },
+            [safe] (int ch) { return safe == nullptr || safe->channelInUse (ch); })));
         o.dialogTitle = "Mixer";
         o.dialogBackgroundColour = theme::panel;
         o.useNativeTitleBar = true;

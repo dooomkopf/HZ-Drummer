@@ -25,6 +25,9 @@ using Settings = std::array<Setting, NumChannels>;
 // Mixer channel a drum voice is routed to
 int channelFor (hz::Voice);
 
+// Channels a plan makes sound: its drum voices, the click of "Klick" bars, and always the total
+std::array<bool, NumChannels> channelsUsedBy (const hz::PatternPlan&);
+
 // Applies mute/solo rules and encodes all channels into one word
 std::uint64_t pack (const Settings&);
 

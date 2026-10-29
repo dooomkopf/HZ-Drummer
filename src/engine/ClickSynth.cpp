@@ -1,5 +1,6 @@
 #include "engine/ClickSynth.h"
 
+#include <algorithm>
 #include <cmath>
 
 namespace hz
@@ -58,6 +59,7 @@ void ClickSynth::render (float* left, float* right, int numSamples, const ClickE
         }
 
         s *= gain;
+        peakLevel = std::max (peakLevel, std::abs (s));
         left[i] += s;
         if (right != nullptr)
             right[i] += s;

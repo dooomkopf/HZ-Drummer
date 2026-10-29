@@ -193,6 +193,7 @@ void SamplePlayer::renderVoice (Voice& v, float* left, float* right, int numSamp
     // channel gain ramps linearly across the block from the previous to the new target
     const float c0 = channelPrevious[(std::size_t) v.channel], c1 = channelTarget[(std::size_t) v.channel];
     const float rampStep = (c1 - c0) / (float) std::max (1, numSamples);
+    float voicePeak = 0.0f;
 
     for (int i = v.startOffset; i < numSamples && v.position < len; ++i, ++v.position)
     {
@@ -208,11 +209,16 @@ void SamplePlayer::renderVoice (Voice& v, float* left, float* right, int numSamp
             level *= v.fadeLevel;
         }
 
-        left[i] += level * s.left[(std::size_t) v.position];
+        const float l = level * s.left[(std::size_t) v.position];
+        const float r = level * s.right[(std::size_t) v.position];
+        left[i] += l;
         if (right != nullptr)
-            right[i] += level * s.right[(std::size_t) v.position];
+            right[i] += r;
+        voicePeak = std::max (voicePeak, std::max (std::abs (l), std::abs (r)));
     }
 
+    auto& channelMax = channelPeak[(std::size_t) v.channel];
+    channelMax = std::max (channelMax, voicePeak);
     v.startOffset = 0;
     v.fadeStart = 0;
     if (v.position >= len)

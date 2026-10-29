@@ -303,6 +303,32 @@ static void testVoiceStealing()
     CHECK (player.getNumActiveVoices() == SamplePlayer::numVoices);
 }
 
+// Pegelanzeige: der Sampler merkt sich den Spitzenpegel je Mixer-Kanal bis zum Zurücksetzen
+static void testChannelPeaks()
+{
+    DrumKit kit;
+    DrumInstrument inst;
+    DrumSample s;
+    s.left.assign (1000, 0.5f);
+    s.right.assign (1000, 0.5f);
+    s.power = 1.0f;
+    inst.samples.push_back (s);
+    kit.instruments.push_back (inst);
+    kit.finalise();
+
+    SamplePlayer player;
+    player.prepare (48000.0);
+    player.setKit (&kit);
+
+    std::vector<float> l (256), r (256);
+    player.trigger (0, 1.0f, 10, 3);
+    player.render (l.data(), r.data(), 256);
+    CHECK (player.peak (3) > 0.1f);
+    CHECK (player.peak (0) <= 0.0f);
+    player.resetPeaks();
+    CHECK (player.peak (3) <= 0.0f);
+}
+
 static int countMeters (const std::vector<Meter>& cat, int num, int den)
 {
     int n = 0;
@@ -882,6 +908,7 @@ int main()
     testResamplerAntiAlias();
     testVelocityPick();
     testVoiceStealing();
+    testChannelPeaks();
     testMeterCatalog();
     testMeterParse();
     testTabParser();

@@ -1,6 +1,7 @@
 // Tests für die App-Schicht (JUCE): Pattern-Dateiformat
 #include "app/PatternIO.h"
 #include "app/Library.h"
+#include "app/MixState.h"
 #include "app/QuickSearch.h"
 #include "app/PreviewMenuItem.h"
 #include "app/SearchQuery.h"
@@ -196,6 +197,23 @@ static void testLibraryDeletion()
     CHECK (folder.deleteRecursively());
 }
 
+// Mixer: welche Kanäle ein Plan überhaupt erklingen lässt (die übrigen Regler werden blass)
+static void testChannelsInUse()
+{
+    hz::PatternPlan plan;
+    plan.bars.push_back ({});
+    hz::PlanEvent kick;
+    kick.voice = { hz::Instrument::Kick, hz::Articulation::Normal };
+    plan.events.push_back (kick);
+
+    auto used = mix::channelsUsedBy (plan);
+    CHECK (used[mix::Kick] && used[mix::Master]);
+    CHECK (! used[mix::Toms] && ! used[mix::Click]);
+
+    plan.bars.front().click = true;   // a "Klick" bar of a song
+    CHECK (mix::channelsUsedBy (plan)[mix::Click]);
+}
+
 static void testMenuClickSeparation()
 {
     using Result = MenuClickGesture::Result;
@@ -226,6 +244,7 @@ int main (int argc, char* argv[])
     testSharedSearch();
     testLibraryDeletion();
     testMenuClickSeparation();
+    testChannelsInUse();
     runSongTests();
 
     // optional: zusätzlich einen Ordner mit Pattern-Dateien prüfen (z.B. eigene/importierte Patterns)
