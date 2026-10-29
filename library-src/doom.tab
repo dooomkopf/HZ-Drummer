@@ -1,0 +1,60 @@
+name:  Doom Half-Time schwer
+tags:  doom, half-time, slow
+tempo: 70 (50-90)
+grid:  1/8
+cr | X . . . . . . . |
+rd | . . x . x . x . |
+sn | . . . . X . . . |
+bd | x . . x . . . . |
+---
+name:  Doom Crash-Teppich
+tags:  doom, slow
+tempo: 65 (50-85)
+grid:  1/8
+cr | X . x . X . x . |
+sn | . . X . . . X . |
+bd | x . . . x x . . |
+---
+name:  Doom Tom-Groove
+tags:  doom, toms, tribal
+tempo: 75 (60-95)
+grid:  1/16
+t3 | . . . . x . x . . . . . x . . . |
+t4 | x . x . . . . . x . x . . . x . |
+sn | . . . . . . . . . . . . . . . . |
+bd | x . . . . . . . x . . . . . . . |
+---
+name:  Doom 12/8 Triolen-Feel
+tags:  doom, triplets, 12/8
+tempo: 60 (45-80)
+meter: 12/8
+grid:  1/8
+rd | X x x X x x X x x X x x |
+sn | . . . . . . X . . . . . |
+bd | x . . . . x x . . . . . |
+---
+name:  Funeral Doom
+tags:  doom, funeral, very-slow
+tempo: 40 (30-55)
+grid:  1/4
+cr | X . . . |
+sn | . . X . |
+bd | x . . . |
+---
+name:  Sludge-Shuffle
+tags:  doom, sludge, shuffle, swing
+tempo: 90 (70-110)
+grid:  1/8
+swing: 1/8 0.667
+hh | X x X x X x X x |
+sn | . . X . . . X . |
+bd | x . . x x . . . |
+---
+name:  Doom Ride-Groove
+tags:  doom, ride, half-time
+tempo: 80 (60-100)
+grid:  1/8
+rb | X . . . X . . . |
+rd | . . x . . . x . |
+sn | . . . . X . . . |
+bd | x . . x . . . x |

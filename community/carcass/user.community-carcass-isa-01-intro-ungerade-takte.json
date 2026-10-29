@@ -1,0 +1,196 @@
+{
+  "formatVersion": 1,
+  "id": "user.community-carcass-isa-01-intro-ungerade-takte",
+  "name": "Carcass – Incarnated Solvent Abuse – 01 Intro (ungerade Takte) (Loop, 1 Takt)",
+  "revision": 1,
+  "tags": [
+    "song",
+    "abschnitt",
+    "band:Carcass",
+    "song:Incarnated Solvent Abuse",
+    "community"
+  ],
+  "tempo": {
+    "default": 156,
+    "min": 0,
+    "max": 0
+  },
+  "bars": [
+    {
+      "meter": "6/8",
+      "grid": "1/16"
+    }
+  ],
+  "swing": {
+    "subdivision": "1/8",
+    "ratio": 0.5
+  },
+  "humanize": {
+    "amount": 0.25,
+    "seed": 65492
+  },
+  "layers": [
+    {
+      "id": 1,
+      "role": "hands",
+      "events": [
+        {
+          "id": 1,
+          "voice": "hihat.open",
+          "pos": "0",
+          "vel": 0.85
+        },
+        {
+          "id": 2,
+          "voice": "snare",
+          "pos": "0",
+          "vel": 1.0
+        },
+        {
+          "id": 3,
+          "voice": "hihat.open",
+          "pos": "1/2",
+          "vel": 0.58
+        },
+        {
+          "id": 4,
+          "voice": "snare",
+          "pos": "1/2",
+          "vel": 0.7
+        },
+        {
+          "id": 5,
+          "voice": "hihat.open",
+          "pos": "1",
+          "vel": 0.58
+        },
+        {
+          "id": 6,
+          "voice": "snare",
+          "pos": "1",
+          "vel": 0.7
+        },
+        {
+          "id": 7,
+          "voice": "hihat.open",
+          "pos": "3/2",
+          "vel": 0.85
+        },
+        {
+          "id": 8,
+          "voice": "snare",
+          "pos": "3/2",
+          "vel": 1.0
+        },
+        {
+          "id": 9,
+          "voice": "hihat.open",
+          "pos": "2",
+          "vel": 0.58
+        },
+        {
+          "id": 10,
+          "voice": "snare",
+          "pos": "2",
+          "vel": 0.7
+        },
+        {
+          "id": 11,
+          "voice": "hihat.open",
+          "pos": "5/2",
+          "vel": 0.58
+        },
+        {
+          "id": 12,
+          "voice": "snare",
+          "pos": "5/2",
+          "vel": 0.7
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "role": "feet",
+      "events": [
+        {
+          "id": 13,
+          "voice": "kick",
+          "pos": "0",
+          "vel": 0.95
+        },
+        {
+          "id": 14,
+          "voice": "kick",
+          "pos": "1/4",
+          "vel": 0.8
+        },
+        {
+          "id": 15,
+          "voice": "kick",
+          "pos": "1/2",
+          "vel": 0.8
+        },
+        {
+          "id": 16,
+          "voice": "kick",
+          "pos": "3/4",
+          "vel": 0.8
+        },
+        {
+          "id": 17,
+          "voice": "kick",
+          "pos": "1",
+          "vel": 0.8
+        },
+        {
+          "id": 18,
+          "voice": "kick",
+          "pos": "5/4",
+          "vel": 0.8
+        },
+        {
+          "id": 19,
+          "voice": "kick",
+          "pos": "3/2",
+          "vel": 0.88
+        },
+        {
+          "id": 20,
+          "voice": "kick",
+          "pos": "7/4",
+          "vel": 0.8
+        },
+        {
+          "id": 21,
+          "voice": "kick",
+          "pos": "2",
+          "vel": 0.8
+        },
+        {
+          "id": 22,
+          "voice": "kick",
+          "pos": "9/4",
+          "vel": 0.8
+        },
+        {
+          "id": 23,
+          "voice": "kick",
+          "pos": "5/2",
+          "vel": 0.8
+        },
+        {
+          "id": 24,
+          "voice": "kick",
+          "pos": "11/4",
+          "vel": 0.8
+        }
+      ]
+    }
+  ],
+  "origin": {
+    "parentId": "",
+    "parentRevision": 0,
+    "operators": [],
+    "seed": 0
+  }
+}

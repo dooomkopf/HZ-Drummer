@@ -1,0 +1,159 @@
+{
+  "formatVersion": 1,
+  "id": "user.community-carcass-nll-01-intro",
+  "name": "Carcass – No Love Lost – 1 Intro (Loop, 2 Takte)",
+  "revision": 1,
+  "tags": [
+    "death",
+    "carcass",
+    "song",
+    "band:Carcass",
+    "song:No Love Lost",
+    "community"
+  ],
+  "tempo": {
+    "default": 160.0,
+    "min": 0.0,
+    "max": 0.0
+  },
+  "bars": [
+    {
+      "meter": "4/4",
+      "grid": "1/16"
+    },
+    {
+      "meter": "4/4",
+      "grid": "1/16"
+    }
+  ],
+  "swing": {
+    "subdivision": "1/8",
+    "ratio": 0.5
+  },
+  "humanize": {
+    "amount": 0.300000011920929,
+    "seed": 2945449789
+  },
+  "layers": [
+    {
+      "id": 1,
+      "role": "hands",
+      "events": [
+        {
+          "id": 1,
+          "voice": "crash1",
+          "pos": "0",
+          "vel": 1.0
+        },
+        {
+          "id": 2,
+          "voice": "hihat",
+          "pos": "1",
+          "vel": 0.75
+        },
+        {
+          "id": 3,
+          "voice": "hihat",
+          "pos": "2",
+          "vel": 0.75
+        },
+        {
+          "id": 4,
+          "voice": "hihat",
+          "pos": "3",
+          "vel": 0.75
+        },
+        {
+          "id": 5,
+          "voice": "hihat",
+          "pos": "4",
+          "vel": 0.75
+        },
+        {
+          "id": 6,
+          "voice": "hihat",
+          "pos": "5",
+          "vel": 0.75
+        },
+        {
+          "id": 7,
+          "voice": "hihat",
+          "pos": "6",
+          "vel": 0.75
+        },
+        {
+          "id": 8,
+          "voice": "hihat",
+          "pos": "7",
+          "vel": 0.75
+        },
+        {
+          "id": 9,
+          "voice": "snare",
+          "pos": "2",
+          "vel": 1.0
+        },
+        {
+          "id": 10,
+          "voice": "snare",
+          "pos": "5",
+          "vel": 1.0
+        },
+        {
+          "id": 11,
+          "voice": "snare",
+          "pos": "7",
+          "vel": 1.0
+        },
+        {
+          "id": 12,
+          "voice": "tom1",
+          "pos": "15/2",
+          "vel": 0.75
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "role": "feet",
+      "events": [
+        {
+          "id": 13,
+          "voice": "kick",
+          "pos": "0",
+          "vel": 0.75
+        },
+        {
+          "id": 14,
+          "voice": "kick",
+          "pos": "3/2",
+          "vel": 0.75
+        },
+        {
+          "id": 15,
+          "voice": "kick",
+          "pos": "7/2",
+          "vel": 0.75
+        },
+        {
+          "id": 16,
+          "voice": "kick",
+          "pos": "9/2",
+          "vel": 0.75
+        },
+        {
+          "id": 17,
+          "voice": "kick",
+          "pos": "13/2",
+          "vel": 0.75
+        }
+      ]
+    }
+  ],
+  "origin": {
+    "parentId": "",
+    "parentRevision": 0,
+    "operators": [],
+    "seed": 0
+  }
+}

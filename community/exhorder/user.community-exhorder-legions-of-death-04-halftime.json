@@ -1,0 +1,132 @@
+{
+  "formatVersion": 1,
+  "id": "user.community-exhorder-legions-of-death-04-halftime",
+  "name": "Exhorder – Legions of Death – 04 Halftime – Achtel-Kick",
+  "revision": 1,
+  "tags": [
+    "thrash",
+    "groove",
+    "song",
+    "abschnitt",
+    "band:Exhorder",
+    "song:Legions of Death",
+    "community"
+  ],
+  "tempo": {
+    "default": 205,
+    "min": 0,
+    "max": 0
+  },
+  "bars": [
+    {
+      "meter": "4/4",
+      "grid": "1/32"
+    }
+  ],
+  "swing": {
+    "subdivision": "1/8",
+    "ratio": 0.5
+  },
+  "humanize": {
+    "amount": 0.08,
+    "seed": 2292069773
+  },
+  "layers": [
+    {
+      "id": 1,
+      "role": "hands",
+      "events": [
+        {
+          "id": 1,
+          "voice": "hihat.open",
+          "pos": "0",
+          "vel": 0.75
+        },
+        {
+          "id": 4,
+          "voice": "hihat.open",
+          "pos": "1",
+          "vel": 0.75
+        },
+        {
+          "id": 7,
+          "voice": "hihat.open",
+          "pos": "2",
+          "vel": 0.75
+        },
+        {
+          "id": 9,
+          "voice": "snare",
+          "pos": "2",
+          "vel": 0.88
+        },
+        {
+          "id": 11,
+          "voice": "hihat.open",
+          "pos": "3",
+          "vel": 0.75
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "role": "feet",
+      "events": [
+        {
+          "id": 2,
+          "voice": "kick",
+          "pos": "0",
+          "vel": 0.82
+        },
+        {
+          "id": 3,
+          "voice": "kick",
+          "pos": "1/2",
+          "vel": 0.82
+        },
+        {
+          "id": 5,
+          "voice": "kick",
+          "pos": "1",
+          "vel": 0.82
+        },
+        {
+          "id": 6,
+          "voice": "kick",
+          "pos": "3/2",
+          "vel": 0.82
+        },
+        {
+          "id": 8,
+          "voice": "kick",
+          "pos": "2",
+          "vel": 0.82
+        },
+        {
+          "id": 10,
+          "voice": "kick",
+          "pos": "5/2",
+          "vel": 0.82
+        },
+        {
+          "id": 12,
+          "voice": "kick",
+          "pos": "3",
+          "vel": 0.82
+        },
+        {
+          "id": 13,
+          "voice": "kick",
+          "pos": "7/2",
+          "vel": 0.82
+        }
+      ]
+    }
+  ],
+  "origin": {
+    "parentId": "",
+    "parentRevision": 0,
+    "operators": [],
+    "seed": 0
+  }
+}

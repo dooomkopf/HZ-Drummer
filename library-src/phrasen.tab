@@ -1,0 +1,107 @@
+# Vier-Takt-Phrasen: drei Takte Groove, im vierten der Übergang, wie ihn ein Drummer vor dem
+# nächsten Teil spielt. Der Crash auf der Eins des ersten Takts ist die Auflösung beim Loop.
+name:  Thrash-Polka, 4 Takte mit Snare-Wirbel
+tags:  thrash, phrase, fill
+tempo: 180 (150-210)
+grid:  1/16
+cr | X . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . |
+hh | x . x . x . x . x . x . x . x . | x . x . x . x . x . x . x . x . | x . x . x . x . x . x . x . x . | x . x . x . x . . . . . . . . . |
+sn | . . X . . . X . . . X . . . X . | . . X . . . X . . . X . . . X . | . . X . . . X . . . X . . . X . | . . X . . . X . g x g x X X X X |
+bd | x . . . x . . . x . . . x . . . | x . . . x . . . x . . . x . . . | x . . . x . . . x . . . x . . . | x . . . x . . . x . . . x . . . |
+---
+name:  D-Beat, 4 Takte mit Snare-Tom-Treppe
+tags:  d-beat, phrase, fill
+tempo: 190 (160-220)
+grid:  1/16
+cr | X . x . x . x . x . x . x . x . | x . x . x . x . x . x . x . x . | x . x . x . x . x . x . x . x . | x . x . x . x . . . . . . . . . |
+sn | . . . . X . . . . . . . X . . . | . . . . X . . . . . . . X . . . | . . . . X . . . . . . . X . . . | . . . . X . . . X X . . . . . . |
+t1 | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . . . . . . . . . x x . . . . |
+t2 | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . x x . . |
+t3 | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . x x |
+bd | x . . . . . x . x . . . . . x . | x . . . . . x . x . . . . . x . | x . . . . . x . x . . . . . x . | x . . . . . x . x . x . x . x . |
+---
+name:  Death-Doublebass, 4 Takte mit Snare-Tom-Lauf
+tags:  death, phrase, fill, double-bass
+tempo: 200 (170-230)
+grid:  1/16
+cr | X . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . |
+rd | x . x . x . x . x . x . x . x . | x . x . x . x . x . x . x . x . | x . x . x . x . x . x . x . x . | x . x . x . x . . . . . . . . . |
+sn | . . . . X . . . . . . . X . . . | . . . . X . . . . . . . X . . . | . . . . X . . . . . . . X . . . | . . . . X . . . X . . . X . . . |
+t1 | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . . . . . . . . x . . . x . . |
+t2 | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . . . . . . . . . x . . . x . |
+t3 | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . . . . . . . . . . x . . . x |
+bd | x x x x x x x x x x x x x x x x | x x x x x x x x x x x x x x x x | x x x x x x x x x x x x x x x x | x x x x x x x x x x x x x x x x |
+---
+name:  Blast, 4 Takte mit Snare-Crescendo
+tags:  grind, blast, phrase, fill
+tempo: 220 (190-250)
+grid:  1/16
+cr | X . x . x . x . x . x . x . x . | x . x . x . x . x . x . x . x . | x . x . x . x . x . x . x . x . | x . x . x . x . . . . . . . . . |
+sn | . x . x . x . x . x . x . x . x | . x . x . x . x . x . x . x . x | . x . x . x . x . x . x . x . x | . x . x . x . x g g x x x X X X |
+bd | x . x . x . x . x . x . x . x . | x . x . x . x . x . x . x . x . | x . x . x . x . x . x . x . x . | x . x . x . x . x . x . x . x . |
+---
+name:  Halftime-Groove, 4 Takte mit Ghost-Fill
+tags:  groove, phrase, fill, half-time
+tempo: 100 (80-130)
+grid:  1/16
+cr | X . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . |
+hh | X . x . X . x . X . x . X . x . | X . x . X . x . X . x . X . x . | X . x . X . x . X . x . X . x . | X . x . X . x . X . . . . . . . |
+sn | . . . g . . . . X . . g . . . . | . . . g . . . . X . . g . . . . | . . . g . . . . X . . g . . . . | . . . g . . g . X . . . . . . . |
+t1 | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . . . . . . . . . x x . . . . |
+t2 | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . x x . . |
+t3 | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . x x |
+bd | x . . . . . x . . . . . . . x . | x . . . . . x . . . . . . . x . | x . . . . . x . . . . . . . x . | x . . . . . x . . . x . . . . . |
+---
+name:  Doom, 4 Takte mit schwerem Tom-Übergang
+tags:  doom, phrase, fill
+tempo: 70 (55-90)
+grid:  1/8
+cr | X . . . . . . . | . . . . . . . . | . . . . . . . . | . . . . . . . . |
+rd | x . x . x . x . | x . x . x . x . | x . x . x . x . | x . x . . . . . |
+sn | . . . . X . . . | . . . . X . . . | . . . . X . . . | . . . . X . . . |
+t1 | . . . . . . . . | . . . . . . . . | . . . . . . . . | . . . . . x . . |
+t2 | . . . . . . . . | . . . . . . . . | . . . . . . . . | . . . . . . x . |
+t3 | . . . . . . . . | . . . . . . . . | . . . . . . . . | . . . . . . . x |
+bd | x . . x . . x . | x . . x . . x . | x . . x . . x . | x . . x . x . x |
+---
+name:  Hardcore-Mosh, 4 Takte mit Snare-Stopp
+tags:  hardcore, phrase, fill, mosh
+tempo: 160 (130-190)
+grid:  1/16
+cr | X . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . |
+ch | X . x . x . x . X . x . x . x . | X . x . x . x . X . x . x . x . | X . x . x . x . X . x . x . x . | X . x . x . x . . . . . . . . . |
+sn | . . . . . . . . X . . . . . . . | . . . . . . . . X . . . . . . . | . . . . . . . . X . . . . . . . | . . . . . . . . X . . . x x X X |
+bd | x . . . . . x . . . . . x . . . | x . . . . . x . . . . . x . . . | x . . . . . x . . . . . x . . . | x . . . . . x . x . . . x . . . |
+---
+name:  Prog 7/8, 4 Takte mit Tom-Fill
+tags:  prog, phrase, fill, odd
+tempo: 150 (120-180)
+meter: 7/8 (2+2+3)
+grid:  1/16
+cr | X . . . . . . . . . . . . . | . . . . . . . . . . . . . . | . . . . . . . . . . . . . . | . . . . . . . . . . . . . . |
+hh | X . x . X . x . X . x . x . | X . x . X . x . X . x . x . | X . x . X . x . X . x . x . | X . x . X . x . . . . . . . |
+sn | . . . . X . . . . . . . X . | . . . . X . . . . . . . X . | . . . . X . . . . . . . X . | . . . . X . . . X . . . . . |
+t1 | . . . . . . . . . . . . . . | . . . . . . . . . . . . . . | . . . . . . . . . . . . . . | . . . . . . . . . x x . . . |
+t2 | . . . . . . . . . . . . . . | . . . . . . . . . . . . . . | . . . . . . . . . . . . . . | . . . . . . . . . . . x . . |
+t3 | . . . . . . . . . . . . . . | . . . . . . . . . . . . . . | . . . . . . . . . . . . . . | . . . . . . . . . . . . x x |
+bd | x . . . . . x . x . . x . . | x . . . . . x . x . . x . . | x . . . . . x . x . . x . . | x . . . . . x . x . . . x . |
+---
+name:  Thrash-Gallop, 4 Takte mit Snare-Fill
+tags:  thrash, phrase, fill, gallop
+tempo: 170 (140-200)
+grid:  1/16
+cr | X . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . |
+hh | x . x . x . x . x . x . x . x . | x . x . x . x . x . x . x . x . | x . x . x . x . x . x . x . x . | x . x . x . x . . . . . . . . . |
+sn | . . . . X . . . . . . . X . . . | . . . . X . . . . . . . X . . . | . . . . X . . . . . . . X . . . | . . . . X . . . X . x . X x X X |
+bd | x . x x x . x x x . x x x . x x | x . x x x . x x x . x x x . x x | x . x x x . x x x . x x x . x x | x . x x x . x x x . x x x . x x |
+---
+name:  Tech-Death, 4 Takte mit Tom-Kaskade
+tags:  techdeath, phrase, fill, double-bass
+tempo: 210 (180-240)
+grid:  1/16
+ch | X . x . x . x . x . x . x . x . | X . x . x . x . x . x . x . x . | X . x . x . x . x . x . x . x . | X . . . . . . . . . . . . . . . |
+sn | . . . . X . . . . . . . X . . . | . . . . X . . . . . . . X . . . | . . . . X . . . . . . . X . . . | X . . . . . . . X x . . . . X X |
+t1 | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . x x . . . . . . x . . . . . |
+t2 | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . . . x x . . . . . x . . . . |
+t3 | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . . . . . . . . . . . . . . . | . . . . . . x x . . . . x x . . |
+bd | x x x x x x x x x x x x x x x x | x x x x x x x x x x x x x x x x | x x x x x x x x x x x x x x x x | x x x x x x x x x x x x x x x x |

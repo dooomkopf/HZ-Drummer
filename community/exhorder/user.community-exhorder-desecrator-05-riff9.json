@@ -1,0 +1,126 @@
+{
+  "formatVersion": 1,
+  "id": "user.community-exhorder-desecrator-05-riff9",
+  "name": "Exhorder – Desecrator – 05 Riff 9 – Gerader Crash-Groove",
+  "revision": 1,
+  "tags": [
+    "thrash",
+    "groove",
+    "song",
+    "abschnitt",
+    "band:Exhorder",
+    "song:Desecrator",
+    "community"
+  ],
+  "tempo": {
+    "default": 84,
+    "min": 0,
+    "max": 0
+  },
+  "bars": [
+    {
+      "meter": "4/4",
+      "grid": "1/32"
+    }
+  ],
+  "swing": {
+    "subdivision": "1/8",
+    "ratio": 0.5
+  },
+  "humanize": {
+    "amount": 0.08,
+    "seed": 1303439348
+  },
+  "layers": [
+    {
+      "id": 1,
+      "role": "hands",
+      "events": [
+        {
+          "id": 1,
+          "voice": "crash1",
+          "pos": "0",
+          "vel": 0.75
+        },
+        {
+          "id": 3,
+          "voice": "crash1",
+          "pos": "1/2",
+          "vel": 0.75
+        },
+        {
+          "id": 4,
+          "voice": "crash1",
+          "pos": "1",
+          "vel": 0.75
+        },
+        {
+          "id": 5,
+          "voice": "snare",
+          "pos": "1",
+          "vel": 0.88
+        },
+        {
+          "id": 6,
+          "voice": "crash1",
+          "pos": "3/2",
+          "vel": 0.75
+        },
+        {
+          "id": 7,
+          "voice": "crash1",
+          "pos": "2",
+          "vel": 0.75
+        },
+        {
+          "id": 9,
+          "voice": "crash1",
+          "pos": "5/2",
+          "vel": 0.75
+        },
+        {
+          "id": 10,
+          "voice": "crash1",
+          "pos": "3",
+          "vel": 0.75
+        },
+        {
+          "id": 11,
+          "voice": "snare",
+          "pos": "3",
+          "vel": 0.88
+        },
+        {
+          "id": 12,
+          "voice": "crash1",
+          "pos": "7/2",
+          "vel": 0.75
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "role": "feet",
+      "events": [
+        {
+          "id": 2,
+          "voice": "kick",
+          "pos": "0",
+          "vel": 0.82
+        },
+        {
+          "id": 8,
+          "voice": "kick",
+          "pos": "2",
+          "vel": 0.82
+        }
+      ]
+    }
+  ],
+  "origin": {
+    "parentId": "",
+    "parentRevision": 0,
+    "operators": [],
+    "seed": 0
+  }
+}

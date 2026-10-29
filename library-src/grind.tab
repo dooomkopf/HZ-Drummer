@@ -1,0 +1,39 @@
+name:  Hammer-Blast
+tags:  grind, blast
+tempo: 200 (160-240)
+grid:  1/16
+cr | x . x . x . x . x . x . x . x . |
+sn | x x x x x x x x x x x x x x x x |
+bd | x x x x x x x x x x x x x x x x |
+---
+name:  Traditional Blast
+tags:  grind, blast
+tempo: 200 (160-240)
+grid:  1/16
+cr | X . x . x . x . x . x . x . x . |
+sn | . x . x . x . x . x . x . x . x |
+bd | x . x . x . x . x . x . x . x . |
+---
+name:  Bomb-Blast
+tags:  grind, blast, double-bass
+tempo: 200 (160-240)
+grid:  1/16
+cr | X . x . x . x . x . x . x . x . |
+sn | x . x . x . x . x . x . x . x . |
+bd | x x x x x x x x x x x x x x x x |
+---
+name:  Blast und D-Beat im Wechsel
+tags:  grind, blast, d-beat
+tempo: 190 (160-230)
+grid:  1/16
+cr | X . x . x . x . x . x . x . x . | X . x . x . x . x . x . x . x . |
+sn | . x . x . x . x . x . x . x . x | . . . . X . . . . . . . X . . . |
+bd | x . x . x . x . x . x . x . x . | x . . . . . x . x . . . . . x . |
+---
+name:  Einhand-Blast (Gravity-artig)
+tags:  grind, blast
+tempo: 180 (150-220)
+grid:  1/16
+cr | X . . . x . . . x . . . x . . . |
+sn | x x x x x x x x x x x x x x x x |
+bd | x . x . x . x . x . x . x . x . |

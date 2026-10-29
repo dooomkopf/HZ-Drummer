@@ -1,0 +1,363 @@
+{
+  "formatVersion": 1,
+  "id": "lib.hardcore-mosh-4-takte-mit-snare-stopp",
+  "name": "Hardcore-Mosh, 4 Takte mit Snare-Stopp",
+  "revision": 1,
+  "tags": [
+    "hardcore",
+    "phrase",
+    "fill",
+    "mosh"
+  ],
+  "tempo": {
+    "default": 160.0,
+    "min": 130.0,
+    "max": 190.0
+  },
+  "bars": [
+    {
+      "meter": "4/4",
+      "grid": "1/16"
+    },
+    {
+      "meter": "4/4",
+      "grid": "1/16"
+    },
+    {
+      "meter": "4/4",
+      "grid": "1/16"
+    },
+    {
+      "meter": "4/4",
+      "grid": "1/16"
+    }
+  ],
+  "swing": {
+    "subdivision": "1/8",
+    "ratio": 0.5
+  },
+  "humanize": {
+    "amount": 0.300000011920929,
+    "seed": 2094087891
+  },
+  "layers": [
+    {
+      "id": 1,
+      "role": "hands",
+      "events": [
+        {
+          "id": 1,
+          "voice": "crash1",
+          "pos": "0",
+          "vel": 1.0
+        },
+        {
+          "id": 2,
+          "voice": "china",
+          "pos": "0",
+          "vel": 1.0
+        },
+        {
+          "id": 3,
+          "voice": "china",
+          "pos": "1/2",
+          "vel": 0.75
+        },
+        {
+          "id": 4,
+          "voice": "china",
+          "pos": "1",
+          "vel": 0.75
+        },
+        {
+          "id": 5,
+          "voice": "china",
+          "pos": "3/2",
+          "vel": 0.75
+        },
+        {
+          "id": 6,
+          "voice": "china",
+          "pos": "2",
+          "vel": 1.0
+        },
+        {
+          "id": 7,
+          "voice": "china",
+          "pos": "5/2",
+          "vel": 0.75
+        },
+        {
+          "id": 8,
+          "voice": "china",
+          "pos": "3",
+          "vel": 0.75
+        },
+        {
+          "id": 9,
+          "voice": "china",
+          "pos": "7/2",
+          "vel": 0.75
+        },
+        {
+          "id": 10,
+          "voice": "china",
+          "pos": "4",
+          "vel": 1.0
+        },
+        {
+          "id": 11,
+          "voice": "china",
+          "pos": "9/2",
+          "vel": 0.75
+        },
+        {
+          "id": 12,
+          "voice": "china",
+          "pos": "5",
+          "vel": 0.75
+        },
+        {
+          "id": 13,
+          "voice": "china",
+          "pos": "11/2",
+          "vel": 0.75
+        },
+        {
+          "id": 14,
+          "voice": "china",
+          "pos": "6",
+          "vel": 1.0
+        },
+        {
+          "id": 15,
+          "voice": "china",
+          "pos": "13/2",
+          "vel": 0.75
+        },
+        {
+          "id": 16,
+          "voice": "china",
+          "pos": "7",
+          "vel": 0.75
+        },
+        {
+          "id": 17,
+          "voice": "china",
+          "pos": "15/2",
+          "vel": 0.75
+        },
+        {
+          "id": 18,
+          "voice": "china",
+          "pos": "8",
+          "vel": 1.0
+        },
+        {
+          "id": 19,
+          "voice": "china",
+          "pos": "17/2",
+          "vel": 0.75
+        },
+        {
+          "id": 20,
+          "voice": "china",
+          "pos": "9",
+          "vel": 0.75
+        },
+        {
+          "id": 21,
+          "voice": "china",
+          "pos": "19/2",
+          "vel": 0.75
+        },
+        {
+          "id": 22,
+          "voice": "china",
+          "pos": "10",
+          "vel": 1.0
+        },
+        {
+          "id": 23,
+          "voice": "china",
+          "pos": "21/2",
+          "vel": 0.75
+        },
+        {
+          "id": 24,
+          "voice": "china",
+          "pos": "11",
+          "vel": 0.75
+        },
+        {
+          "id": 25,
+          "voice": "china",
+          "pos": "23/2",
+          "vel": 0.75
+        },
+        {
+          "id": 26,
+          "voice": "china",
+          "pos": "12",
+          "vel": 1.0
+        },
+        {
+          "id": 27,
+          "voice": "china",
+          "pos": "25/2",
+          "vel": 0.75
+        },
+        {
+          "id": 28,
+          "voice": "china",
+          "pos": "13",
+          "vel": 0.75
+        },
+        {
+          "id": 29,
+          "voice": "china",
+          "pos": "27/2",
+          "vel": 0.75
+        },
+        {
+          "id": 30,
+          "voice": "snare",
+          "pos": "2",
+          "vel": 1.0
+        },
+        {
+          "id": 31,
+          "voice": "snare",
+          "pos": "6",
+          "vel": 1.0
+        },
+        {
+          "id": 32,
+          "voice": "snare",
+          "pos": "10",
+          "vel": 1.0
+        },
+        {
+          "id": 33,
+          "voice": "snare",
+          "pos": "14",
+          "vel": 1.0
+        },
+        {
+          "id": 34,
+          "voice": "snare",
+          "pos": "15",
+          "vel": 0.75
+        },
+        {
+          "id": 35,
+          "voice": "snare",
+          "pos": "61/4",
+          "vel": 0.75
+        },
+        {
+          "id": 36,
+          "voice": "snare",
+          "pos": "31/2",
+          "vel": 1.0
+        },
+        {
+          "id": 37,
+          "voice": "snare",
+          "pos": "63/4",
+          "vel": 1.0
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "role": "feet",
+      "events": [
+        {
+          "id": 38,
+          "voice": "kick",
+          "pos": "0",
+          "vel": 0.75
+        },
+        {
+          "id": 39,
+          "voice": "kick",
+          "pos": "3/2",
+          "vel": 0.75
+        },
+        {
+          "id": 40,
+          "voice": "kick",
+          "pos": "3",
+          "vel": 0.75
+        },
+        {
+          "id": 41,
+          "voice": "kick",
+          "pos": "4",
+          "vel": 0.75
+        },
+        {
+          "id": 42,
+          "voice": "kick",
+          "pos": "11/2",
+          "vel": 0.75
+        },
+        {
+          "id": 43,
+          "voice": "kick",
+          "pos": "7",
+          "vel": 0.75
+        },
+        {
+          "id": 44,
+          "voice": "kick",
+          "pos": "8",
+          "vel": 0.75
+        },
+        {
+          "id": 45,
+          "voice": "kick",
+          "pos": "19/2",
+          "vel": 0.75
+        },
+        {
+          "id": 46,
+          "voice": "kick",
+          "pos": "11",
+          "vel": 0.75
+        },
+        {
+          "id": 47,
+          "voice": "kick",
+          "pos": "12",
+          "vel": 0.75
+        },
+        {
+          "id": 48,
+          "voice": "kick",
+          "pos": "27/2",
+          "vel": 0.75
+        },
+        {
+          "id": 49,
+          "voice": "kick",
+          "pos": "14",
+          "vel": 0.75
+        },
+        {
+          "id": 50,
+          "voice": "kick",
+          "pos": "15",
+          "vel": 0.75
+        }
+      ]
+    }
+  ],
+  "origin": {
+    "parentId": "",
+    "parentRevision": 0,
+    "operators": [],
+    "seed": 0
+  }
+}

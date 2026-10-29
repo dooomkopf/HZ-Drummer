@@ -1,0 +1,52 @@
+# D-Beat: Kick auf 1, 2+, 3, 4+ / Snare auf 2 und 4
+name:  D-Beat klassisch
+tags:  d-beat, punk, crust
+tempo: 180 (150-220)
+grid:  1/8
+cr | X x x x X x x x |
+sn | . . X . . . X . |
+bd | x . . x x . . x |
+---
+name:  D-Beat Crust (schnell)
+tags:  d-beat, crust, fast
+tempo: 220 (190-250)
+grid:  1/8
+c2 | X x X x X x X x |
+sn | . . X . . . X . |
+bd | x . . x x . . x |
+---
+name:  D-Beat mit Doppelbass
+tags:  d-beat, double-bass
+tempo: 170 (140-200)
+grid:  1/16
+cr | X . x . x . x . X . x . x . x . |
+sn | . . . . X . . . . . . . X . . . |
+bd | x x x x x x x x x x x x x x x x |
+---
+name:  D-Beat Halbzeit
+tags:  d-beat, half-time
+tempo: 180 (150-220)
+grid:  1/8
+cr | X . x . x . x . |
+sn | . . . . X . . . |
+bd | x . . x x . . x |
+---
+# Der Galopp "2+ 3" wird ab etwa 190 BPM meist nachgezogen gespielt (Motörhead-Erbe): leicht …
+name:  D-Beat leicht geswingt
+tags:  d-beat, punk, crust, shuffle
+tempo: 190 (160-220)
+grid:  1/8
+swing: 1/8 0.58
+cr | X x x x X x x x |
+sn | . . X . . . X . |
+bd | x . . x x . . x |
+---
+# … oder ganz triolisch, der eigentliche "D-Beat-Shuffle"
+name:  D-Beat Shuffle (triolisch)
+tags:  d-beat, crust, shuffle
+tempo: 200 (170-230)
+grid:  1/8
+swing: 1/8 0.667
+cr | X x x x X x x x |
+sn | . . X . . . X . |
+bd | x . . x x . . x |

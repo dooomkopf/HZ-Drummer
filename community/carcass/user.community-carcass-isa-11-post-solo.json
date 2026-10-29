@@ -1,0 +1,152 @@
+{
+  "formatVersion": 1,
+  "id": "user.community-carcass-isa-11-post-solo",
+  "name": "Carcass – Incarnated Solvent Abuse – 11 Post-Solo (Loop, 2 Takte)",
+  "revision": 1,
+  "tags": [
+    "song",
+    "abschnitt",
+    "band:Carcass",
+    "song:Incarnated Solvent Abuse",
+    "community"
+  ],
+  "tempo": {
+    "default": 156,
+    "min": 0,
+    "max": 0
+  },
+  "bars": [
+    {
+      "meter": "4/4",
+      "grid": "1/16"
+    },
+    {
+      "meter": "4/4",
+      "grid": "1/16"
+    }
+  ],
+  "swing": {
+    "subdivision": "1/8",
+    "ratio": 0.5
+  },
+  "humanize": {
+    "amount": 0.25,
+    "seed": 65502
+  },
+  "layers": [
+    {
+      "id": 1,
+      "role": "hands",
+      "events": [
+        {
+          "id": 1,
+          "voice": "ride",
+          "pos": "0",
+          "vel": 0.85
+        },
+        {
+          "id": 2,
+          "voice": "ride",
+          "pos": "1",
+          "vel": 0.85
+        },
+        {
+          "id": 3,
+          "voice": "ride",
+          "pos": "2",
+          "vel": 0.85
+        },
+        {
+          "id": 4,
+          "voice": "snare",
+          "pos": "2",
+          "vel": 1.0
+        },
+        {
+          "id": 5,
+          "voice": "tom4",
+          "pos": "3",
+          "vel": 0.9
+        },
+        {
+          "id": 6,
+          "voice": "tom4",
+          "pos": "7/2",
+          "vel": 0.925
+        },
+        {
+          "id": 7,
+          "voice": "crash1",
+          "pos": "4",
+          "vel": 1.0
+        },
+        {
+          "id": 8,
+          "voice": "ride",
+          "pos": "5",
+          "vel": 0.85
+        },
+        {
+          "id": 9,
+          "voice": "ride",
+          "pos": "6",
+          "vel": 0.85
+        },
+        {
+          "id": 10,
+          "voice": "snare",
+          "pos": "6",
+          "vel": 1.0
+        },
+        {
+          "id": 11,
+          "voice": "ride",
+          "pos": "7",
+          "vel": 0.85
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "role": "feet",
+      "events": [
+        {
+          "id": 12,
+          "voice": "kick",
+          "pos": "0",
+          "vel": 0.95
+        },
+        {
+          "id": 13,
+          "voice": "kick",
+          "pos": "3",
+          "vel": 0.88
+        },
+        {
+          "id": 14,
+          "voice": "kick",
+          "pos": "7/2",
+          "vel": 0.8
+        },
+        {
+          "id": 15,
+          "voice": "kick",
+          "pos": "4",
+          "vel": 0.95
+        },
+        {
+          "id": 16,
+          "voice": "kick",
+          "pos": "15/2",
+          "vel": 0.8
+        }
+      ]
+    }
+  ],
+  "origin": {
+    "parentId": "",
+    "parentRevision": 0,
+    "operators": [],
+    "seed": 0
+  }
+}

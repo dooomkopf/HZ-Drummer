@@ -1,0 +1,39 @@
+name:  Tech-Death 5er-Kick über 4/4
+tags:  tech-death, ostinato, polyrhythm
+tempo: 140 (110-170)
+grid:  1/16
+rd | X.x. x.x. x.x. x.x. | X.x. x.x. x.x. x.x. | X.x. x.x. x.x. x.x. | X.x. x.x. x.x. x.x. | X.x. x.x. x.x. x.x. |
+sn | .... X... .... X... | .... X... .... X... | .... X... .... X... | .... X... .... X... | .... X... .... X... |
+bd | xx.x .xx. x.xx .x.x | x.x. xx.x .xx. x.xx | .x.x x.x. xx.x .xx. | x.xx .x.x x.x. xx.x | .xx. x.xx .x.x x.x. |
+---
+name:  Tech-Death 7er-Kick über 4/4
+tags:  tech-death, ostinato, polyrhythm
+tempo: 130 (100-160)
+grid:  1/16
+ch | X... x... x... x... | X... x... x... x... | X... x... x... x... | X... x... x... x... | X... x... x... x... | X... x... x... x... | X... x... x... x... |
+sn | .... .... X... .... | .... .... X... .... | .... .... X... .... | .... .... X... .... | .... .... X... .... | .... .... X... .... | .... .... X... .... |
+bd | x.xx .x.x .xx. x.x. | xx.x .x.x x.x. x.xx | .x.x .xx. x.x. xx.x | .x.x x.x. x.xx .x.x | .xx. x.x. xx.x .x.x | x.x. x.xx .x.x .xx. | x.x. xx.x .x.x x.x. |
+---
+name:  Tech-Death Sextolen-Kick
+tags:  tech-death, double-bass, sextuplets
+tempo: 100 (80-130)
+grid:  1/24
+cr | X..... x..... x..... x..... |
+sn | ...... X..... ...... X..... |
+bd | xxxxxx xxxxxx xxxxxx xxxxxx |
+---
+name:  Tech-Death verschobene Snare
+tags:  tech-death, displaced
+tempo: 160 (130-190)
+grid:  1/16
+rd | X.x. x.x. x.x. x.x. |
+sn | ...X .... ..X. ...X |
+bd | xxx. xxx. xx.x xx.. |
+---
+name:  Tech-Death Offbeat-China
+tags:  tech-death, half-time, double-bass
+tempo: 170 (140-200)
+grid:  1/16
+ch | ..X. ..X. ..X. ..X. |
+sn | .... .... X... .... |
+bd | xxxx xxxx xxxx xxxx |

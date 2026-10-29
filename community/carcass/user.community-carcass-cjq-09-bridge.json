@@ -1,0 +1,142 @@
+{
+  "formatVersion": 1,
+  "id": "user.community-carcass-cjq-09-bridge",
+  "name": "Carcass – Corporal Jigsore Quandary – 09 Bridge (Loop, 1 Takt)",
+  "revision": 1,
+  "tags": [
+    "song",
+    "abschnitt",
+    "band:Carcass",
+    "song:Corporal Jigsore Quandary",
+    "community"
+  ],
+  "tempo": {
+    "default": 140,
+    "min": 0,
+    "max": 0
+  },
+  "bars": [
+    {
+      "meter": "4/4",
+      "grid": "1/16"
+    }
+  ],
+  "swing": {
+    "subdivision": "1/8",
+    "ratio": 0.5
+  },
+  "humanize": {
+    "amount": 0.25,
+    "seed": 50661
+  },
+  "layers": [
+    {
+      "id": 1,
+      "role": "hands",
+      "events": [
+        {
+          "id": 1,
+          "voice": "crash1",
+          "pos": "0",
+          "vel": 1.0
+        },
+        {
+          "id": 2,
+          "voice": "ride",
+          "pos": "1/2",
+          "vel": 0.7
+        },
+        {
+          "id": 3,
+          "voice": "ride",
+          "pos": "1",
+          "vel": 0.85
+        },
+        {
+          "id": 4,
+          "voice": "snare",
+          "pos": "1",
+          "vel": 1.0
+        },
+        {
+          "id": 5,
+          "voice": "ride",
+          "pos": "3/2",
+          "vel": 0.7
+        },
+        {
+          "id": 6,
+          "voice": "ride",
+          "pos": "2",
+          "vel": 0.85
+        },
+        {
+          "id": 7,
+          "voice": "ride",
+          "pos": "5/2",
+          "vel": 0.7
+        },
+        {
+          "id": 8,
+          "voice": "ride",
+          "pos": "3",
+          "vel": 0.85
+        },
+        {
+          "id": 9,
+          "voice": "snare",
+          "pos": "3",
+          "vel": 1.0
+        },
+        {
+          "id": 10,
+          "voice": "ride",
+          "pos": "7/2",
+          "vel": 0.7
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "role": "feet",
+      "events": [
+        {
+          "id": 11,
+          "voice": "kick",
+          "pos": "0",
+          "vel": 0.95
+        },
+        {
+          "id": 12,
+          "voice": "kick",
+          "pos": "3/2",
+          "vel": 0.8
+        },
+        {
+          "id": 13,
+          "voice": "kick",
+          "pos": "2",
+          "vel": 0.88
+        },
+        {
+          "id": 14,
+          "voice": "kick",
+          "pos": "5/2",
+          "vel": 0.8
+        },
+        {
+          "id": 15,
+          "voice": "kick",
+          "pos": "7/2",
+          "vel": 0.8
+        }
+      ]
+    }
+  ],
+  "origin": {
+    "parentId": "",
+    "parentRevision": 0,
+    "operators": [],
+    "seed": 0
+  }
+}

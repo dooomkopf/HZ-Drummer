@@ -1,0 +1,521 @@
+{
+  "formatVersion": 1,
+  "id": "user.community-carcass-cjq-groove-a",
+  "name": "Carcass – Corporal Jigsore Quandary – 2 Groove A",
+  "revision": 1,
+  "tags": [
+    "death",
+    "carcass",
+    "song",
+    "band:Carcass",
+    "song:Corporal Jigsore Quandary",
+    "community"
+  ],
+  "tempo": {
+    "default": 142.0,
+    "min": 141.0,
+    "max": 147.0
+  },
+  "bars": [
+    {
+      "meter": "4/4",
+      "grid": "1/16"
+    },
+    {
+      "meter": "4/4",
+      "grid": "1/16"
+    },
+    {
+      "meter": "4/4",
+      "grid": "1/16"
+    },
+    {
+      "meter": "4/4",
+      "grid": "1/16"
+    }
+  ],
+  "swing": {
+    "subdivision": "1/8",
+    "ratio": 0.5
+  },
+  "humanize": {
+    "amount": 0.300000011920929,
+    "seed": 660679663
+  },
+  "layers": [
+    {
+      "id": 1,
+      "role": "hands",
+      "events": [
+        {
+          "id": 1,
+          "voice": "crash1",
+          "pos": "0",
+          "vel": 1.0
+        },
+        {
+          "id": 2,
+          "voice": "crash1",
+          "pos": "7/2",
+          "vel": 1.0
+        },
+        {
+          "id": 3,
+          "voice": "crash1",
+          "pos": "15/2",
+          "vel": 1.0
+        },
+        {
+          "id": 4,
+          "voice": "crash1",
+          "pos": "8",
+          "vel": 1.0
+        },
+        {
+          "id": 5,
+          "voice": "crash1",
+          "pos": "23/2",
+          "vel": 1.0
+        },
+        {
+          "id": 6,
+          "voice": "crash1",
+          "pos": "31/2",
+          "vel": 1.0
+        },
+        {
+          "id": 7,
+          "voice": "hihat.open",
+          "pos": "1/2",
+          "vel": 0.75
+        },
+        {
+          "id": 8,
+          "voice": "hihat.open",
+          "pos": "1",
+          "vel": 0.75
+        },
+        {
+          "id": 9,
+          "voice": "hihat.open",
+          "pos": "3/2",
+          "vel": 0.75
+        },
+        {
+          "id": 10,
+          "voice": "hihat.open",
+          "pos": "2",
+          "vel": 0.75
+        },
+        {
+          "id": 11,
+          "voice": "hihat.open",
+          "pos": "5/2",
+          "vel": 0.75
+        },
+        {
+          "id": 12,
+          "voice": "hihat.open",
+          "pos": "3",
+          "vel": 0.75
+        },
+        {
+          "id": 13,
+          "voice": "hihat",
+          "pos": "4",
+          "vel": 0.75
+        },
+        {
+          "id": 14,
+          "voice": "hihat.open",
+          "pos": "9/2",
+          "vel": 0.75
+        },
+        {
+          "id": 15,
+          "voice": "hihat.open",
+          "pos": "5",
+          "vel": 0.75
+        },
+        {
+          "id": 16,
+          "voice": "hihat.open",
+          "pos": "11/2",
+          "vel": 0.75
+        },
+        {
+          "id": 17,
+          "voice": "hihat.open",
+          "pos": "6",
+          "vel": 0.75
+        },
+        {
+          "id": 18,
+          "voice": "hihat.open",
+          "pos": "13/2",
+          "vel": 0.75
+        },
+        {
+          "id": 19,
+          "voice": "hihat.open",
+          "pos": "7",
+          "vel": 0.75
+        },
+        {
+          "id": 20,
+          "voice": "hihat.open",
+          "pos": "17/2",
+          "vel": 0.75
+        },
+        {
+          "id": 21,
+          "voice": "hihat.open",
+          "pos": "9",
+          "vel": 0.75
+        },
+        {
+          "id": 22,
+          "voice": "hihat.open",
+          "pos": "19/2",
+          "vel": 0.75
+        },
+        {
+          "id": 23,
+          "voice": "hihat.open",
+          "pos": "10",
+          "vel": 0.75
+        },
+        {
+          "id": 24,
+          "voice": "hihat.open",
+          "pos": "21/2",
+          "vel": 0.75
+        },
+        {
+          "id": 25,
+          "voice": "hihat.open",
+          "pos": "11",
+          "vel": 0.75
+        },
+        {
+          "id": 26,
+          "voice": "hihat",
+          "pos": "12",
+          "vel": 0.75
+        },
+        {
+          "id": 27,
+          "voice": "hihat.open",
+          "pos": "25/2",
+          "vel": 0.75
+        },
+        {
+          "id": 28,
+          "voice": "hihat.open",
+          "pos": "13",
+          "vel": 0.75
+        },
+        {
+          "id": 29,
+          "voice": "hihat.open",
+          "pos": "27/2",
+          "vel": 0.75
+        },
+        {
+          "id": 30,
+          "voice": "hihat.open",
+          "pos": "14",
+          "vel": 0.75
+        },
+        {
+          "id": 31,
+          "voice": "hihat.open",
+          "pos": "29/2",
+          "vel": 0.75
+        },
+        {
+          "id": 32,
+          "voice": "hihat.open",
+          "pos": "15",
+          "vel": 0.75
+        },
+        {
+          "id": 33,
+          "voice": "snare",
+          "pos": "1",
+          "vel": 1.0
+        },
+        {
+          "id": 34,
+          "voice": "snare",
+          "pos": "3",
+          "vel": 1.0
+        },
+        {
+          "id": 35,
+          "voice": "snare",
+          "pos": "5",
+          "vel": 1.0
+        },
+        {
+          "id": 36,
+          "voice": "snare",
+          "pos": "7",
+          "vel": 1.0
+        },
+        {
+          "id": 37,
+          "voice": "snare",
+          "pos": "9",
+          "vel": 1.0
+        },
+        {
+          "id": 38,
+          "voice": "snare",
+          "pos": "11",
+          "vel": 1.0
+        },
+        {
+          "id": 39,
+          "voice": "snare",
+          "pos": "13",
+          "vel": 1.0
+        },
+        {
+          "id": 40,
+          "voice": "snare",
+          "pos": "15",
+          "vel": 1.0
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "role": "feet",
+      "events": [
+        {
+          "id": 41,
+          "voice": "kick",
+          "pos": "0",
+          "vel": 0.75
+        },
+        {
+          "id": 42,
+          "voice": "kick",
+          "pos": "3/2",
+          "vel": 0.75
+        },
+        {
+          "id": 43,
+          "voice": "kick",
+          "pos": "7/4",
+          "vel": 0.75
+        },
+        {
+          "id": 44,
+          "voice": "kick",
+          "pos": "2",
+          "vel": 0.75
+        },
+        {
+          "id": 45,
+          "voice": "kick",
+          "pos": "9/4",
+          "vel": 0.75
+        },
+        {
+          "id": 46,
+          "voice": "kick",
+          "pos": "5/2",
+          "vel": 0.75
+        },
+        {
+          "id": 47,
+          "voice": "kick",
+          "pos": "11/4",
+          "vel": 0.75
+        },
+        {
+          "id": 48,
+          "voice": "kick",
+          "pos": "3",
+          "vel": 0.75
+        },
+        {
+          "id": 49,
+          "voice": "kick",
+          "pos": "7/2",
+          "vel": 0.75
+        },
+        {
+          "id": 50,
+          "voice": "kick",
+          "pos": "4",
+          "vel": 0.75
+        },
+        {
+          "id": 51,
+          "voice": "kick",
+          "pos": "11/2",
+          "vel": 0.75
+        },
+        {
+          "id": 52,
+          "voice": "kick",
+          "pos": "23/4",
+          "vel": 0.75
+        },
+        {
+          "id": 53,
+          "voice": "kick",
+          "pos": "6",
+          "vel": 0.75
+        },
+        {
+          "id": 54,
+          "voice": "kick",
+          "pos": "25/4",
+          "vel": 0.75
+        },
+        {
+          "id": 55,
+          "voice": "kick",
+          "pos": "13/2",
+          "vel": 0.75
+        },
+        {
+          "id": 56,
+          "voice": "kick",
+          "pos": "27/4",
+          "vel": 0.75
+        },
+        {
+          "id": 57,
+          "voice": "kick",
+          "pos": "7",
+          "vel": 0.75
+        },
+        {
+          "id": 58,
+          "voice": "kick",
+          "pos": "15/2",
+          "vel": 0.75
+        },
+        {
+          "id": 59,
+          "voice": "kick",
+          "pos": "8",
+          "vel": 0.75
+        },
+        {
+          "id": 60,
+          "voice": "kick",
+          "pos": "19/2",
+          "vel": 0.75
+        },
+        {
+          "id": 61,
+          "voice": "kick",
+          "pos": "39/4",
+          "vel": 0.75
+        },
+        {
+          "id": 62,
+          "voice": "kick",
+          "pos": "10",
+          "vel": 0.75
+        },
+        {
+          "id": 63,
+          "voice": "kick",
+          "pos": "41/4",
+          "vel": 0.75
+        },
+        {
+          "id": 64,
+          "voice": "kick",
+          "pos": "21/2",
+          "vel": 0.75
+        },
+        {
+          "id": 65,
+          "voice": "kick",
+          "pos": "43/4",
+          "vel": 0.75
+        },
+        {
+          "id": 66,
+          "voice": "kick",
+          "pos": "11",
+          "vel": 0.75
+        },
+        {
+          "id": 67,
+          "voice": "kick",
+          "pos": "23/2",
+          "vel": 0.75
+        },
+        {
+          "id": 68,
+          "voice": "kick",
+          "pos": "12",
+          "vel": 0.75
+        },
+        {
+          "id": 69,
+          "voice": "kick",
+          "pos": "27/2",
+          "vel": 0.75
+        },
+        {
+          "id": 70,
+          "voice": "kick",
+          "pos": "55/4",
+          "vel": 0.75
+        },
+        {
+          "id": 71,
+          "voice": "kick",
+          "pos": "14",
+          "vel": 0.75
+        },
+        {
+          "id": 72,
+          "voice": "kick",
+          "pos": "57/4",
+          "vel": 0.75
+        },
+        {
+          "id": 73,
+          "voice": "kick",
+          "pos": "29/2",
+          "vel": 0.75
+        },
+        {
+          "id": 74,
+          "voice": "kick",
+          "pos": "59/4",
+          "vel": 0.75
+        },
+        {
+          "id": 75,
+          "voice": "kick",
+          "pos": "15",
+          "vel": 0.75
+        },
+        {
+          "id": 76,
+          "voice": "kick",
+          "pos": "31/2",
+          "vel": 0.75
+        }
+      ]
+    }
+  ],
+  "origin": {
+    "parentId": "",
+    "parentRevision": 0,
+    "operators": [],
+    "seed": 0
+  }
+}

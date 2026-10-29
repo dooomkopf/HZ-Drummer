@@ -1,0 +1,174 @@
+{
+  "formatVersion": 1,
+  "id": "user.community-exhorder-legions-of-death-03-doppelkicks",
+  "name": "Exhorder – Legions of Death – 03 Doppelkicks – Offbeat-Snare",
+  "revision": 1,
+  "tags": [
+    "thrash",
+    "groove",
+    "song",
+    "abschnitt",
+    "band:Exhorder",
+    "song:Legions of Death",
+    "community"
+  ],
+  "tempo": {
+    "default": 153,
+    "min": 0,
+    "max": 0
+  },
+  "bars": [
+    {
+      "meter": "4/4",
+      "grid": "1/32"
+    }
+  ],
+  "swing": {
+    "subdivision": "1/8",
+    "ratio": 0.5
+  },
+  "humanize": {
+    "amount": 0.08,
+    "seed": 584755042
+  },
+  "layers": [
+    {
+      "id": 1,
+      "role": "hands",
+      "events": [
+        {
+          "id": 1,
+          "voice": "hihat.open",
+          "pos": "0",
+          "vel": 0.75
+        },
+        {
+          "id": 4,
+          "voice": "hihat.open",
+          "pos": "1/2",
+          "vel": 0.75
+        },
+        {
+          "id": 5,
+          "voice": "snare",
+          "pos": "1/2",
+          "vel": 0.88
+        },
+        {
+          "id": 6,
+          "voice": "hihat.open",
+          "pos": "1",
+          "vel": 0.75
+        },
+        {
+          "id": 9,
+          "voice": "hihat.open",
+          "pos": "3/2",
+          "vel": 0.75
+        },
+        {
+          "id": 10,
+          "voice": "snare",
+          "pos": "3/2",
+          "vel": 0.88
+        },
+        {
+          "id": 11,
+          "voice": "hihat.open",
+          "pos": "2",
+          "vel": 0.75
+        },
+        {
+          "id": 14,
+          "voice": "hihat.open",
+          "pos": "5/2",
+          "vel": 0.75
+        },
+        {
+          "id": 15,
+          "voice": "snare",
+          "pos": "5/2",
+          "vel": 0.88
+        },
+        {
+          "id": 16,
+          "voice": "hihat.open",
+          "pos": "3",
+          "vel": 0.75
+        },
+        {
+          "id": 19,
+          "voice": "hihat.open",
+          "pos": "7/2",
+          "vel": 0.75
+        },
+        {
+          "id": 20,
+          "voice": "snare",
+          "pos": "7/2",
+          "vel": 0.88
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "role": "feet",
+      "events": [
+        {
+          "id": 2,
+          "voice": "kick",
+          "pos": "0",
+          "vel": 0.82
+        },
+        {
+          "id": 3,
+          "voice": "kick",
+          "pos": "1/4",
+          "vel": 0.82
+        },
+        {
+          "id": 7,
+          "voice": "kick",
+          "pos": "1",
+          "vel": 0.82
+        },
+        {
+          "id": 8,
+          "voice": "kick",
+          "pos": "5/4",
+          "vel": 0.82
+        },
+        {
+          "id": 12,
+          "voice": "kick",
+          "pos": "2",
+          "vel": 0.82
+        },
+        {
+          "id": 13,
+          "voice": "kick",
+          "pos": "9/4",
+          "vel": 0.82
+        },
+        {
+          "id": 17,
+          "voice": "kick",
+          "pos": "3",
+          "vel": 0.82
+        },
+        {
+          "id": 18,
+          "voice": "kick",
+          "pos": "13/4",
+          "vel": 0.82
+        }
+      ]
+    }
+  ],
+  "origin": {
+    "parentId": "",
+    "parentRevision": 0,
+    "operators": [],
+    "seed": 0
+  }
+}

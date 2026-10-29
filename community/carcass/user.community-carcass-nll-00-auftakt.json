@@ -1,0 +1,65 @@
+{
+  "formatVersion": 1,
+  "id": "user.community-carcass-nll-00-auftakt",
+  "name": "Carcass – No Love Lost – 0 Auftakt",
+  "revision": 1,
+  "tags": [
+    "death",
+    "carcass",
+    "song",
+    "band:Carcass",
+    "song:No Love Lost",
+    "community"
+  ],
+  "tempo": {
+    "default": 160.0,
+    "min": 0.0,
+    "max": 0.0
+  },
+  "bars": [
+    {
+      "meter": "4/4",
+      "grid": "1/16"
+    }
+  ],
+  "swing": {
+    "subdivision": "1/8",
+    "ratio": 0.5
+  },
+  "humanize": {
+    "amount": 0.300000011920929,
+    "seed": 3678683097
+  },
+  "layers": [
+    {
+      "id": 1,
+      "role": "hands",
+      "events": [
+        {
+          "id": 1,
+          "voice": "snare",
+          "pos": "3",
+          "vel": 1.0
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "role": "feet",
+      "events": [
+        {
+          "id": 2,
+          "voice": "kick",
+          "pos": "5/2",
+          "vel": 0.75
+        }
+      ]
+    }
+  ],
+  "origin": {
+    "parentId": "",
+    "parentRevision": 0,
+    "operators": [],
+    "seed": 0
+  }
+}

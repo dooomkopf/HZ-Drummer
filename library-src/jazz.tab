@@ -1,0 +1,26 @@
+name:  Jazz Swing-Ride
+tags:  jazz, swing
+tempo: 140 (100-220)
+grid:  1/8
+swing: 1/8 0.667
+humanize: 0.5
+rd | X . x x X . x x |
+sn | . . . g . . . g |
+bd | g . g . g . g . |
+---
+name:  Shuffle
+tags:  jazz, blues, shuffle
+tempo: 110 (80-140)
+grid:  1/12
+hh | X . x x . x X . x x . x |
+sn | . . . X . . . . . X . . |
+bd | x . . . . . x . . . . . |
+---
+name:  Fusion-Groove
+tags:  jazz, fusion
+tempo: 100 (80-120)
+grid:  1/16
+humanize: 0.45
+hh | X x x x X x x x X x x x X x x x |
+sn | . . g . X . . g . g . . X . . g |
+bd | x . . x . . x . . . x . . x . . |

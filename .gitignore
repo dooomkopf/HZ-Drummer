@@ -1,0 +1,5 @@
+build/
+kits/
+kits-src/
+tools/.venv/
+*.settings

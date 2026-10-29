@@ -1,0 +1,47 @@
+name:  Death Double-Time
+tags:  death, double-time, fast
+tempo: 240 (200-280)
+grid:  1/8
+rd | X x X x X x X x |
+sn | . x . x . x . x |
+bd | x . x . x . x . |
+---
+name:  Death Kick-Bursts
+tags:  death, double-bass
+tempo: 170 (140-200)
+grid:  1/16
+cr | X . . . x . . . x . . . x . . . |
+sn | . . . . X . . . . . . . X . . . |
+bd | x x x x . . . . x x x x . . x x |
+---
+name:  Death Triolen-Kick
+tags:  death, triplets, double-bass
+tempo: 120 (100-150)
+grid:  1/12
+cr | X . . x . . x . . x . . |
+sn | . . . X . . . . . X . . |
+bd | x x x x x x x x x x x x |
+---
+name:  Death Mid-Tempo Doppelbass Halbzeit
+tags:  death, mid-tempo, double-bass, half-time
+tempo: 150 (120-180)
+grid:  1/16
+ch | X . . . x . . . x . . . x . . . |
+sn | . . . . . . . . X . . . . . . . |
+bd | x x x x x x x x x x x x x x x x |
+---
+name:  Death Doppelbass-Einwürfe
+tags:  death, double-bass, groove
+tempo: 160 (130-190)
+grid:  1/16
+rd | X . x . x . x . x . x . x . x . |
+sn | . . . . X . . . . . . . X . . . |
+bd | x . . . . . . . x x x x x x x x |
+---
+name:  Death Ride-Glocke Polka
+tags:  death, polka, ride
+tempo: 210 (180-240)
+grid:  1/8
+rb | X . X . X . X . |
+sn | . x . x . x . x |
+bd | x . x . x . x . |

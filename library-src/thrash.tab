@@ -1,0 +1,56 @@
+name:  Thrash Skank
+tags:  thrash, skank, fast
+tempo: 220 (180-250)
+grid:  1/8
+cr | X . . . . . . . |
+hh | . . x . x . x . |
+sn | . x . x . x . x |
+bd | x . x . x . x . |
+---
+name:  Thrash Polka (Crash-Viertel)
+tags:  thrash, polka
+tempo: 200 (170-240)
+grid:  1/8
+cr | X . x . x . x . |
+sn | . x . x . x . x |
+bd | x . x . x . x . |
+---
+name:  Thrash Gallop
+tags:  thrash, gallop
+tempo: 170 (140-200)
+grid:  1/16
+cr | X . . . x . . . x . . . x . . . |
+sn | . . . . X . . . . . . . X . . . |
+bd | x . x x x . x x x . x x x . x x |
+---
+name:  Thrash-Beat mit 16tel-Doppelbass
+tags:  thrash, double-bass
+tempo: 170 (140-200)
+grid:  1/16
+cr | X . . . x . . . x . . . x . . . |
+sn | . . . . X . . . . . . . X . . . |
+bd | x x x x x x x x x x x x x x x x |
+---
+name:  Thrash Half-Time-Groove
+tags:  thrash, half-time, groove
+tempo: 180 (150-210)
+grid:  1/8
+hh | X x x x X x x x |
+sn | . . . . X . . . |
+bd | x . . x . . x . |
+---
+name:  Thrash Mid-Tempo-Stampf
+tags:  thrash, mid-tempo
+tempo: 130 (110-150)
+grid:  1/16
+rd | X . x . x . x . x . x . x . x . |
+sn | . . . . X . . . . . . . X . . . |
+bd | x . . . . . x x x . . . . . x . |
+---
+name:  Thrash Breakdown
+tags:  thrash, breakdown, half-time
+tempo: 140 (110-170)
+grid:  1/16
+ch | X . . . x . . . x . . . x . . . |
+sn | . . . . . . . . X . . . . . . . |
+bd | x . . x . . x . x . . x . . x . |

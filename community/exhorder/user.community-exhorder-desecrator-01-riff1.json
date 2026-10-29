@@ -1,0 +1,216 @@
+{
+  "formatVersion": 1,
+  "id": "user.community-exhorder-desecrator-01-riff1",
+  "name": "Exhorder – Desecrator – 01 Riff 1 – Synkopen und Triolen",
+  "revision": 1,
+  "tags": [
+    "thrash",
+    "groove",
+    "song",
+    "abschnitt",
+    "band:Exhorder",
+    "song:Desecrator",
+    "community"
+  ],
+  "tempo": {
+    "default": 67,
+    "min": 0,
+    "max": 0
+  },
+  "bars": [
+    {
+      "meter": "4/4",
+      "grid": "1/32"
+    }
+  ],
+  "swing": {
+    "subdivision": "1/8",
+    "ratio": 0.5
+  },
+  "humanize": {
+    "amount": 0.08,
+    "seed": 3466281677
+  },
+  "layers": [
+    {
+      "id": 1,
+      "role": "hands",
+      "events": [
+        {
+          "id": 1,
+          "voice": "crash1",
+          "pos": "0",
+          "vel": 0.75
+        },
+        {
+          "id": 3,
+          "voice": "hihat",
+          "pos": "1/4",
+          "vel": 0.75
+        },
+        {
+          "id": 4,
+          "voice": "hihat",
+          "pos": "1/2",
+          "vel": 0.75
+        },
+        {
+          "id": 5,
+          "voice": "hihat",
+          "pos": "3/4",
+          "vel": 0.75
+        },
+        {
+          "id": 7,
+          "voice": "hihat",
+          "pos": "1",
+          "vel": 0.75
+        },
+        {
+          "id": 8,
+          "voice": "snare",
+          "pos": "1",
+          "vel": 0.88
+        },
+        {
+          "id": 9,
+          "voice": "hihat",
+          "pos": "5/4",
+          "vel": 0.75
+        },
+        {
+          "id": 10,
+          "voice": "hihat",
+          "pos": "3/2",
+          "vel": 0.75
+        },
+        {
+          "id": 11,
+          "voice": "hihat",
+          "pos": "7/4",
+          "vel": 0.75
+        },
+        {
+          "id": 13,
+          "voice": "hihat",
+          "pos": "2",
+          "vel": 0.75
+        },
+        {
+          "id": 15,
+          "voice": "hihat",
+          "pos": "9/4",
+          "vel": 0.75
+        },
+        {
+          "id": 16,
+          "voice": "hihat",
+          "pos": "5/2",
+          "vel": 0.75
+        },
+        {
+          "id": 17,
+          "voice": "hihat",
+          "pos": "11/4",
+          "vel": 0.75
+        },
+        {
+          "id": 21,
+          "voice": "hihat",
+          "pos": "3",
+          "vel": 0.75
+        },
+        {
+          "id": 22,
+          "voice": "snare",
+          "pos": "3",
+          "vel": 0.88
+        },
+        {
+          "id": 23,
+          "voice": "crash1",
+          "pos": "13/4",
+          "vel": 0.75
+        },
+        {
+          "id": 25,
+          "voice": "hihat",
+          "pos": "7/2",
+          "vel": 0.75
+        },
+        {
+          "id": 26,
+          "voice": "hihat",
+          "pos": "15/4",
+          "vel": 0.75
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "role": "feet",
+      "events": [
+        {
+          "id": 2,
+          "voice": "kick",
+          "pos": "0",
+          "vel": 0.82
+        },
+        {
+          "id": 6,
+          "voice": "kick",
+          "pos": "3/4",
+          "vel": 0.82
+        },
+        {
+          "id": 12,
+          "voice": "kick",
+          "pos": "7/4",
+          "vel": 0.82
+        },
+        {
+          "id": 14,
+          "voice": "kick",
+          "pos": "2",
+          "vel": 0.82
+        },
+        {
+          "id": 18,
+          "voice": "kick",
+          "pos": "11/4",
+          "vel": 0.82
+        },
+        {
+          "id": 19,
+          "voice": "kick",
+          "pos": "17/6",
+          "vel": 0.82
+        },
+        {
+          "id": 20,
+          "voice": "kick",
+          "pos": "35/12",
+          "vel": 0.82
+        },
+        {
+          "id": 24,
+          "voice": "kick",
+          "pos": "13/4",
+          "vel": 0.82
+        },
+        {
+          "id": 27,
+          "voice": "kick",
+          "pos": "15/4",
+          "vel": 0.82
+        }
+      ]
+    }
+  ],
+  "origin": {
+    "parentId": "",
+    "parentRevision": 0,
+    "operators": [],
+    "seed": 0
+  }
+}

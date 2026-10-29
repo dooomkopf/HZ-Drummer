@@ -1,0 +1,802 @@
+{
+  "formatVersion": 1,
+  "id": "user.community-carcass-cjq-12-vor-refrain-2",
+  "name": "Carcass – Corporal Jigsore Quandary – 12 Vor-Refrain 2",
+  "revision": 1,
+  "tags": [
+    "song",
+    "abschnitt",
+    "band:Carcass",
+    "song:Corporal Jigsore Quandary",
+    "community"
+  ],
+  "tempo": {
+    "default": 140,
+    "min": 0,
+    "max": 0
+  },
+  "bars": [
+    {
+      "meter": "12/8",
+      "grid": "1/16"
+    },
+    {
+      "meter": "12/8",
+      "grid": "1/16"
+    },
+    {
+      "meter": "12/8",
+      "grid": "1/16"
+    },
+    {
+      "meter": "12/8",
+      "grid": "1/16"
+    }
+  ],
+  "swing": {
+    "subdivision": "1/8",
+    "ratio": 0.5
+  },
+  "humanize": {
+    "amount": 0.25,
+    "seed": 50664
+  },
+  "layers": [
+    {
+      "id": 1,
+      "role": "hands",
+      "events": [
+        {
+          "id": 1,
+          "voice": "crash1",
+          "pos": "0",
+          "vel": 1.0
+        },
+        {
+          "id": 3,
+          "voice": "snare",
+          "pos": "0",
+          "vel": 1.0
+        },
+        {
+          "id": 4,
+          "voice": "hihat.open",
+          "pos": "1/2",
+          "vel": 0.45
+        },
+        {
+          "id": 6,
+          "voice": "hihat.open",
+          "pos": "1",
+          "vel": 0.58
+        },
+        {
+          "id": 8,
+          "voice": "hihat.open",
+          "pos": "3/2",
+          "vel": 0.85
+        },
+        {
+          "id": 10,
+          "voice": "snare",
+          "pos": "3/2",
+          "vel": 1.0
+        },
+        {
+          "id": 11,
+          "voice": "hihat.open",
+          "pos": "2",
+          "vel": 0.58
+        },
+        {
+          "id": 13,
+          "voice": "hihat.open",
+          "pos": "5/2",
+          "vel": 0.58
+        },
+        {
+          "id": 15,
+          "voice": "hihat.open",
+          "pos": "3",
+          "vel": 0.85
+        },
+        {
+          "id": 17,
+          "voice": "snare",
+          "pos": "3",
+          "vel": 1.0
+        },
+        {
+          "id": 18,
+          "voice": "hihat.open",
+          "pos": "7/2",
+          "vel": 0.58
+        },
+        {
+          "id": 20,
+          "voice": "hihat.open",
+          "pos": "4",
+          "vel": 0.58
+        },
+        {
+          "id": 22,
+          "voice": "hihat.open",
+          "pos": "9/2",
+          "vel": 0.85
+        },
+        {
+          "id": 24,
+          "voice": "snare",
+          "pos": "9/2",
+          "vel": 1.0
+        },
+        {
+          "id": 25,
+          "voice": "hihat.open",
+          "pos": "5",
+          "vel": 0.58
+        },
+        {
+          "id": 27,
+          "voice": "hihat.open",
+          "pos": "11/2",
+          "vel": 0.58
+        },
+        {
+          "id": 29,
+          "voice": "crash1",
+          "pos": "6",
+          "vel": 1.0
+        },
+        {
+          "id": 31,
+          "voice": "snare",
+          "pos": "6",
+          "vel": 1.0
+        },
+        {
+          "id": 32,
+          "voice": "hihat.open",
+          "pos": "13/2",
+          "vel": 0.45
+        },
+        {
+          "id": 34,
+          "voice": "hihat.open",
+          "pos": "7",
+          "vel": 0.58
+        },
+        {
+          "id": 36,
+          "voice": "hihat.open",
+          "pos": "15/2",
+          "vel": 0.85
+        },
+        {
+          "id": 38,
+          "voice": "snare",
+          "pos": "15/2",
+          "vel": 1.0
+        },
+        {
+          "id": 39,
+          "voice": "hihat.open",
+          "pos": "8",
+          "vel": 0.58
+        },
+        {
+          "id": 41,
+          "voice": "hihat.open",
+          "pos": "17/2",
+          "vel": 0.58
+        },
+        {
+          "id": 43,
+          "voice": "tom2",
+          "pos": "9",
+          "vel": 0.85
+        },
+        {
+          "id": 44,
+          "voice": "tom2",
+          "pos": "19/2",
+          "vel": 0.867
+        },
+        {
+          "id": 45,
+          "voice": "tom2",
+          "pos": "39/4",
+          "vel": 0.875
+        },
+        {
+          "id": 46,
+          "voice": "tom2",
+          "pos": "10",
+          "vel": 0.883
+        },
+        {
+          "id": 47,
+          "voice": "tom4",
+          "pos": "21/2",
+          "vel": 0.9
+        },
+        {
+          "id": 48,
+          "voice": "tom4",
+          "pos": "11",
+          "vel": 0.917
+        },
+        {
+          "id": 49,
+          "voice": "tom4",
+          "pos": "45/4",
+          "vel": 0.925
+        },
+        {
+          "id": 50,
+          "voice": "tom4",
+          "pos": "23/2",
+          "vel": 0.933
+        },
+        {
+          "id": 51,
+          "voice": "tom4",
+          "pos": "47/4",
+          "vel": 0.942
+        },
+        {
+          "id": 52,
+          "voice": "crash1",
+          "pos": "12",
+          "vel": 1.0
+        },
+        {
+          "id": 56,
+          "voice": "ride",
+          "pos": "25/2",
+          "vel": 0.58
+        },
+        {
+          "id": 59,
+          "voice": "ride",
+          "pos": "13",
+          "vel": 0.58
+        },
+        {
+          "id": 62,
+          "voice": "ride",
+          "pos": "27/2",
+          "vel": 0.85
+        },
+        {
+          "id": 63,
+          "voice": "snare",
+          "pos": "27/2",
+          "vel": 1.0
+        },
+        {
+          "id": 66,
+          "voice": "ride",
+          "pos": "14",
+          "vel": 0.58
+        },
+        {
+          "id": 69,
+          "voice": "ride",
+          "pos": "29/2",
+          "vel": 0.58
+        },
+        {
+          "id": 72,
+          "voice": "ride",
+          "pos": "15",
+          "vel": 0.85
+        },
+        {
+          "id": 73,
+          "voice": "snare",
+          "pos": "15",
+          "vel": 1.0
+        },
+        {
+          "id": 76,
+          "voice": "ride",
+          "pos": "31/2",
+          "vel": 0.58
+        },
+        {
+          "id": 79,
+          "voice": "ride",
+          "pos": "16",
+          "vel": 0.58
+        },
+        {
+          "id": 82,
+          "voice": "ride",
+          "pos": "33/2",
+          "vel": 0.85
+        },
+        {
+          "id": 83,
+          "voice": "snare",
+          "pos": "33/2",
+          "vel": 1.0
+        },
+        {
+          "id": 86,
+          "voice": "ride",
+          "pos": "17",
+          "vel": 0.58
+        },
+        {
+          "id": 88,
+          "voice": "snare",
+          "pos": "69/4",
+          "vel": 0.916
+        },
+        {
+          "id": 90,
+          "voice": "ride",
+          "pos": "35/2",
+          "vel": 0.58
+        },
+        {
+          "id": 91,
+          "voice": "snare",
+          "pos": "35/2",
+          "vel": 0.927
+        },
+        {
+          "id": 93,
+          "voice": "crash1",
+          "pos": "18",
+          "vel": 1.0
+        },
+        {
+          "id": 95,
+          "voice": "snare",
+          "pos": "18",
+          "vel": 1.0
+        },
+        {
+          "id": 98,
+          "voice": "ride",
+          "pos": "37/2",
+          "vel": 0.58
+        },
+        {
+          "id": 101,
+          "voice": "ride",
+          "pos": "19",
+          "vel": 0.58
+        },
+        {
+          "id": 104,
+          "voice": "ride",
+          "pos": "39/2",
+          "vel": 0.85
+        },
+        {
+          "id": 105,
+          "voice": "snare",
+          "pos": "39/2",
+          "vel": 1.0
+        },
+        {
+          "id": 108,
+          "voice": "ride",
+          "pos": "20",
+          "vel": 0.58
+        },
+        {
+          "id": 110,
+          "voice": "tom1",
+          "pos": "41/2",
+          "vel": 0.833
+        },
+        {
+          "id": 111,
+          "voice": "tom1",
+          "pos": "83/4",
+          "vel": 0.842
+        },
+        {
+          "id": 112,
+          "voice": "tom1",
+          "pos": "21",
+          "vel": 0.85
+        },
+        {
+          "id": 113,
+          "voice": "tom1",
+          "pos": "85/4",
+          "vel": 0.858
+        },
+        {
+          "id": 114,
+          "voice": "tom1",
+          "pos": "43/2",
+          "vel": 0.867
+        },
+        {
+          "id": 115,
+          "voice": "tom2",
+          "pos": "87/4",
+          "vel": 0.875
+        },
+        {
+          "id": 116,
+          "voice": "tom2",
+          "pos": "22",
+          "vel": 0.883
+        },
+        {
+          "id": 117,
+          "voice": "tom2",
+          "pos": "89/4",
+          "vel": 0.892
+        },
+        {
+          "id": 118,
+          "voice": "tom2",
+          "pos": "45/2",
+          "vel": 0.9
+        },
+        {
+          "id": 119,
+          "voice": "tom2",
+          "pos": "91/4",
+          "vel": 0.908
+        },
+        {
+          "id": 120,
+          "voice": "tom2",
+          "pos": "23",
+          "vel": 0.917
+        },
+        {
+          "id": 121,
+          "voice": "tom4",
+          "pos": "93/4",
+          "vel": 0.925
+        },
+        {
+          "id": 122,
+          "voice": "tom4",
+          "pos": "47/2",
+          "vel": 0.933
+        },
+        {
+          "id": 123,
+          "voice": "tom4",
+          "pos": "95/4",
+          "vel": 0.942
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "role": "feet",
+      "events": [
+        {
+          "id": 2,
+          "voice": "kick",
+          "pos": "0",
+          "vel": 0.95
+        },
+        {
+          "id": 5,
+          "voice": "kick",
+          "pos": "1/2",
+          "vel": 0.8
+        },
+        {
+          "id": 7,
+          "voice": "kick",
+          "pos": "1",
+          "vel": 0.8
+        },
+        {
+          "id": 9,
+          "voice": "kick",
+          "pos": "3/2",
+          "vel": 0.88
+        },
+        {
+          "id": 12,
+          "voice": "kick",
+          "pos": "2",
+          "vel": 0.8
+        },
+        {
+          "id": 14,
+          "voice": "kick",
+          "pos": "5/2",
+          "vel": 0.8
+        },
+        {
+          "id": 16,
+          "voice": "kick",
+          "pos": "3",
+          "vel": 0.88
+        },
+        {
+          "id": 19,
+          "voice": "kick",
+          "pos": "7/2",
+          "vel": 0.8
+        },
+        {
+          "id": 21,
+          "voice": "kick",
+          "pos": "4",
+          "vel": 0.8
+        },
+        {
+          "id": 23,
+          "voice": "kick",
+          "pos": "9/2",
+          "vel": 0.88
+        },
+        {
+          "id": 26,
+          "voice": "kick",
+          "pos": "5",
+          "vel": 0.8
+        },
+        {
+          "id": 28,
+          "voice": "kick",
+          "pos": "11/2",
+          "vel": 0.8
+        },
+        {
+          "id": 30,
+          "voice": "kick",
+          "pos": "6",
+          "vel": 0.95
+        },
+        {
+          "id": 33,
+          "voice": "kick",
+          "pos": "13/2",
+          "vel": 0.8
+        },
+        {
+          "id": 35,
+          "voice": "kick",
+          "pos": "7",
+          "vel": 0.8
+        },
+        {
+          "id": 37,
+          "voice": "kick",
+          "pos": "15/2",
+          "vel": 0.88
+        },
+        {
+          "id": 40,
+          "voice": "kick",
+          "pos": "8",
+          "vel": 0.8
+        },
+        {
+          "id": 42,
+          "voice": "kick",
+          "pos": "17/2",
+          "vel": 0.8
+        },
+        {
+          "id": 53,
+          "voice": "kick",
+          "pos": "12",
+          "vel": 0.95
+        },
+        {
+          "id": 54,
+          "voice": "kick",
+          "pos": "49/4",
+          "vel": 0.8
+        },
+        {
+          "id": 55,
+          "voice": "kick",
+          "pos": "25/2",
+          "vel": 0.8
+        },
+        {
+          "id": 57,
+          "voice": "kick",
+          "pos": "51/4",
+          "vel": 0.8
+        },
+        {
+          "id": 58,
+          "voice": "kick",
+          "pos": "13",
+          "vel": 0.8
+        },
+        {
+          "id": 60,
+          "voice": "kick",
+          "pos": "53/4",
+          "vel": 0.8
+        },
+        {
+          "id": 61,
+          "voice": "kick",
+          "pos": "27/2",
+          "vel": 0.88
+        },
+        {
+          "id": 64,
+          "voice": "kick",
+          "pos": "55/4",
+          "vel": 0.8
+        },
+        {
+          "id": 65,
+          "voice": "kick",
+          "pos": "14",
+          "vel": 0.8
+        },
+        {
+          "id": 67,
+          "voice": "kick",
+          "pos": "57/4",
+          "vel": 0.8
+        },
+        {
+          "id": 68,
+          "voice": "kick",
+          "pos": "29/2",
+          "vel": 0.8
+        },
+        {
+          "id": 70,
+          "voice": "kick",
+          "pos": "59/4",
+          "vel": 0.8
+        },
+        {
+          "id": 71,
+          "voice": "kick",
+          "pos": "15",
+          "vel": 0.88
+        },
+        {
+          "id": 74,
+          "voice": "kick",
+          "pos": "61/4",
+          "vel": 0.8
+        },
+        {
+          "id": 75,
+          "voice": "kick",
+          "pos": "31/2",
+          "vel": 0.8
+        },
+        {
+          "id": 77,
+          "voice": "kick",
+          "pos": "63/4",
+          "vel": 0.8
+        },
+        {
+          "id": 78,
+          "voice": "kick",
+          "pos": "16",
+          "vel": 0.8
+        },
+        {
+          "id": 80,
+          "voice": "kick",
+          "pos": "65/4",
+          "vel": 0.8
+        },
+        {
+          "id": 81,
+          "voice": "kick",
+          "pos": "33/2",
+          "vel": 0.88
+        },
+        {
+          "id": 84,
+          "voice": "kick",
+          "pos": "67/4",
+          "vel": 0.8
+        },
+        {
+          "id": 85,
+          "voice": "kick",
+          "pos": "17",
+          "vel": 0.8
+        },
+        {
+          "id": 87,
+          "voice": "kick",
+          "pos": "69/4",
+          "vel": 0.8
+        },
+        {
+          "id": 89,
+          "voice": "kick",
+          "pos": "35/2",
+          "vel": 0.8
+        },
+        {
+          "id": 92,
+          "voice": "kick",
+          "pos": "71/4",
+          "vel": 0.8
+        },
+        {
+          "id": 94,
+          "voice": "kick",
+          "pos": "18",
+          "vel": 0.95
+        },
+        {
+          "id": 96,
+          "voice": "kick",
+          "pos": "73/4",
+          "vel": 0.8
+        },
+        {
+          "id": 97,
+          "voice": "kick",
+          "pos": "37/2",
+          "vel": 0.8
+        },
+        {
+          "id": 99,
+          "voice": "kick",
+          "pos": "75/4",
+          "vel": 0.8
+        },
+        {
+          "id": 100,
+          "voice": "kick",
+          "pos": "19",
+          "vel": 0.8
+        },
+        {
+          "id": 102,
+          "voice": "kick",
+          "pos": "77/4",
+          "vel": 0.8
+        },
+        {
+          "id": 103,
+          "voice": "kick",
+          "pos": "39/2",
+          "vel": 0.88
+        },
+        {
+          "id": 106,
+          "voice": "kick",
+          "pos": "79/4",
+          "vel": 0.8
+        },
+        {
+          "id": 107,
+          "voice": "kick",
+          "pos": "20",
+          "vel": 0.8
+        },
+        {
+          "id": 109,
+          "voice": "kick",
+          "pos": "81/4",
+          "vel": 0.8
+        }
+      ]
+    }
+  ],
+  "origin": {
+    "parentId": "",
+    "parentRevision": 0,
+    "operators": [],
+    "seed": 0
+  }
+}

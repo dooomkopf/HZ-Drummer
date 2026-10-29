@@ -1,0 +1,418 @@
+{
+  "formatVersion": 1,
+  "id": "user.community-carcass-isa-06-refrain",
+  "name": "Carcass – Incarnated Solvent Abuse – 06 Refrain (Loop, 4 Takte)",
+  "revision": 1,
+  "tags": [
+    "song",
+    "abschnitt",
+    "band:Carcass",
+    "song:Incarnated Solvent Abuse",
+    "community"
+  ],
+  "tempo": {
+    "default": 156,
+    "min": 0,
+    "max": 0
+  },
+  "bars": [
+    {
+      "meter": "4/4",
+      "grid": "1/16"
+    },
+    {
+      "meter": "4/4",
+      "grid": "1/16"
+    },
+    {
+      "meter": "4/4",
+      "grid": "1/16"
+    },
+    {
+      "meter": "4/4",
+      "grid": "1/16"
+    }
+  ],
+  "swing": {
+    "subdivision": "1/8",
+    "ratio": 0.5
+  },
+  "humanize": {
+    "amount": 0.25,
+    "seed": 65497
+  },
+  "layers": [
+    {
+      "id": 1,
+      "role": "hands",
+      "events": [
+        {
+          "id": 1,
+          "voice": "tom2",
+          "pos": "0",
+          "vel": 0.75
+        },
+        {
+          "id": 2,
+          "voice": "tom2",
+          "pos": "1/4",
+          "vel": 0.762
+        },
+        {
+          "id": 3,
+          "voice": "tom2",
+          "pos": "1/2",
+          "vel": 0.775
+        },
+        {
+          "id": 4,
+          "voice": "tom2",
+          "pos": "3/4",
+          "vel": 0.787
+        },
+        {
+          "id": 5,
+          "voice": "tom4",
+          "pos": "1",
+          "vel": 0.8
+        },
+        {
+          "id": 6,
+          "voice": "tom4",
+          "pos": "5/4",
+          "vel": 0.812
+        },
+        {
+          "id": 7,
+          "voice": "tom4",
+          "pos": "3/2",
+          "vel": 0.825
+        },
+        {
+          "id": 8,
+          "voice": "tom4",
+          "pos": "7/4",
+          "vel": 0.838
+        },
+        {
+          "id": 9,
+          "voice": "tom2",
+          "pos": "2",
+          "vel": 0.85
+        },
+        {
+          "id": 10,
+          "voice": "tom2",
+          "pos": "9/4",
+          "vel": 0.863
+        },
+        {
+          "id": 11,
+          "voice": "tom2",
+          "pos": "5/2",
+          "vel": 0.875
+        },
+        {
+          "id": 12,
+          "voice": "tom2",
+          "pos": "11/4",
+          "vel": 0.887
+        },
+        {
+          "id": 13,
+          "voice": "snare",
+          "pos": "3",
+          "vel": 0.883
+        },
+        {
+          "id": 14,
+          "voice": "snare",
+          "pos": "13/4",
+          "vel": 0.899
+        },
+        {
+          "id": 15,
+          "voice": "snare",
+          "pos": "7/2",
+          "vel": 0.916
+        },
+        {
+          "id": 16,
+          "voice": "snare",
+          "pos": "15/4",
+          "vel": 0.933
+        },
+        {
+          "id": 17,
+          "voice": "crash1",
+          "pos": "4",
+          "vel": 1.0
+        },
+        {
+          "id": 18,
+          "voice": "hihat.open",
+          "pos": "9/2",
+          "vel": 0.45
+        },
+        {
+          "id": 19,
+          "voice": "snare",
+          "pos": "9/2",
+          "vel": 0.7
+        },
+        {
+          "id": 20,
+          "voice": "hihat.open",
+          "pos": "11/2",
+          "vel": 0.7
+        },
+        {
+          "id": 21,
+          "voice": "snare",
+          "pos": "11/2",
+          "vel": 0.7
+        },
+        {
+          "id": 22,
+          "voice": "hihat.open",
+          "pos": "13/2",
+          "vel": 0.7
+        },
+        {
+          "id": 23,
+          "voice": "snare",
+          "pos": "13/2",
+          "vel": 0.7
+        },
+        {
+          "id": 24,
+          "voice": "hihat.open",
+          "pos": "15/2",
+          "vel": 0.7
+        },
+        {
+          "id": 25,
+          "voice": "snare",
+          "pos": "15/2",
+          "vel": 0.7
+        },
+        {
+          "id": 26,
+          "voice": "hihat.open",
+          "pos": "17/2",
+          "vel": 0.7
+        },
+        {
+          "id": 27,
+          "voice": "snare",
+          "pos": "17/2",
+          "vel": 0.7
+        },
+        {
+          "id": 28,
+          "voice": "hihat.open",
+          "pos": "19/2",
+          "vel": 0.7
+        },
+        {
+          "id": 29,
+          "voice": "snare",
+          "pos": "19/2",
+          "vel": 0.7
+        },
+        {
+          "id": 30,
+          "voice": "hihat.open",
+          "pos": "21/2",
+          "vel": 0.7
+        },
+        {
+          "id": 31,
+          "voice": "snare",
+          "pos": "21/2",
+          "vel": 0.7
+        },
+        {
+          "id": 32,
+          "voice": "hihat.open",
+          "pos": "23/2",
+          "vel": 0.7
+        },
+        {
+          "id": 33,
+          "voice": "snare",
+          "pos": "23/2",
+          "vel": 0.7
+        },
+        {
+          "id": 34,
+          "voice": "hihat.open",
+          "pos": "25/2",
+          "vel": 0.7
+        },
+        {
+          "id": 35,
+          "voice": "snare",
+          "pos": "25/2",
+          "vel": 0.7
+        },
+        {
+          "id": 36,
+          "voice": "hihat.open",
+          "pos": "27/2",
+          "vel": 0.7
+        },
+        {
+          "id": 37,
+          "voice": "snare",
+          "pos": "27/2",
+          "vel": 0.7
+        },
+        {
+          "id": 38,
+          "voice": "hihat.open",
+          "pos": "29/2",
+          "vel": 0.7
+        },
+        {
+          "id": 39,
+          "voice": "snare",
+          "pos": "29/2",
+          "vel": 0.7
+        },
+        {
+          "id": 40,
+          "voice": "hihat.open",
+          "pos": "31/2",
+          "vel": 0.7
+        },
+        {
+          "id": 41,
+          "voice": "snare",
+          "pos": "31/2",
+          "vel": 0.7
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "role": "feet",
+      "events": [
+        {
+          "id": 42,
+          "voice": "kick",
+          "pos": "4",
+          "vel": 0.95
+        },
+        {
+          "id": 43,
+          "voice": "kick",
+          "pos": "5",
+          "vel": 0.88
+        },
+        {
+          "id": 44,
+          "voice": "kick",
+          "pos": "21/4",
+          "vel": 0.8
+        },
+        {
+          "id": 45,
+          "voice": "kick",
+          "pos": "6",
+          "vel": 0.88
+        },
+        {
+          "id": 46,
+          "voice": "kick",
+          "pos": "7",
+          "vel": 0.88
+        },
+        {
+          "id": 47,
+          "voice": "kick",
+          "pos": "29/4",
+          "vel": 0.8
+        },
+        {
+          "id": 48,
+          "voice": "kick",
+          "pos": "8",
+          "vel": 0.95
+        },
+        {
+          "id": 49,
+          "voice": "kick",
+          "pos": "9",
+          "vel": 0.88
+        },
+        {
+          "id": 50,
+          "voice": "kick",
+          "pos": "37/4",
+          "vel": 0.8
+        },
+        {
+          "id": 51,
+          "voice": "kick",
+          "pos": "10",
+          "vel": 0.88
+        },
+        {
+          "id": 52,
+          "voice": "kick",
+          "pos": "11",
+          "vel": 0.88
+        },
+        {
+          "id": 53,
+          "voice": "kick",
+          "pos": "45/4",
+          "vel": 0.8
+        },
+        {
+          "id": 54,
+          "voice": "kick",
+          "pos": "12",
+          "vel": 0.95
+        },
+        {
+          "id": 55,
+          "voice": "kick",
+          "pos": "13",
+          "vel": 0.88
+        },
+        {
+          "id": 56,
+          "voice": "kick",
+          "pos": "53/4",
+          "vel": 0.8
+        },
+        {
+          "id": 57,
+          "voice": "kick",
+          "pos": "14",
+          "vel": 0.88
+        },
+        {
+          "id": 58,
+          "voice": "kick",
+          "pos": "15",
+          "vel": 0.88
+        },
+        {
+          "id": 59,
+          "voice": "kick",
+          "pos": "61/4",
+          "vel": 0.8
+        }
+      ]
+    }
+  ],
+  "origin": {
+    "parentId": "",
+    "parentRevision": 0,
+    "operators": [],
+    "seed": 0
+  }
+}

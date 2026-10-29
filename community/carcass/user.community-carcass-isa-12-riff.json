@@ -1,0 +1,76 @@
+{
+  "formatVersion": 1,
+  "id": "user.community-carcass-isa-12-riff",
+  "name": "Carcass – Incarnated Solvent Abuse – 12 Riff (Loop, 1 Takt)",
+  "revision": 1,
+  "tags": [
+    "song",
+    "abschnitt",
+    "band:Carcass",
+    "song:Incarnated Solvent Abuse",
+    "community"
+  ],
+  "tempo": {
+    "default": 156,
+    "min": 0,
+    "max": 0
+  },
+  "bars": [
+    {
+      "meter": "4/4",
+      "grid": "1/16"
+    }
+  ],
+  "swing": {
+    "subdivision": "1/8",
+    "ratio": 0.5
+  },
+  "humanize": {
+    "amount": 0.25,
+    "seed": 65503
+  },
+  "layers": [
+    {
+      "id": 1,
+      "role": "hands",
+      "events": [
+        {
+          "id": 1,
+          "voice": "crash1",
+          "pos": "1",
+          "vel": 1.0
+        },
+        {
+          "id": 2,
+          "voice": "snare",
+          "pos": "2",
+          "vel": 1.0
+        },
+        {
+          "id": 3,
+          "voice": "crash1",
+          "pos": "3",
+          "vel": 1.0
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "role": "feet",
+      "events": [
+        {
+          "id": 4,
+          "voice": "kick",
+          "pos": "0",
+          "vel": 0.95
+        }
+      ]
+    }
+  ],
+  "origin": {
+    "parentId": "",
+    "parentRevision": 0,
+    "operators": [],
+    "seed": 0
+  }
+}

@@ -1,0 +1,88 @@
+name:  Prog 5/4 Groove
+tags:  prog, 5/4, odd
+tempo: 120 (90-150)
+meter: 5/4
+grid:  1/8
+hh | X x x x X x x x x x |
+sn | . . X . . . . . X . |
+bd | x . . . x x . . . . |
+---
+name:  Prog 7/8 (2+2+3)
+tags:  prog, 7/8, odd
+tempo: 140 (110-180)
+meter: 7/8 (2+2+3)
+grid:  1/8
+hh | X x X x X x x |
+sn | . . X . . . X |
+bd | x . . . x x . |
+---
+name:  Prog 7/8 (3+2+2)
+tags:  prog, 7/8, odd
+tempo: 140 (110-180)
+meter: 7/8 (3+2+2)
+grid:  1/8
+rd | X x x X x X x |
+sn | . . . X . . . |
+bd | x . x . . x . |
+---
+name:  Prog 9/8 (2+2+2+3)
+tags:  prog, 9/8, odd
+tempo: 150 (120-180)
+meter: 9/8 (2+2+2+3)
+grid:  1/8
+hh | X x X x X x X x x |
+sn | . . X . . . X . . |
+bd | x . . . x . . . x |
+---
+name:  Prog 11/8 (3+3+3+2)
+tags:  prog, 11/8, odd
+tempo: 150 (120-180)
+meter: 11/8 (3+3+3+2)
+grid:  1/8
+rd | X x x X x x X x x X x |
+sn | . . . X . . . . . X . |
+bd | x . . . . . x . x . . |
+---
+name:  Prog 13/16 (3+3+3+4)
+tags:  prog, 13/16, odd
+tempo: 110 (90-140)
+meter: 13/16 (3+3+3+4)
+grid:  1/16
+hh | X x x X x x X x x X x x x |
+sn | . . . X . . . . . X . . . |
+bd | x . x . . x x . . . . x . |
+---
+name:  Prog 5/4 + 6/8 Wechsel
+tags:  prog, odd, meter-change
+tempo: 120 (90-150)
+meter: 5/4, 6/8 (3+3)
+grid:  1/8
+cr | X . . . . . . . . . | X . . . . . |
+hh | . x x x x x x x x x | . x x x x x |
+sn | . . X . . . . . X . | . . . X . . |
+bd | x . . . x x . . . . | x . . . . x |
+---
+name:  Linearer Groove
+tags:  prog, fusion, linear
+tempo: 100 (80-130)
+grid:  1/16
+hh | X . . x . x . . x . . x . x . . |
+sn | . . X . . . . X . . X . . . . X |
+bd | . x . . x . x . . x . . x . x . |
+---
+name:  Polyrhythmus 3 gegen 2
+tags:  prog, polyrhythm, 3:2
+tempo: 100 (70-140)
+grid:  1/8
+cr(3) | X x x |
+sn    | . . . . X . . . |
+bd    | x . . x . . x . |
+---
+name:  Polyrhythmus 3 gegen 4 (Ride)
+tags:  prog, polyrhythm, 3:4
+tempo: 110 (80-140)
+grid:  1/16
+rd(3) | X x x |
+hh    | x . x . x . x . x . x . x . x . |
+sn    | . . . . X . . . . . . . X . . . |
+bd    | x . . . . . x . x . . . . . . . |

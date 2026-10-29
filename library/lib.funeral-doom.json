@@ -1,0 +1,68 @@
+{
+  "formatVersion": 1,
+  "id": "lib.funeral-doom",
+  "name": "Funeral Doom",
+  "revision": 1,
+  "tags": [
+    "doom",
+    "funeral",
+    "very-slow"
+  ],
+  "tempo": {
+    "default": 40.0,
+    "min": 30.0,
+    "max": 55.0
+  },
+  "bars": [
+    {
+      "meter": "4/4",
+      "grid": "1/4"
+    }
+  ],
+  "swing": {
+    "subdivision": "1/8",
+    "ratio": 0.5
+  },
+  "humanize": {
+    "amount": 0.300000011920929,
+    "seed": 4081949929
+  },
+  "layers": [
+    {
+      "id": 1,
+      "role": "hands",
+      "events": [
+        {
+          "id": 1,
+          "voice": "crash1",
+          "pos": "0",
+          "vel": 1.0
+        },
+        {
+          "id": 2,
+          "voice": "snare",
+          "pos": "2",
+          "vel": 1.0
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "role": "feet",
+      "events": [
+        {
+          "id": 3,
+          "voice": "kick",
+          "pos": "0",
+          "vel": 0.75
+        }
+      ]
+    }
+  ],
+  "origin": {
+    "parentId": "",
+    "parentRevision": 0,
+    "operators": [],
+    "seed": 0
+  }
+}

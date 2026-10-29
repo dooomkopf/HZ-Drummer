@@ -1,0 +1,145 @@
+{
+  "formatVersion": 1,
+  "id": "lib.death-kick-bursts",
+  "name": "Death Kick-Bursts",
+  "revision": 1,
+  "tags": [
+    "death",
+    "double-bass"
+  ],
+  "tempo": {
+    "default": 170.0,
+    "min": 140.0,
+    "max": 200.0
+  },
+  "bars": [
+    {
+      "meter": "4/4",
+      "grid": "1/16"
+    }
+  ],
+  "swing": {
+    "subdivision": "1/8",
+    "ratio": 0.5
+  },
+  "humanize": {
+    "amount": 0.300000011920929,
+    "seed": 2918945721
+  },
+  "layers": [
+    {
+      "id": 1,
+      "role": "hands",
+      "events": [
+        {
+          "id": 1,
+          "voice": "crash1",
+          "pos": "0",
+          "vel": 1.0
+        },
+        {
+          "id": 2,
+          "voice": "crash1",
+          "pos": "1",
+          "vel": 0.75
+        },
+        {
+          "id": 3,
+          "voice": "crash1",
+          "pos": "2",
+          "vel": 0.75
+        },
+        {
+          "id": 4,
+          "voice": "crash1",
+          "pos": "3",
+          "vel": 0.75
+        },
+        {
+          "id": 5,
+          "voice": "snare",
+          "pos": "1",
+          "vel": 1.0
+        },
+        {
+          "id": 6,
+          "voice": "snare",
+          "pos": "3",
+          "vel": 1.0
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "role": "feet",
+      "events": [
+        {
+          "id": 7,
+          "voice": "kick",
+          "pos": "0",
+          "vel": 0.75
+        },
+        {
+          "id": 8,
+          "voice": "kick",
+          "pos": "1/4",
+          "vel": 0.75
+        },
+        {
+          "id": 9,
+          "voice": "kick",
+          "pos": "1/2",
+          "vel": 0.75
+        },
+        {
+          "id": 10,
+          "voice": "kick",
+          "pos": "3/4",
+          "vel": 0.75
+        },
+        {
+          "id": 11,
+          "voice": "kick",
+          "pos": "2",
+          "vel": 0.75
+        },
+        {
+          "id": 12,
+          "voice": "kick",
+          "pos": "9/4",
+          "vel": 0.75
+        },
+        {
+          "id": 13,
+          "voice": "kick",
+          "pos": "5/2",
+          "vel": 0.75
+        },
+        {
+          "id": 14,
+          "voice": "kick",
+          "pos": "11/4",
+          "vel": 0.75
+        },
+        {
+          "id": 15,
+          "voice": "kick",
+          "pos": "7/2",
+          "vel": 0.75
+        },
+        {
+          "id": 16,
+          "voice": "kick",
+          "pos": "15/4",
+          "vel": 0.75
+        }
+      ]
+    }
+  ],
+  "origin": {
+    "parentId": "",
+    "parentRevision": 0,
+    "operators": [],
+    "seed": 0
+  }
+}
