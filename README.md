@@ -89,3 +89,20 @@ HZ-Drummer steht unter der **GNU Affero General Public License v3.0**, siehe [LI
 - `tools/gpdrums` nutzt zur Laufzeit die TuxGuitar-Bibliothek (LGPL), die nicht mitgeliefert wird.
 
 Das Repo enthält keine Transkriptionen kompletter Songs und keine Guitar-Pro- oder MIDI-Dateien fremder Stücke.
+
+## Unterstützen
+
+**Buy me a coffee, if you like it …** ☕
+
+Per Bitcoin Lightning:
+
+<img src="docs/bilder/lightning.png" alt="QR-Code für eine Lightning-Spende" width="220">
+
+<details>
+<summary>Als Text zum Kopieren (BOLT12-Angebot, die Wallet muss BOLT12 unterstützen)</summary>
+
+```text
+lno1pgqppmsrse80qf0aara4slvcjxrvu6j2rp5ftmjy4yntlsmsutpkvkt6878sxu4q9q68umuk7azekmrdd5wpsxc3duv4pxj736tkv6qpmsaq7g3uqgp05s9vqknhkv9hrdqfgl374flv0p5npr4xv0yq9wz6rxgfn6pvdzgqxdtly6z4y2q5khs4hsvwgyh4c586r66pwfhmu27h4aw2qtn9v54ez0rm3q9qn7fnf9kwl8yvc3q55yk40yvqyq5dxwwrc2rxgah0g2d0lg6mn50rq53dw96d2hzy6wae20xer4g7qqerh58wkn38e540v93f9sscxpzvr2qp0gtwmrla5y9me7kq2hl4wa0n4nfrdc7qctsvhs7ysr9thrtlwknq
+```
+
+</details>
