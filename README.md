@@ -4,6 +4,17 @@ Drum-Begleitprogramm zum Gitarre-Üben, gebaut für Metal: realistische Samples,
 
 Das Programm ist ein Übungswerkzeug, kein Drum-Computer für Aufnahmen: Es soll ohne Umwege den richtigen Groove im richtigen Tempo liefern, damit man zur Gitarre greifen kann.
 
+![Hauptfenster während der Wiedergabe eines Songs](docs/bilder/hauptfenster.png)
+
+<p>
+<img src="docs/bilder/raster.png" alt="Raster-Editor mit Mute und Solo je Spur" width="49%">
+<img src="docs/bilder/arranger.png" alt="Arranger mit Suche, Ablage und Ablauf" width="49%">
+</p>
+<p>
+<img src="docs/bilder/suche.png" alt="Schnellsuche mit Abzeichen" width="49%">
+<img src="docs/bilder/mixer.png" alt="Mixer je Instrument" width="49%">
+</p>
+
 ## Was es kann
 
 - **Patterns** in beliebigen Taktarten, auch gemischt innerhalb eines Patterns, mit Akzenten, Ghost-Notes, Flams, offener HiHat, Swing und einstellbarer „Menschlichkeit“.
