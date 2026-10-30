@@ -2,6 +2,52 @@
 
 #include "app/views/InWindowDialog.h"
 
+namespace
+{
+    // The count-in button's background (the user's draft, variant C): a large stylised metronome
+    // on the right, cut off by the pill, behind the centred text. Coordinates in units of the pill
+    // height, x from the pill's right edge, y from its top, so it scales cleanly with size and DPI.
+    void drawMetronome (juce::Graphics& g, juce::Rectangle<float> pill, float opacity)
+    {
+        const float h = pill.getHeight();
+        auto at = [&] (float x, float y) { return juce::Point<float> (pill.getRight() + x * h, pill.getY() + y * h); };
+
+        // housing sides, running past the top and bottom edge
+        constexpr float leftTop = -0.571f, leftBottom = -0.830f, rightTop = -0.323f, rightBottom = -0.153f;
+        auto left  = [] (float y) { return leftTop + (leftBottom - leftTop) * y; };
+        auto right = [] (float y) { return rightTop + (rightBottom - rightTop) * y; };
+
+        // pendulum: pivot exactly midway between the sides, leaning to the upper right
+        constexpr float pivotY = 0.941f, lean = 0.514f, tipY = 0.18f, weightY = 0.3215f;
+        const float pivotX = 0.5f * (left (pivotY) + right (pivotY));
+        auto rodX = [&] (float y) { return pivotX + lean * (pivotY - y); };
+
+        // the right side pauses where the pendulum and its weight pass it
+        constexpr float gapFrom = 0.313f, gapTo = 0.485f, beyond = 0.05f;
+        juce::Path housing;
+        housing.startNewSubPath (at (left (-beyond), -beyond));
+        housing.lineTo (at (left (1.0f + beyond), 1.0f + beyond));
+        housing.startNewSubPath (at (right (-beyond), -beyond));
+        housing.lineTo (at (right (gapFrom), gapFrom));
+        housing.startNewSubPath (at (right (gapTo), gapTo));
+        housing.lineTo (at (right (1.0f + beyond), 1.0f + beyond));
+
+        g.setColour (juce::Colours::white.withAlpha (0.30f * opacity));
+        g.strokePath (housing, juce::PathStrokeType (juce::jmax (1.0f, 0.028f * h)));
+
+        juce::Path rod;
+        rod.startNewSubPath (at (rodX (1.0f + beyond), 1.0f + beyond));
+        rod.lineTo (at (rodX (tipY), tipY));
+        g.strokePath (rod, juce::PathStrokeType (juce::jmax (1.0f, 0.033f * h)));
+
+        // the small weight, upright on the rod
+        juce::Path weight;
+        weight.addRectangle (-0.045f * h, -0.0615f * h, 0.09f * h, 0.123f * h);
+        weight.applyTransform (juce::AffineTransform::rotation (std::atan (lean)).translated (at (rodX (weightY), weightY)));
+        g.fillPath (weight);
+    }
+}
+
 const juce::Colour HZLook::buttonFill  { 0xff34343d };
 const juce::Colour HZLook::buttonOn    { 0xff2e7a4a };
 const juce::Colour HZLook::textColour  { 0xffeeeeee };
@@ -41,6 +87,14 @@ void HZLook::drawButtonBackground (juce::Graphics& g, juce::Button& button, cons
     g.setGradientFill (juce::ColourGradient (fill.brighter (0.08f), bounds.getX(), bounds.getY(),
                                              fill.darker (0.08f), bounds.getX(), bounds.getBottom(), false));
     g.fillPath (pill);
+
+    if (button.getProperties()["metronome"])
+    {
+        juce::Graphics::ScopedSaveState state (g);
+        g.reduceClipRegion (pill);
+        drawMetronome (g, bounds, button.isEnabled() ? 1.0f : 0.5f);
+    }
+
     g.setColour (juce::Colours::white.withAlpha (button.isEnabled() ? 0.10f : 0.04f));
     g.strokePath (pill, juce::PathStrokeType (1.0f));
 }

@@ -64,5 +64,6 @@ float gainOf (std::uint64_t packed, int channel)
 
 const char* channelName (int channel) { return names[channel]; }
 const char* channelKey (int channel)  { return keys[channel]; }
+float defaultDb (int channel)         { return channel == Click ? -8.0f : 0.0f; }
 
 } // namespace mix

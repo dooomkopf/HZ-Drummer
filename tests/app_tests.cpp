@@ -214,6 +214,9 @@ static void testChannelsInUse()
 
     plan.bars.front().click = true;   // a "Klick" bar of a song
     CHECK (mix::channelsUsedBy (plan)[mix::Click]);
+
+    // Grundwerte der Regler: Klick etwas leiser als das Schlagzeug
+    CHECK (mix::defaultDb (mix::Click) == -8.0f && mix::defaultDb (mix::Kick) == 0.0f && mix::defaultDb (mix::Master) == 0.0f);
 }
 
 static void testMenuClickSeparation()

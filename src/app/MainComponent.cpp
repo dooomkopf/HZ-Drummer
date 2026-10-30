@@ -33,6 +33,7 @@ MainComponent::MainComponent()
     mixerButton.onClick = [this] { showMixer(); };
     addAndMakeVisible (countInButton);
     countInButton.onClick = [this] { cycleCountIn(); };
+    countInButton.getProperties().set ("metronome", true);   // drawn by HZLook
     countInButton.setTooltip ("Ein Takt Klicks vor dem Start: aus, nur am Anfang des Songs, oder vor jedem Start"_u);
     updateCountInButton();
 
@@ -157,7 +158,7 @@ void MainComponent::loadSettings()
     for (int ch = 0; ch < mix::NumChannels; ++ch)
     {
         const juce::String k (mix::channelKey (ch));
-        mixSettings[(size_t) ch] = { (float) props.getDoubleValue ("mix_" + k + "_db", 0.0), props.getBoolValue ("mix_" + k + "_mute", false), false };
+        mixSettings[(size_t) ch] = { (float) props.getDoubleValue ("mix_" + k + "_db", mix::defaultDb (ch)), props.getBoolValue ("mix_" + k + "_mute", false), false };
     }
     engine.setMixState (mix::pack (mixSettings));
 }

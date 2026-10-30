@@ -5,6 +5,7 @@
 // The program's look: pill-shaped buttons with a soft drop shadow on the dark background.
 // Everything else (sliders, combo boxes, text fields) stays JUCE's dark default.
 // Installed as the default look-and-feel in Main.cpp; the arranger's Look derives from it.
+// A button with the property "metronome" gets a metronome behind its text (the count-in button).
 class HZLook : public juce::LookAndFeel_V4
 {
 public:

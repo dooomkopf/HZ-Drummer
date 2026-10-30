@@ -81,7 +81,7 @@ MixerPanel::MixerPanel (const mix::Settings& initial, std::function<void (int, S
         s.slider.setTextBoxStyle (juce::Slider::TextBoxBelow, false, 70, 22);
         s.slider.setTextValueSuffix (" dB");
         s.slider.setValue (initial[(size_t) ch].db, juce::dontSendNotification);
-        s.slider.setDoubleClickReturnValue (true, 0.0);
+        s.slider.setDoubleClickReturnValue (true, mix::defaultDb (ch));
         s.slider.getProperties().set ("master", ch == mix::Master);
         s.slider.onValueChange = [this, ch] { notify (ch); };
 
@@ -114,7 +114,7 @@ MixerPanel::MixerPanel (const mix::Settings& initial, std::function<void (int, S
             auto& s = strips[(size_t) ch];
             s.mute.setToggleState (false, juce::dontSendNotification);
             s.solo.setToggleState (false, juce::dontSendNotification);
-            s.slider.setValue (0.0, juce::dontSendNotification);
+            s.slider.setValue (mix::defaultDb (ch), juce::dontSendNotification);
             notify (ch);
         }
     };
@@ -197,7 +197,7 @@ void MixerPanel::paint (juce::Graphics& g)
 
     g.setColour (textDim);
     g.setFont (juce::FontOptions (15.0f));
-    g.drawText ("Doppelklick auf einen Regler: 0 dB   ·   M = stumm   ·   S = solo   ·   blass = spielt hier nicht"_u,
+    g.drawText ("Doppelklick: Grundwert, Klick -8 dB   ·   M = stumm   ·   S = solo   ·   blass = spielt hier nicht"_u,
                 getLocalBounds().reduced (20, 14).removeFromBottom (32), juce::Justification::centredLeft);
 }
 

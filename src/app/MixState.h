@@ -36,5 +36,6 @@ float gainOf (std::uint64_t packed, int channel);
 
 const char* channelName (int channel);   // UI label (German)
 const char* channelKey (int channel);    // key in the settings file
+float defaultDb (int channel);           // fader default: the click a little below the drums
 
 } // namespace mix
