@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "app/FolderPanel.h"
 #include "app/MixerPanel.h"
 #include "app/NavigationMenus.h"
 #include "app/Text.h"
@@ -80,6 +81,8 @@ void MainComponent::showPatternMenu()
     actions.preview = [this] (int i) { previewPattern (i); };
     actions.isPreviewing = [this] (int i) { return audition == Audition::Menu && menuPreviewIndex == i && control.play; };   // the mark means "sounds"
     actions.toggleFavorite = [this] { toggleFavorite(); };
+    actions.moveTo = [this] (const std::string& id, const FolderPath& target) { moveToFolder (id, target); };
+    actions.editFolders = [this] { showDataTools (2); };
     actions.showErrors = [this]
     {
         juce::AlertWindow::showMessageBoxAsync (juce::MessageBoxIconType::WarningIcon, "Fehlerhafte Pattern-Dateien",
@@ -91,6 +94,23 @@ void MainComponent::showPatternMenu()
             if (safe != nullptr && result == 0)
                 safe->cancelPreview();   // dismissed without a choice: back to the previous state
         });
+}
+
+void MainComponent::moveToFolder (const std::string& id, const FolderPath& target)
+{
+    const auto error = library.editFolders (Library::areaOf (id), [&] (FolderNode& root) { return folders::moveItem (root, id, target); });
+    if (error.isNotEmpty())
+        juce::AlertWindow::showMessageBoxAsync (juce::MessageBoxIconType::WarningIcon, "Verschieben nicht möglich"_u, error);
+    refreshFolders();
+}
+
+void MainComponent::refreshFolders()
+{
+    if (foldersWindow == nullptr)
+        return;
+    auto* frame = dynamic_cast<GlowFrame*> (foldersWindow->getContentComponent());
+    if (auto* panel = dynamic_cast<FolderPanel*> (frame != nullptr ? frame->content() : foldersWindow->getContentComponent()))
+        panel->refresh();
 }
 
 void MainComponent::confirmDeleteLibraryEntry (const std::string& id)
@@ -269,11 +289,11 @@ void MainComponent::showAudioSettings()
         {
             juce::AudioDeviceSelectorComponent selector;
             juce::Label badgeLine, info;
-            juce::TextButton trash { "Papierkorb" }, logs { "Logdateien" };
+            juce::TextButton trash { "Papierkorb" }, logs { "Logdateien" }, structure { "Ordnerstruktur" };
             explicit SystemPanel (juce::AudioDeviceManager& dm) : selector (dm, 0, 0, 2, 2, false, false, true, false)
             {
                 addAndMakeVisible (selector);
-                addAndMakeVisible (trash); addAndMakeVisible (logs);
+                addAndMakeVisible (trash); addAndMakeVisible (logs); addAndMakeVisible (structure);
                 addAndMakeVisible (badgeLine);
                 badgeLine.setFont (juce::FontOptions (20.0f, juce::Font::bold));
                 badgeLine.setColour (juce::Label::textColourId, theme::textMain);
@@ -292,13 +312,15 @@ void MainComponent::showAudioSettings()
                 selector.setBounds (r.withTrimmedTop (ActiveGlow::height));
                 auto actions = juce::Rectangle<int> (0, juce::jmin (selector.getBottom() + 4, r.getBottom() - 42), getWidth(), 42).reduced (12, 4);
                 trash.setBounds (actions.removeFromLeft (160)); actions.removeFromLeft (10);
-                logs.setBounds (actions.removeFromLeft (160));
+                logs.setBounds (actions.removeFromLeft (160)); actions.removeFromLeft (10);
+                structure.setBounds (actions.removeFromLeft (160));
             }
         };
         auto* panel = new SystemPanel (deviceManager);
         const juce::Component::SafePointer<MainComponent> safe (this);
         panel->trash.onClick = [safe] { if (safe != nullptr) safe->showDataTools (0); };
         panel->logs.onClick = [safe] { if (safe != nullptr) safe->showDataTools (1); };
+        panel->structure.onClick = [safe] { if (safe != nullptr) safe->showDataTools (2); };
 
         // badges: how much of the colour x mark space is taken, and whether any two patterns share one
         const auto st = badges.stats (library.all());
@@ -327,7 +349,7 @@ void MainComponent::showAudioSettings()
 
 void MainComponent::showDataTools (int tab)
 {
-    auto& window = tab == 0 ? trashWindow : logsWindow;
+    auto& window = tab == 0 ? trashWindow : tab == 1 ? logsWindow : foldersWindow;
     if (window == nullptr)
     {
         juce::Component* panel = nullptr;
@@ -344,11 +366,12 @@ void MainComponent::showDataTools (int tab)
                 if (safe->editorWindow != nullptr) safe->editorWindow->getArranger().libraryChanged();
             });
         }
-        else panel = new LogPanel();
-        panel->setSize (tab == 0 ? 820 : 1000, tab == 0 ? 500 : 620);
+        else if (tab == 1) panel = new LogPanel();
+        else panel = new FolderPanel (library);
+        panel->setSize (tab == 1 ? 1000 : 820, tab == 0 ? 500 : 640);
         juce::DialogWindow::LaunchOptions options;
         options.content.setOwned (new GlowFrame (panel));
-        options.dialogTitle = tab == 0 ? "Papierkorb" : "Logdateien";
+        options.dialogTitle = tab == 0 ? "Papierkorb" : tab == 1 ? "Logdateien" : "Ordnerstruktur";
         options.dialogBackgroundColour = theme::panel; options.useNativeTitleBar = true; options.resizable = true;
         window.reset (options.create());
     }
@@ -356,6 +379,7 @@ void MainComponent::showDataTools (int tab)
     auto* content = frame != nullptr ? frame->content() : window->getContentComponent();
     if (auto* trash = dynamic_cast<TrashPanel*> (content)) trash->refresh();
     if (auto* logs = dynamic_cast<LogPanel*> (content)) logs->refresh();
+    if (auto* folderPanel = dynamic_cast<FolderPanel*> (content)) folderPanel->refresh();
     window->setVisible (true); window->toFront (true);
 }
 

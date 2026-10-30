@@ -12,6 +12,7 @@ HZ-Drummer kennt drei Formate: **Drum-Tabs** zum Schreiben von Hand, **Pattern-J
 | Eigene Songs | `~/.config/HZ-Drummer/songs/*.json` |
 | Papierkorb | `~/.config/HZ-Drummer/trash/<uuid>/` mit `data.json` und `metadata.json` |
 | Arbeitsstand und Ablage des Arrangers | `~/.config/HZ-Drummer/arranger.json`, `ablage.json` |
+| Ordnerstruktur für Songs und eigene Patterns | `~/.config/HZ-Drummer/ordner.json` |
 
 Bei Patterns werden Unterordner mitgelesen. Jede Kennung darf nur einmal vorkommen, Doppelte werden mit Meldung ignoriert.
 
@@ -161,3 +162,23 @@ Abläufe aus dem Arranger. Jeder Block trägt eine eigene **Kopie** seines Patte
 | `parts[].meter`, `count` | bei Pause und Klick: Taktart und Zahl der Takte |
 
 Ältere Songs im Format 1 verweisen nur auf Patterns, ohne Kopie: `{ "pattern": "user.mein-intro", "label": "Intro", "repeats": 2 }`. Sie werden weiter gelesen und beim nächsten Speichern auf Format 2 gebracht.
+
+## Ordner-JSON
+
+`ordner.json` hält die Ordner aus **System › Ordnerstruktur**, je ein Baum für Songs und für eigene Patterns. Einträge stehen über ihre Kennung darin, die Pattern- und Song-Dateien selbst bleiben unverändert.
+
+```json
+{
+  "formatVersion": 1,
+  "songs": {
+    "folders": [ { "name": "Thrash", "folders": [], "items": [ "song.beispiel-1a2b3c4d" ] } ],
+    "items": []
+  },
+  "patterns": { "folders": [], "items": [] }
+}
+```
+
+- Die Reihenfolge in `folders` und `items` ist die Reihenfolge im Menü; Ordner stehen vor den Einträgen.
+- Ordnernamen gelten ohne Rücksicht auf Groß- und Kleinschreibung; gleichnamige Geschwister werden beim Lesen zusammengelegt.
+- Ein Eintrag, der nirgends steht, kommt an seinen Standardplatz: Songs auf die oberste Ebene, eigene Patterns nach `band:` und `song:`. Kennungen gelöschter Einträge fallen beim nächsten Speichern weg.
+- Ist die Datei nicht lesbar, meldet die App das und überschreibt sie nicht.

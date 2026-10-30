@@ -1,5 +1,6 @@
 #pragma once
 
+#include "app/FolderTree.h"
 #include "app/Song.h"
 #include "engine/Pattern.h"
 
@@ -43,8 +44,14 @@ public:
     juce::String favoritesToString() const;
     void favoritesFromString (const juce::String&);
 
+    // Folders of songs and own patterns (System → Ordnerstruktur); edits are saved at once
+    static FolderTree::Area areaOf (const std::string& id)   { return juce::String (id).startsWith ("song.") ? FolderTree::Songs : FolderTree::Patterns; }
+    FolderNode folders (FolderTree::Area) const;             // every song / own pattern in its place
+    juce::String editFolders (FolderTree::Area, const std::function<juce::String (FolderNode&)>& edit);   // "" on success
+
     static juce::File userPatternFolder();   // ~/.config/HZ-Drummer/patterns
     static juce::File songFolder();          // ~/.config/HZ-Drummer/songs
+    static juce::File folderFile();          // ~/.config/HZ-Drummer/ordner.json
 
     // Display helpers
     static juce::String styleTitle (const std::string& tag);   // "thrash" -> "Thrash"
@@ -57,6 +64,7 @@ private:
     std::map<std::string, std::vector<SongSpan>> spansById;
     std::map<std::string, Song> songsById;
     std::set<std::string> favorites;
+    FolderTree folderTree;
     juce::StringArray loadErrors;
 };
 

@@ -120,7 +120,9 @@ private:
     void setMix (int channel, mix::Setting);
     bool channelInUse (int channel) const;   // mixer: does this channel sound in what is selected?
     void showAudioSettings();
-    void showDataTools (int tab);
+    void showDataTools (int tab);    // 0 trash, 1 log files, 2 folders
+    void moveToFolder (const std::string& id, const FolderPath&);
+    void refreshFolders();           // the folder window, if open, after the library changed
     void seekToBar (int bar);        // within the playing song/pattern
     void seekPart (int dir);         // songs: next / previous part (N / B)
     void previewPattern (int index); // pattern menu: audition an entry (toggle), menu stays open
@@ -188,7 +190,7 @@ private:
 
     // windows and widgets
     std::unique_ptr<WorkshopWindow> editorWindow;
-    std::unique_ptr<juce::DialogWindow> mixerWindow, audioWindow, trashWindow, logsWindow;
+    std::unique_ptr<juce::DialogWindow> mixerWindow, audioWindow, trashWindow, logsWindow, foldersWindow;
     juce::TextButton playButton { "Start" }, tapButton { "Tap" }, audioButton { "System" },
                      editButton { "Bearbeiten" }, mixerButton { "Mixer" }, searchButton { "Suchen" }, deleteEntryButton { "Löschen"_u },
                      countInButton;

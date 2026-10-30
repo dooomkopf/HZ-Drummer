@@ -15,6 +15,8 @@ static int failures = 0;
 
 #include "app/Song.h"
 void runSongTests();
+void runFolderTests();
+extern int folderTestFailures;
 void checkSongFolder (const juce::File& songs, const std::vector<hz::Pattern>& library);
 extern int songTestFailures;
 
@@ -246,6 +248,7 @@ int main (int argc, char* argv[])
     testMenuClickSeparation();
     testChannelsInUse();
     runSongTests();
+    runFolderTests();
 
     // optional: zusätzlich einen Ordner mit Pattern-Dateien prüfen (z.B. eigene/importierte Patterns)
     if (argc > 2)
@@ -265,7 +268,7 @@ int main (int argc, char* argv[])
             checkSongFolder (juce::File::getCurrentWorkingDirectory().getChildFile (argv[3]), all);
         }
     }
-    failures += songTestFailures;
+    failures += songTestFailures + folderTestFailures;
 
     if (failures == 0)
         std::printf ("Alle App-Tests bestanden.\n");

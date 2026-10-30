@@ -27,6 +27,11 @@ juce::File Library::songFolder()
     return userPatternFolder().getSiblingFile ("songs");
 }
 
+juce::File Library::folderFile()
+{
+    return userPatternFolder().getSiblingFile ("ordner.json");
+}
+
 void Library::reload()
 {
     loadErrors.clear();
@@ -78,6 +83,9 @@ void Library::reload()
         const auto sb = b.tags.empty() ? std::string() : b.tags.front();
         return sa < sb;
     });
+
+    if (const auto error = folderTree.load (folderFile()); error.isNotEmpty())
+        loadErrors.add (error);
 
     if (onReloaded)
         onReloaded (entries);
@@ -151,6 +159,37 @@ juce::String Library::save (hz::Pattern& p, bool asNew)
 
     p = candidate;
     reload();
+    return {};
+}
+
+FolderNode Library::folders (FolderTree::Area area) const
+{
+    std::vector<FolderTree::Entry> list;
+    for (int i = 0; i < size(); ++i)
+    {
+        if (area == FolderTree::Songs ? ! isSong (i) : ! isUserPattern (i))
+            continue;
+        FolderPath place;   // songs: top level; own patterns: band, then song (as the menu had them before)
+        if (area == FolderTree::Patterns)
+        {
+            place.add (bandOf (entries[(size_t) i]));
+            place.add (groupOf (entries[(size_t) i]));
+        }
+        list.push_back ({ entries[(size_t) i].id, place });
+    }
+    return folderTree.resolve (area, list);
+}
+
+juce::String Library::editFolders (FolderTree::Area area, const std::function<juce::String (FolderNode&)>& edit)
+{
+    auto root = folders (area);
+    if (const auto error = edit (root); error.isNotEmpty())
+        return error;
+    auto changed = folderTree;
+    changed.set (area, std::move (root));
+    if (const auto error = changed.save (folderFile()); error.isNotEmpty())
+        return error;
+    folderTree = std::move (changed);
     return {};
 }
 

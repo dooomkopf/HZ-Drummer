@@ -1,6 +1,7 @@
 #include "app/arranger/ArrangerPanel.h"
 
 #include "app/Library.h"
+#include "app/NavigationMenus.h"
 #include "app/Text.h"
 #include "app/arranger/ArrangerStyle.h"
 #include "app/views/InWindowDialog.h"
@@ -681,12 +682,15 @@ void ArrangerPanel::showLoadMenu()
     juce::PopupMenu menu;
     const auto& lib = host.getLibrary();
     std::vector<std::string> ids;   // by id: the library may reload before the choice arrives
-    for (int i = 0; i < lib.size(); ++i)
-        if (lib.isSong (i))
+    addFolderMenu (menu, lib.folders (FolderTree::Songs), [&] (juce::PopupMenu& m, const std::string& id, const FolderPath& folder)
+    {
+        if (const int i = lib.indexOf (id); i >= 0)
         {
-            ids.push_back (lib.get (i).id);
-            menu.addItem ((int) ids.size(), juce::String (lib.get (i).name));
+            ids.push_back (id);
+            m.addItem ((int) ids.size(), folders::shortName (juce::String (lib.get (i).name), folder));
         }
+        return false;
+    });
     if (ids.empty())
         menu.addItem (1, "(keine gespeicherten Songs)", false);
     menu.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (&toolbar),

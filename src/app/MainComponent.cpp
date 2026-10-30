@@ -19,7 +19,7 @@ MainComponent::MainComponent()
 
     badges.load (Library::songFolder().getSiblingFile ("abzeichen.json"));
     BadgeRegistry::setGlobal (&badges);
-    library.onReloaded = [this] (const std::vector<hz::Pattern>& all) { badges.ensure (all); };
+    library.onReloaded = [this] (const std::vector<hz::Pattern>& all) { badges.ensure (all); refreshFolders(); };
     library.reload();
     loadSettings();
     kits = std::make_unique<KitManager> (KitManager::findDefaultKit());

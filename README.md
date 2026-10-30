@@ -23,7 +23,7 @@ Das Programm ist ein Übungswerkzeug, kein Drum-Computer für Aufnahmen: Es soll
 - **Arranger**: Songabläufe aus Bausteinen, mit Ablage, Taktbereichen, lokalen Varianten und Sprung auf jeden Block.
 - **Suche** über alles mit Filtern wie `7/8` oder `160-190 bpm`, Vorhören direkt im Menü.
 - **Einzählen** vor dem Start, Tap-Tempo, Mixer je Instrument mit Pegelanzeige, Metronom mit eigenen Taktarten.
-- **Papierkorb** für eigene Patterns und Songs.
+- **Ordnerstruktur** und **Papierkorb** für eigene Patterns und Songs.
 - **Community-Bausteine**: kurze Loops von Carcass und Exhorder zum Mitspielen, siehe [community/](community/).
 
 ## Schnellstart

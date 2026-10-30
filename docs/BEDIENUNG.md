@@ -27,6 +27,8 @@ Im Menü ein Pattern wählen schaltet auf Pattern, eine Taktart wählen schaltet
 
 **Eigene Patterns und Songs löschen:** Rechtsklick auf den Eintrag im Pattern-Menü, oder der Knopf **Löschen** neben dem Titel, wenn ein eigener Eintrag geladen ist. Nichts wird endgültig gelöscht: Die Datei wandert in den Papierkorb (**System › Papierkorb**, dort „Wiederherstellen“). Ein Pattern, das ein gespeicherter Song, der Ablauf oder die Ablage noch verwendet, lässt sich nicht löschen; die Meldung sagt, wo es steckt.
 
+**Ordner für Songs und eigene Patterns:** Unter **System › Ordnerstruktur** stehen Songs und eigene Patterns als Baum. Dort legst du Ordner an, auch beliebig verschachtelt, benennst sie um und löschst leere. Einträge und Ordner ziehst du mit der Maus an ihren neuen Platz; **Hoch** und **Runter** ändern die Reihenfolge. Im Pattern-Menü verschiebt **Verschieben nach** den gerade geladenen Song oder das geladene Pattern in einen vorhandenen Ordner. Solange ein Eintrag keinem Ordner zugeordnet ist, steht er wie bisher: Songs oben, eigene Patterns nach Band und Song. Die Ordner stehen in `ordner.json`, die Pattern- und Song-Dateien bleiben dabei unverändert.
+
 **System** zeigt außerdem die Audio-Einstellungen, die freien Abzeichen und die Logdateien (App-Protokoll und Startprotokoll).
 
 **Einzählen (Knopf „Click“):** Der Knopf schaltet durch drei Stellungen: grau *Click* = aus, blau *START* = ein Takt Klicks, wenn der Song oder das Pattern von vorn startet, grün *AN* = vor jedem Start, auch nach einer Pause mitten im Song. Der Klick-Takt hat die Taktart des Takts, an dem es losgeht, und der Song setzt danach genau dort ein. Zeit genug, vom Laptop zur Gitarre zu greifen. Gilt nur für den Hauptplayer, nicht für Raster, Arranger oder Vorhören.
@@ -82,6 +84,7 @@ Im Menü ein Pattern wählen schaltet auf Pattern, eine Taktart wählen schaltet
 | Eigene Patterns | `~/.config/HZ-Drummer/patterns/*.json` |
 | Eigene Songs (Abläufe) | `~/.config/HZ-Drummer/songs/*.json` |
 | Papierkorb (gelöschte Patterns und Songs, je ein Ordner mit `data.json` und `metadata.json`) | `~/.config/HZ-Drummer/trash/` |
+| Ordnerstruktur (Ordner für Songs und eigene Patterns) | `~/.config/HZ-Drummer/ordner.json` |
 | Abzeichen-Register | `~/.config/HZ-Drummer/abzeichen.json` |
 | App-Protokoll (Papierkorb, Fehler) | `~/.cache/HZ-Drummer/app.log` |
 | Mitgelieferte Patterns (lesbare Quelle) | `library-src/*.tab` |
