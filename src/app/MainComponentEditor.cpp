@@ -132,8 +132,14 @@ EditorHost::Playhead MainComponent::getPlayhead() const
 
 bool MainComponent::handleTransportKey (const juce::KeyPress& key)
 {
-    // in the editor only transport keys work (left/right would switch the pattern)
-    return isTransportKey (key) && handleGlobalKey (key);
+    // in the workshop only transport keys work (left/right would switch the pattern). Space never
+    // starts the main window's selection there (nor its count-in): it pauses what sounds and
+    // resumes only what the workshop put into the transport
+    if (! isTransportKey (key))
+        return false;
+    if (key.getKeyCode() == juce::KeyPress::spaceKey && ! control.play && audition == Audition::None && ! arranging.has_value())
+        return true;   // nothing of the workshop's to play: swallow it
+    return handleGlobalKey (key);
 }
 
 void MainComponent::editorClosed()
