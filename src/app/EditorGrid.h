@@ -80,6 +80,17 @@ public:
         repaint();
     }
 
+    // how far right a hit at pos sounds because of the swing (0 if it does not swing)
+    float swingOffsetPx (hz::Rational pos) const
+    {
+        const auto& p = owner.pattern;
+        const double shift = hz::swingShift (p, pos);
+        if (shift <= 0.0)
+            return 0.0f;
+        const int bi = p.barAt (pos);
+        return (float) (shift / p.bars[(size_t) bi].lengthInQuarters().toDouble()) * (float) headers[(size_t) bi].area.getWidth();
+    }
+
     float xForPos (hz::Rational pos) const
     {
         const auto& p = owner.pattern;
@@ -137,18 +148,31 @@ public:
             g.setColour (juce::Colour (0xffe89a2c));
             g.drawFittedText (juce::String (hz::meterLabel (b.meter)) + juce::String (juce::CharPointer_UTF8 (" \xe2\x96\xbe")),
                               h.meterArea, juce::Justification::centredLeft, 1);
-            g.setColour (textDim);
-            g.drawFittedText (juce::String (b.grid.num) + "/" + juce::String (b.grid.den) + juce::String (juce::CharPointer_UTF8 (" \xe2\x96\xbe")),
-                              h.gridArea, juce::Justification::centredLeft, 1);
+            // the grid; light red if some hits have no place in it (diamonds): its menu then suggests one that has
+            const auto gridText = juce::String (b.grid.num) + "/" + juce::String (b.grid.den) + juce::String (juce::CharPointer_UTF8 (" \xe2\x96\xbe"));
+            g.setColour (gridHoldsHits (p, bi, b.grid) ? textDim : hintRed);
+            g.drawFittedText (gridText, h.gridArea, juce::Justification::centredLeft, 1);
+            if (bi == 0 && owner.swingHint)   // behind the grid of bar 1: swing is set, but finds no place
+            {
+                const int used = (int) std::ceil (juce::GlyphArrangement::getStringWidth (juce::Font (juce::FontOptions (14.0f)), gridText)) + 12;
+                g.setColour (hintRed);
+                g.setFont (juce::FontOptions (13.0f));
+                g.drawFittedText ("Swing wirkt in diesem Raster auf keine Stelle", h.gridArea.withTrimmedLeft (used),
+                                  juce::Justification::centredLeft, 2, 0.9f);
+            }
         }
 
-        // cells
+        // cells; with swing on, the places it moves (the "und" of eighths, "e" and "a" of sixteenths) lightly tinted
+        std::vector<bool> swingPlace;
+        for (const auto& c : columns)
+            swingPlace.push_back (hz::swingShift (p, c.pos) > 0.0);
         for (int li = 0; li < (int) owner.lanes.size(); ++li)
         {
             const int y = headerH + li * owner.rowH;
-            for (const auto& c : columns)
+            for (size_t ci = 0; ci < columns.size(); ++ci)
             {
-                g.setColour (c.beatStart ? cellB : cellA);
+                const auto& c = columns[ci];
+                g.setColour (swingPlace[ci] ? cellSwing : c.beatStart ? cellB : cellA);
                 g.fillRect (juce::Rectangle<float> (c.x + 1, (float) y + 1, c.w - 2, (float) owner.rowH - 2));
             }
         }
@@ -171,6 +195,14 @@ public:
                 g.fillRect (0, headerH + li * owner.rowH - 1, getWidth(), 2);
             }
 
+        // a hit played later/earlier: "+20ms" in one line; in a narrow place it gets narrower rather than cut off
+        auto drawLag = [&g] (int ms, juce::Rectangle<float> area, juce::Justification where)
+        {
+            g.setFont (juce::FontOptions (13.0f));
+            g.drawFittedText ((ms > 0 ? juce::String ("+") : juce::String (juce::CharPointer_UTF8 ("\xe2\x88\x92"))) + juce::String (std::abs (ms)) + "ms",
+                              area.toNearestInt(), where, 1, 0.5f);
+        };
+
         // hits
         for (const auto& l : p.layers)
             for (const auto& e : l.events)
@@ -189,6 +221,14 @@ public:
                     const float size = 0.35f + 0.65f * e.velocity;
                     auto r = juce::Rectangle<float> (c.x + 2, y + 2, c.w - 4, (float) owner.rowH - 4);
                     r = r.withSizeKeepingCentre (r.getWidth() * size, r.getHeight() * size);
+                    // swing: drawn where it sounds; its grid place (where it is clicked) stays as a faint outline
+                    const float swingDx = swingOffsetPx (e.pos);
+                    if (swingDx > 0.0f)
+                    {
+                        g.setColour (col.withAlpha (0.35f));
+                        g.drawRoundedRectangle (r, 3.0f, 1.0f);
+                        r = r.translated (swingDx, 0.0f);
+                    }
                     g.setColour (col.withAlpha (0.45f + 0.55f * e.velocity));
                     g.fillRoundedRectangle (r, 3.0f);
                     if (e.velocity >= 0.95f)
@@ -200,23 +240,37 @@ public:
                     {
                         // dark on light hits (snare), white on the others
                         g.setColour (col.getPerceivedBrightness() > 0.6f ? juce::Colour (0xff1c1c20) : juce::Colours::white);
-                        // "+20ms" in one line; in a narrow cell it gets narrower rather than cut off
-                        g.setFont (juce::FontOptions (13.0f));
-                        g.drawFittedText ((ms > 0 ? juce::String ("+") : juce::String (juce::CharPointer_UTF8 ("\xe2\x88\x92"))) + juce::String (std::abs (ms)) + "ms",
-                                          juce::Rectangle<float> (c.x, y, c.w, (float) owner.rowH).toNearestInt(),
-                                          juce::Justification::centred, 1, 0.5f);
+                        drawLag (ms, juce::Rectangle<float> (c.x + swingDx, y, c.w, (float) owner.rowH), juce::Justification::centred);
                     }
                 }
                 else
                 {
-                    // not on the grid (e.g. polyrhythm): diamond at the exact position
-                    const float x = xForPos (e.pos);
-                    juce::Path d;
+                    // not on the grid (e.g. polyrhythm): diamond at the exact position. Swing as on the grid:
+                    // drawn where it sounds, its place (where it is clicked) stays as a faint outline
+                    const float x = xForPos (e.pos), swingDx = swingOffsetPx (e.pos);
                     const float s = 5.0f + 4.0f * e.velocity, cy = y + owner.rowH * 0.5f;
-                    d.addTriangle (x - s, cy, x, cy - s, x + s, cy);
-                    d.addTriangle (x - s, cy, x, cy + s, x + s, cy);
+                    auto diamond = [s, cy] (float centre)
+                    {
+                        juce::Path d;
+                        d.startNewSubPath (centre - s, cy);
+                        d.lineTo (centre, cy - s);
+                        d.lineTo (centre + s, cy);
+                        d.lineTo (centre, cy + s);
+                        d.closeSubPath();
+                        return d;
+                    };
+                    if (swingDx > 0.0f)
+                    {
+                        g.setColour (col.withAlpha (0.35f));
+                        g.strokePath (diamond (x), juce::PathStrokeType (1.0f));
+                    }
                     g.setColour (col.withAlpha (0.5f + 0.5f * e.velocity));
-                    g.fillPath (d);
+                    g.fillPath (diamond (x + swingDx));
+                    if (const int ms = juce::roundToInt (e.lagMs); ms != 0)
+                    {
+                        g.setColour (juce::Colours::white);   // beside the small diamond, on the dark cells
+                        drawLag (ms, juce::Rectangle<float> (x + swingDx + s + 2.0f, y, 44.0f, (float) owner.rowH), juce::Justification::centredLeft);
+                    }
                 }
             }
     }

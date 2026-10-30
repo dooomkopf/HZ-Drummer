@@ -3,6 +3,17 @@
 
 #include <algorithm>
 
+namespace
+{
+    // every card in the Ablage has an identity of its own (the editor finds its card by it): a card whose
+    // uid another one already has, e.g. the same block with another bar range, gets a new one
+    void giveOwnUid (SongPart& card, const std::vector<SongPart>& cards)
+    {
+        if (card.uid.empty() || std::any_of (cards.begin(), cards.end(), [&] (const SongPart& c) { return c.uid == card.uid; }))
+            card.uid = newBlockUid();
+    }
+}
+
 juce::String ArrangerModel::contentKey (const Song& s)
 {
     // identity is not content: neither the file id nor the block uids (older files get random ones on load)
@@ -52,7 +63,12 @@ void ArrangerModel::adoptSaved (const Song& saved)
 
 void ArrangerModel::loadScratch (std::vector<SongPart> list)
 {
-    current.scratch = std::move (list);
+    current.scratch.clear();
+    for (auto& card : list)   // an Ablage saved earlier may hold one uid twice
+    {
+        giveOwnUid (card, current.scratch);
+        current.scratch.push_back (std::move (card));
+    }
     if (onChange)
         onChange();
 }
@@ -303,6 +319,7 @@ int ArrangerModel::addToScratch (std::vector<SongPart> parts)
         const bool known = std::any_of (next.scratch.begin(), next.scratch.end(), [&] (const SongPart& s) { return sameBlock (s, p); });
         if (! known)
         {
+            giveOwnUid (p, next.scratch);
             next.scratch.push_back (std::move (p));
             ++added;
         }
@@ -321,7 +338,10 @@ void ArrangerModel::moveToScratch (int index)
     next.song.parts.erase (next.song.parts.begin() + index);
     const bool known = std::any_of (next.scratch.begin(), next.scratch.end(), [&] (const SongPart& s) { return sameBlock (s, part); });
     if (! known)
+    {
+        giveOwnUid (part, next.scratch);
         next.scratch.push_back (std::move (part));
+    }
     commit (std::move (next), ! known);
 }
 
@@ -352,6 +372,7 @@ bool ArrangerModel::insertIntoScratch (int index, SongPart part)
         return false;
     auto next = current;
     index = std::clamp (index, 0, (int) next.scratch.size());
+    giveOwnUid (part, next.scratch);
     next.scratch.insert (next.scratch.begin() + index, std::move (part));
     return commit (std::move (next), true);
 }

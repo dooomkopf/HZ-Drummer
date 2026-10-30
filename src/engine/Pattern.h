@@ -151,4 +151,8 @@ struct PatternPlan
 
 PatternPlan buildPlan (const Pattern&);
 
+// How much later (in quarters) the pattern's swing plays an event at 'pos': only exact offbeats of the
+// swing subdivision move (the "und" of eighths, "e" and "a" of sixteenths; triplets stay untouched).
+double swingShift (const Pattern&, Rational pos);
+
 } // namespace hz

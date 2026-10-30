@@ -73,6 +73,10 @@ PatternEditor::PatternEditor (EditorHost& h) : host (h), help ("hilfezeile-raste
     addAndMakeVisible (swingBox);
     swingBox.getProperties().set ("pill", true);   // drawn by HZLook like the buttons beside it
     swingBox.setWantsKeyboardFocus (false);
+    swingBox.setTooltip ("Swing: Jeder zweite Schlag der Unterteilung kommt später, bei Achteln das \"und\", bei 16teln \"e\" und \"a\". "
+                         "Die Prozent sagen, wie viel vom Paar der erste Schlag bekommt: 50 % = gerade, 58 % = leicht, "
+                         "67 % = triolisch (Shuffle), 72 % = stark. Im Editor stehen diese Schläge versetzt da, "
+                         "ihr Platz im Raster bleibt als blasser Rahmen."_u);
     for (int i = 0; i < (int) std::size (swingOptions); ++i)
         swingBox.addItem (juce::String (juce::CharPointer_UTF8 (swingOptions[i].label)), i + 1);
     swingBox.onChange = [this]
@@ -222,7 +226,18 @@ void PatternEditor::updateControls()
     redoButton.setEnabled (! redoStack.empty());
     saveButton.setEnabled ((userPattern || blockMode) && dirty);
     deleteButton.setVisible (userPattern && ! blockMode);
-    renameButton.setVisible (! blockMode && ! pattern.bars.empty());   // a block is renamed in the arranger
+    // a block is renamed in the arranger; the tempo slider and the rest of the row move up or make room
+    if (const bool showRename = ! blockMode && ! pattern.bars.empty(); renameButton.isVisible() != showRename)
+    {
+        renameButton.setVisible (showRename);
+        resized();
+    }
+    // swing set, but nothing here it moves (e.g. the grid 1/12 has no straight "und"): the bar line says so
+    if (const bool hint = ! pattern.bars.empty() && pattern.swing.ratio > 0.5f && ! swingFindsPlace (pattern); hint != swingHint)
+    {
+        swingHint = hint;
+        grid->repaint();
+    }
     closeButton.setEnabled (! pattern.bars.empty());
     help.repaint();   // its default text follows the block mode
     // an empty raster (nothing loaded, or closed): nothing to add to, take over, save or shape
@@ -392,7 +407,7 @@ void PatternEditor::resized()
     }
     tempoSlider.setBounds (row1.removeFromLeft (200));
     row1.removeFromLeft (10);
-    swingBox.setBounds (row1.removeFromLeft (160));
+    swingBox.setBounds (row1.removeFromLeft (190));   // room for "Achtel triolisch (67 %)"
     row1.removeFromLeft (10);
     humanizeLabel.setBounds (row1.removeFromLeft (90));
     humanizeSlider.setBounds (row1.removeFromLeft (190));   // a little shorter, room for the tempo slider

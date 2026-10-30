@@ -131,6 +131,17 @@ std::string Pattern::validate() const
     return {};
 }
 
+double swingShift (const Pattern& p, Rational pos)
+{
+    const Rational sub = p.swing.subdivision * Rational (4);   // in quarters
+    if (! (p.swing.ratio > 0.5f && sub.num > 0))
+        return 0.0;
+    const auto rel = pos - p.barStart (p.barAt (pos));
+    const auto pairs = rel / (sub * Rational (2));
+    const auto frac = pairs - Rational (pairs.num / pairs.den);
+    return frac == Rational (1, 2) ? (sub.toDouble() * 2.0) * (p.swing.ratio - 0.5) : 0.0;
+}
+
 PatternPlan buildPlan (const Pattern& p)
 {
     PatternPlan plan;
@@ -142,23 +153,12 @@ PatternPlan buildPlan (const Pattern& p)
     for (int i = 0; i < (int) p.bars.size(); ++i)
         plan.bars.push_back ({ p.barStart (i).toDouble(), p.bars[(size_t) i].lengthInQuarters().toDouble(), p.bars[(size_t) i].meter, 0 });
 
-    const Rational sub = p.swing.subdivision * Rational (4);   // in quarters
-    const bool swinging = p.swing.ratio > 0.5f && sub.num > 0;
-
     for (const auto& layer : p.layers)
         for (const auto& e : layer.events)
         {
             double pos = e.pos.toDouble();
 
-            // Swing: only exact offbeats of the subdivision (triplets stay untouched)
-            if (swinging)
-            {
-                const auto rel = e.pos - p.barStart (p.barAt (e.pos));
-                const auto pairs = rel / (sub * Rational (2));
-                const auto frac = pairs - Rational (pairs.num / pairs.den);
-                if (frac == Rational (1, 2))
-                    pos += (sub.toDouble() * 2.0) * (p.swing.ratio - 0.5);
-            }
+            pos += swingShift (p, e.pos);   // only exact offbeats of the swing subdivision
 
             if (e.flam)
             {

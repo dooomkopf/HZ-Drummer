@@ -324,6 +324,29 @@ static void testScratchCards()
     CHECK (scratchSaves >= 4);
 }
 
+// the editor finds a card by its uid: two cards never share one
+static void testScratchCardIdentity()
+{
+    const auto lib = smallLibrary();
+    ArrangerModel m;
+    m.load (Song {});
+    auto twoBars = lib[0];
+    twoBars.bars.push_back (twoBars.bars.front());
+    m.insertParts (0, { makePatternPart (twoBars) });
+
+    // the same block twice, with another bar range: two cards, each with its own uid
+    CHECK (m.addToScratch ({ m.song().parts[0] }) == 1);
+    const auto first = m.scratch()[0].uid;
+    m.setRange (0, 1, 1);
+    CHECK (m.addToScratch ({ m.song().parts[0] }) == 1);
+    CHECK (m.scratch().size() == 2 && m.scratch()[0].uid == first && m.scratch()[1].uid != first);
+    CHECK (m.indexOfScratchUid (m.scratch()[1].uid) == 1);
+
+    // an Ablage saved with one uid twice: the second card gets a new one when loading
+    m.loadScratch ({ m.scratch()[0], m.scratch()[0] });
+    CHECK (m.scratch().size() == 2 && m.scratch()[0].uid == first && m.scratch()[1].uid != first);
+}
+
 static void testArrangerLimits()
 {
     ArrangerModel m;
@@ -502,6 +525,7 @@ void runSongTests()
     testArrangerModel();
     testMoveToScratch();
     testScratchCards();
+    testScratchCardIdentity();
     testArrangerLimits();
 }
 

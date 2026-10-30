@@ -134,6 +134,7 @@ private:
     bool cardMode = false;         // blockMode for a card of the Ablage (see setCardPattern)
     std::function<void (const hz::Pattern&)> cardSavedAsNew;
     juce::String blockTitle;
+    bool swingHint = false;        // swing is set, but finds no place here: said in the bar line (see updateControls)
     std::function<bool (const hz::Pattern&)> applyToBlock;
     std::vector<hz::Pattern> undoStack, redoStack;
     std::vector<Lane> allLanes, lanes;

@@ -227,15 +227,56 @@ void PatternEditor::showGridMenuForBar (int bar)
 
     juce::PopupMenu m;
     const auto& b = pattern.bars[(size_t) bar];
+    auto setGrid = [safe = juce::Component::SafePointer<PatternEditor> (this), bar] (hz::Rational g)
+    {
+        if (safe != nullptr)
+            safe->editBar (bar, [bar, g] (hz::Pattern& p) { hz::setBarGrid (p, bar, g); });
+    };
+    // some hits have no place in this grid (diamonds): first the coarsest grid that has one for every hit
+    if (! gridHoldsHits (pattern, bar, b.grid))
+    {
+        if (const auto fit = fittingGrid (pattern, bar); fit.num > 0)
+            m.addItem ("Passend: " + juce::String (fit.num) + "/" + juce::String (fit.den) + " (alle Schläge in Kästchen)"_u,
+                       [setGrid, fit] { setGrid (fit); });
+        else
+            m.addItem ("Kein passendes Raster", false, false, [] {});
+        m.addSeparator();
+    }
+    // swing set, but no place anywhere for it (the hint behind the grid of bar 1): every bar gets the coarsest
+    // grid that keeps its hits in cells and has places the swing moves, all in one undo step
+    if (swingHint)
+    {
+        juce::StringArray grids;
+        int fixable = 0;
+        for (int bi = 0; bi < (int) pattern.bars.size(); ++bi)
+            if (const auto g = fittingGrid (pattern, bi, true); g.num > 0)
+            {
+                ++fixable;
+                grids.addIfNotAlreadyThere (juce::String (g.num) + "/" + juce::String (g.den));
+            }
+        const int bars = (int) pattern.bars.size();
+        if (fixable == 0)
+            m.addItem ("Kein passendes Raster für Swing"_u, false, false, [] {});
+        else
+            m.addItem ("Passend für Swing: "_u + grids.joinIntoString (", ")
+                           + (bars == 1 ? juce::String() : fixable == bars ? juce::String (" (alle Takte)")
+                                                         : " (" + juce::String (fixable) + (fixable == 1 ? " Takt)" : " Takte)")),
+                       [safe = juce::Component::SafePointer<PatternEditor> (this), bar]
+                       {
+                           if (safe != nullptr)
+                               safe->editBar (bar, [] (hz::Pattern& p)
+                               {
+                                   for (int bi = 0; bi < (int) p.bars.size(); ++bi)
+                                       if (const auto g = fittingGrid (p, bi, true); g.num > 0)
+                                           hz::setBarGrid (p, bi, g);
+                               });
+                       });
+        m.addSeparator();
+    }
     for (const auto& o : gridOptions)
     {
         const bool fits = (b.lengthInQuarters() / (o.grid * hz::Rational (4))).den == 1;
-        m.addItem (juce::String (juce::CharPointer_UTF8 (o.label)), fits, o.grid == b.grid,
-                   [safe = juce::Component::SafePointer<PatternEditor> (this), bar, g = o.grid]
-                   {
-                       if (safe != nullptr)
-                           safe->editBar (bar, [bar, g] (hz::Pattern& p) { hz::setBarGrid (p, bar, g); });
-                   });
+        m.addItem (juce::String (juce::CharPointer_UTF8 (o.label)), fits, o.grid == b.grid, [setGrid, g = o.grid] { setGrid (g); });
     }
     m.showMenuAsync (juce::PopupMenu::Options().withMousePosition());
 }

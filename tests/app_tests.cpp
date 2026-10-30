@@ -1,5 +1,6 @@
 // Tests für die App-Schicht (JUCE): Pattern-Dateiformat
 #include "app/PatternIO.h"
+#include "app/EditorStyle.h"
 #include "app/Library.h"
 #include "app/MixState.h"
 #include "app/QuickSearch.h"
@@ -255,6 +256,60 @@ static void testMenuClickSeparation()
     CHECK (gesture.release (none, true) == Result::None);
 }
 
+// the editor's hint "Swing wirkt in diesem Raster auf keine Stelle": swing needs an offbeat of its subdivision
+static void testSwingFindsPlace()
+{
+    using editorstyle::swingFindsPlace;
+    auto triplets = hz::parseTabs ("name: 3 gegen 2\ngrid: 1/12\nswing: 1/8 0.667\nsn | x . . . x . . . x . . . |\nbd | x . . . . . x . . . . . |\n").patterns.at (0);
+    CHECK (! swingFindsPlace (triplets));    // no straight "und" in the grid, no hit on one
+    triplets.bars[0].grid = { 1, 8 };
+    CHECK (swingFindsPlace (triplets));      // the grid has the "und" places now
+
+    auto eighths = hz::parseTabs ("name: Achtel\ngrid: 1/8\nswing: 1/16 0.58\nhh | x x x x x x x x |\n").patterns.at (0);
+    CHECK (! swingFindsPlace (eighths));     // sixteenth swing, but no "e" or "a" anywhere
+    eighths.swing = { { 1, 8 }, 0.58f };
+    eighths.bars[0].grid = { 1, 4 };
+    CHECK (swingFindsPlace (eighths));       // no grid place, but the hits on the "und" move (drawn as diamonds)
+    eighths.swing.ratio = 0.5f;
+    CHECK (! swingFindsPlace (eighths));     // no swing
+}
+
+// the grid the editor suggests for a bar with diamonds
+static void testFittingGrid()
+{
+    using editorstyle::gridHoldsHits;
+    using editorstyle::fittingGrid;
+    auto withHits = [] (const char* tabs, std::initializer_list<hz::Rational> extra)
+    {
+        auto p = hz::parseTabs (tabs).patterns.at (0);
+        for (auto pos : extra)
+        {
+            auto hit = p.layers[0].events[0];
+            hit.pos = pos;
+            p.layers[0].events.push_back (hit);
+        }
+        return p;
+    };
+    // quarters and a triplet ("Lernen: 3 gegen 2 (Rauten)"): 1/12
+    auto quarters = withHits ("name: a\ngrid: 1/8\nhh | x . x . x . x . |\n", { { 4, 3 } });
+    CHECK (! gridHoldsHits (quarters, 0, { 1, 8 }) && gridHoldsHits (quarters, 0, { 1, 12 }));
+    CHECK (fittingGrid (quarters, 0) == hz::Rational (1, 12));
+    // eighths and triplets ("Polyrhythmus 3 gegen 2"): 1/24
+    CHECK (fittingGrid (withHits ("name: b\ngrid: 1/8\nhh | x x x x x x x x |\n", { { 4, 3 }, { 8, 3 } }), 0) == hz::Rational (1, 24));
+    // sixteenths and two 32nd triplets (Exhorder, Riff 1): only the new 1/48
+    const auto exhorder = withHits ("name: c\ngrid: 1/16\nhh | x x x x x x x x x x x x x x x x |\n", { { 17, 6 }, { 35, 12 } });
+    CHECK (fittingGrid (exhorder, 0) == hz::Rational (1, 48));
+    // a 32nd and a triplet together: no grid of the menu has a place for both
+    CHECK (fittingGrid (withHits ("name: d\ngrid: 1/16\nhh | x . . . . . . . . . . . . . . . |\n", { { 1, 8 }, { 1, 3 } }), 0).num == 0);
+
+    // for swing ("Lernen: 3 gegen 2 (feines Raster)"): every hit keeps its cell, and places the swing moves come in
+    auto triplets = hz::parseTabs ("name: e\ngrid: 1/12\nswing: 1/8 0.667\nsn | x . . . x . . . x . . . |\n").patterns.at (0);
+    CHECK (! editorstyle::barHasSwingPlace (triplets, 0, { 1, 12 }) && editorstyle::barHasSwingPlace (triplets, 0, { 1, 24 }));
+    CHECK (fittingGrid (triplets, 0, true) == hz::Rational (1, 24));   // eighth swing: the straight "und"
+    triplets.swing.subdivision = { 1, 16 };
+    CHECK (fittingGrid (triplets, 0, true) == hz::Rational (1, 48));   // sixteenth swing: "e" and "a"
+}
+
 int main (int argc, char* argv[])
 {
     const auto tabDir = juce::File::getCurrentWorkingDirectory().getChildFile (argc > 1 ? argv[1] : "library-src");
@@ -265,6 +320,8 @@ int main (int argc, char* argv[])
     testLibraryDeletion();
     testMenuClickSeparation();
     testChannelsInUse();
+    testSwingFindsPlace();
+    testFittingGrid();
     runSongTests();
     runFolderTests();
 

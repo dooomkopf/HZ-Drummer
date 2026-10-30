@@ -15,6 +15,18 @@
 #include "app/Text.h"
 #include "app/views/Theme.h"
 
+namespace
+{
+    // deleting from outside (main window, folder view) leaves a pattern open in the editor alone: the next
+    // Strg+S there would write it back. The editor's own Löschen clears the editor and does not come here.
+    juce::String openInEditor (WorkshopWindow* editorWindow, const std::string& id)
+    {
+        if (editorWindow != nullptr && editorWindow->getEditor().getPattern().id == id)
+            return "Dieser Baustein ist im Editor geöffnet. Zuerst dort schließen oder dort löschen."_u;
+        return {};
+    }
+}
+
 void MainComponent::setupKeys()
 {
     KeyActions a;
@@ -122,8 +134,13 @@ void MainComponent::confirmDeleteLibraryEntry (const std::string& id)
         juce::ModalCallbackFunction::create ([safe = juce::Component::SafePointer<MainComponent> (this), id] (int result)
         {
             if (safe == nullptr || result != 1) return;
-            safe->cancelPreview();
-            if (const auto error = safe->removeLibraryEntry (id); error.isNotEmpty())
+            auto error = openInEditor (safe->editorWindow.get(), id);
+            if (error.isEmpty())
+            {
+                safe->cancelPreview();
+                error = safe->removeLibraryEntry (id);
+            }
+            if (error.isNotEmpty())
                 juce::AlertWindow::showMessageBoxAsync (juce::MessageBoxIconType::WarningIcon, "Löschen nicht möglich"_u, error);
         }));
 }
@@ -401,6 +418,8 @@ void MainComponent::showDataTools (int tab)
             {
                 if (safe == nullptr)
                     return juce::String();
+                if (auto error = openInEditor (safe->editorWindow.get(), id); error.isNotEmpty())
+                    return error;
                 safe->cancelPreview();
                 return safe->removeLibraryEntry (id);
             };
