@@ -12,7 +12,7 @@ Das Programm ist ein Übungswerkzeug, kein Drum-Computer für Aufnahmen: Es soll
 </p>
 <p>
 <img src="docs/bilder/suche.png" alt="Schnellsuche mit Abzeichen" width="49%">
-<img src="docs/bilder/mixer.png" alt="Mixer je Instrument" width="49%">
+<img src="docs/bilder/mixer.png" alt="Mixer je Instrument mit Pegelanzeige" width="49%">
 </p>
 
 ## Was es kann
@@ -22,7 +22,7 @@ Das Programm ist ein Übungswerkzeug, kein Drum-Computer für Aufnahmen: Es soll
 - **Raster-Editor** („Werkstatt“): Schläge setzen, Lautstärke ziehen, Takte und Taktarten je Takt ändern, Mute und Solo je Spur, Rückgängig und Wiederholen, sofort hörbar.
 - **Arranger**: Songabläufe aus Bausteinen, mit Ablage, Taktbereichen, lokalen Varianten und Sprung auf jeden Block.
 - **Suche** über alles mit Filtern wie `7/8` oder `160-190 bpm`, Vorhören direkt im Menü.
-- **Einzählen** vor dem Start, Tap-Tempo, Mixer je Instrument, Metronom mit eigenen Taktarten.
+- **Einzählen** vor dem Start, Tap-Tempo, Mixer je Instrument mit Pegelanzeige, Metronom mit eigenen Taktarten.
 - **Papierkorb** für eigene Patterns und Songs.
 - **Community-Bausteine**: kurze Loops von Carcass und Exhorder zum Mitspielen, siehe [community/](community/).
 

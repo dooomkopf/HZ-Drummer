@@ -177,6 +177,11 @@ void MixerPanel::paint (juce::Graphics& g)
 {
     g.fillAll (panelBg);
 
+    // Visually set off the total (before the meters, or it would cover the master's)
+    const auto master = strips[mix::Master].name.getBounds().getUnion (strips[mix::Master].mute.getBounds()).expanded (8, 8);
+    g.setColour (juce::Colour (0xff24242a));
+    g.fillRoundedRectangle (master.toFloat(), 8.0f);
+
     for (int ch = 0; ch < mix::NumChannels; ++ch)
     {
         const auto& s = strips[(size_t) ch];
@@ -189,11 +194,6 @@ void MixerPanel::paint (juce::Graphics& g)
         g.setColour (s.meterDb > -1.0f ? meterHot : s.meterDb > -9.0f ? meterWarm : meterOk);
         g.fillRoundedRectangle (area.withTop (y), 2.0f);
     }
-
-    // Visually set off the total
-    const auto master = strips[mix::Master].name.getBounds().getUnion (strips[mix::Master].mute.getBounds()).expanded (8, 8);
-    g.setColour (juce::Colour (0xff24242a));
-    g.fillRoundedRectangle (master.toFloat(), 8.0f);
 
     g.setColour (textDim);
     g.setFont (juce::FontOptions (15.0f));
