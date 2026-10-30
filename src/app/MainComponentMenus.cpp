@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "Version.h"
 #include "app/AudioSettingsPanel.h"
 #include "app/FolderPanel.h"
 #include "app/MixerPanel.h"
@@ -289,7 +290,7 @@ void MainComponent::showAudioSettings()
         struct SystemPanel : juce::Component
         {
             AudioSettingsPanel selector;
-            juce::Label badgeLine, info;
+            juce::Label badgeLine, info, version;
             juce::TextButton trash { "Papierkorb" }, logs { "Logdateien" }, structure { "Ordnerstruktur" };
             explicit SystemPanel (juce::AudioDeviceManager& dm) : selector (dm)
             {
@@ -302,18 +303,23 @@ void MainComponent::showAudioSettings()
                 info.setFont (juce::FontOptions (14.0f));
                 info.setColour (juce::Label::textColourId, theme::textDim);
                 info.setJustificationType (juce::Justification::topLeft);
-                setSize (560, ActiveGlow::height + AudioSettingsPanel::preferredHeight + 4 + 42 + 44 + 50);
+                addAndMakeVisible (version);
+                version.setFont (juce::FontOptions (14.0f));
+                version.setColour (juce::Label::textColourId, theme::textDim);
+                version.setText ("HZ-Drummer v" HZ_VERSION, juce::dontSendNotification);
+                setSize (560, ActiveGlow::height + AudioSettingsPanel::preferredHeight + 4 + 42 + 44 + 50 + 28);
             }
             void resized() override
             {
                 auto r = getLocalBounds();
+                version.setBounds (r.removeFromBottom (28).reduced (12, 4));
                 info.setBounds (r.removeFromBottom (50).reduced (12, 4));
                 badgeLine.setBounds (r.removeFromBottom (44).reduced (12, 4));
                 selector.setBounds (r.withTrimmedTop (ActiveGlow::height).withHeight (AudioSettingsPanel::preferredHeight));
                 auto actions = juce::Rectangle<int> (0, selector.getBottom() + 4, getWidth(), 42).reduced (12, 4);
-                trash.setBounds (actions.removeFromLeft (160)); actions.removeFromLeft (10);
-                logs.setBounds (actions.removeFromLeft (160)); actions.removeFromLeft (10);
-                structure.setBounds (actions.removeFromLeft (160));
+                structure.setBounds (actions.removeFromRight (160)); actions.removeFromRight (10);   // right-aligned
+                logs.setBounds (actions.removeFromRight (160)); actions.removeFromRight (10);
+                trash.setBounds (actions.removeFromRight (160));
             }
         };
         auto* panel = new SystemPanel (deviceManager);

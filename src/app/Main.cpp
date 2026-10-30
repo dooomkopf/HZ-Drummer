@@ -1,4 +1,5 @@
 #include "app/MainComponent.h"
+#include "Version.h"
 #include "app/views/HZLook.h"
 
 #include <juce_gui_extra/juce_gui_extra.h>
@@ -7,14 +8,14 @@ class HZDrummerApplication : public juce::JUCEApplication
 {
 public:
     const juce::String getApplicationName() override { return JUCE_APPLICATION_NAME_STRING; }
-    const juce::String getApplicationVersion() override { return JUCE_APPLICATION_VERSION_STRING; }
+    const juce::String getApplicationVersion() override { return HZ_VERSION; }
     bool moreThanOneInstanceAllowed() override { return false; }
 
     void initialise (const juce::String& commandLine) override
     {
         const auto logFile = juce::File::getSpecialLocation (juce::File::userHomeDirectory).getChildFile (".cache/HZ-Drummer/app.log");
         logFile.getParentDirectory().createDirectory();
-        logger = std::make_unique<juce::FileLogger> (logFile, "HZ-Drummer gestartet", 1024 * 1024);
+        logger = std::make_unique<juce::FileLogger> (logFile, "HZ-Drummer v" HZ_VERSION " gestartet", 1024 * 1024);
         juce::Logger::setCurrentLogger (logger.get());
         juce::LookAndFeel::setDefaultLookAndFeel (&look);
         mainWindow = std::make_unique<MainWindow> (getApplicationName());

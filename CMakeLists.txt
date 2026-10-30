@@ -77,6 +77,14 @@ target_compile_definitions(HZDrummer PRIVATE
     JUCE_APPLICATION_NAME_STRING="$<TARGET_PROPERTY:HZDrummer,JUCE_PRODUCT_NAME>"
     JUCE_APPLICATION_VERSION_STRING="$<TARGET_PROPERTY:HZDrummer,JUCE_VERSION>")
 
+# version v0.1.<number of commits>, counted anew on every build (System window, app log)
+add_custom_target(hzversion
+    COMMAND ${CMAKE_COMMAND} -DSOURCE_DIR=${CMAKE_SOURCE_DIR} -DOUTPUT=${CMAKE_BINARY_DIR}/generated/Version.h
+            -P ${CMAKE_SOURCE_DIR}/cmake/Version.cmake
+    BYPRODUCTS ${CMAKE_BINARY_DIR}/generated/Version.h)
+add_dependencies(HZDrummer hzversion)
+target_include_directories(HZDrummer PRIVATE ${CMAKE_BINARY_DIR}/generated)
+
 # the complete drum kit of the icon, drawn faintly behind the main window (views/Watermark)
 juce_add_binary_data(hzassets SOURCES assets/drumkit.png)
 

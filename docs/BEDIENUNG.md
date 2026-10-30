@@ -29,7 +29,7 @@ Im Menü ein Pattern wählen schaltet auf Pattern, eine Taktart wählen schaltet
 
 **Ordner für Songs und eigene Patterns:** Unter **System › Ordnerstruktur** stehen Songs und eigene Patterns als Baum. Dort legst du Ordner an, auch beliebig verschachtelt, benennst sie um und löschst leere. Einträge und Ordner ziehst du mit der Maus an ihren neuen Platz; **Hoch** und **Runter** ändern die Reihenfolge. Im Pattern-Menü verschiebt **Verschieben nach** den gerade geladenen Song oder das geladene Pattern in einen vorhandenen Ordner. Solange ein Eintrag keinem Ordner zugeordnet ist, steht er wie bisher: Songs oben, eigene Patterns nach Band und Song. Die Ordner stehen in `ordner.json`, die Pattern- und Song-Dateien bleiben dabei unverändert.
 
-**System** zeigt außerdem die Audio-Einstellungen, die freien Abzeichen und die Logdateien (App-Protokoll und Startprotokoll).
+**System** zeigt außerdem die Audio-Einstellungen, die freien Abzeichen und die Logdateien (App-Protokoll und Startprotokoll), ganz unten die Versionsnummer. Sie lautet v0.1.X; X ist die Zahl der Commits und wird beim Bauen automatisch gesetzt.
 
 **Einzählen (Knopf „Click“):** Der Knopf schaltet durch drei Stellungen: grau *Click* = aus, blau *START* = ein Takt Klicks, wenn der Song oder das Pattern von vorn startet, grün *AN* = vor jedem Start, auch nach einer Pause mitten im Song. Der Klick-Takt hat die Taktart des Takts, an dem es losgeht, und der Song setzt danach genau dort ein. Zeit genug, vom Laptop zur Gitarre zu greifen. Gilt nur für den Hauptplayer, nicht für Raster, Arranger oder Vorhören.
 
