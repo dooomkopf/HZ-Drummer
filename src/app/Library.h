@@ -71,6 +71,7 @@ private:
     std::vector<hz::Pattern> entries;
     std::map<std::string, std::vector<SongSpan>> spansById;
     std::map<std::string, Song> songsById;
+    std::map<std::string, juce::File> songFilesById;   // where each song was loaded from
     std::set<std::string> favorites;
     FolderTree folderTree;
     juce::StringArray loadErrors;

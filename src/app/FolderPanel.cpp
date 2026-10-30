@@ -248,7 +248,12 @@ void FolderPanel::selectPlace (const Place& where)
     for (auto* p = item->getParentItem(); p != nullptr; p = p->getParentItem())
         p->setOpen (true);
     item->setSelected (true, true);
-    tree.scrollToKeepItemVisible (item);
+    juce::MessageManager::callAsync ([safe = juce::Component::SafePointer<FolderPanel> (this)]
+    {
+        if (safe != nullptr)
+            if (auto* chosen = safe->tree.getSelectedItem (0))
+                safe->tree.scrollToKeepItemVisible (chosen);   // after the rows are laid out
+    });
 }
 
 FolderPanel::Item* FolderPanel::selected() const

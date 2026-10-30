@@ -58,6 +58,26 @@ void InWindowDialog::parentSizeChanged()
         centreAroundComponent (near != nullptr ? near.getComponent() : getParentComponent(), getWidth(), getHeight());
 }
 
+void InWindowDialog::visibilityChanged()
+{
+    juce::AlertWindow::visibilityChanged();
+    if (! isVisible())
+        return;
+    // the first text field takes the keys at once, its text selected: typing must not need a
+    // click into it first (the fields are added after the dialog became visible, so look later)
+    juce::MessageManager::callAsync ([safe = juce::Component::SafePointer<InWindowDialog> (this)]
+    {
+        if (safe != nullptr)
+            for (auto* child : safe->getChildren())
+                if (auto* editor = dynamic_cast<juce::TextEditor*> (child))
+                {
+                    editor->grabKeyboardFocus();
+                    editor->selectAll();
+                    return;
+                }
+    });
+}
+
 void InWindowDialog::componentBeingDeleted (juce::Component&)
 {
     // The window closes with the dialog still open. The modal manager answers "cancel" but no

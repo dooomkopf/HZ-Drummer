@@ -19,6 +19,7 @@ public:
     bool canModalEventBeSentToComponent (const juce::Component* target) override;
     bool keyPressed (const juce::KeyPress&) override;
     void parentSizeChanged() override;
+    void visibilityChanged() override;
 
 private:
     void componentBeingDeleted (juce::Component&) override;

@@ -7,6 +7,7 @@
 int renameCopies (std::vector<SongPart>&, const std::string& sourceId, const std::string& oldName, const std::string& newName);
 
 // The same in the saved files: every song in songFolder, the arranger's working state and the
-// Ablage. Files that cannot be read are left alone. Returns "" or what could not be written.
+// Ablage. Files that cannot be read are left alone; one that cannot be written does not stop the
+// others. Returns "" or every file that could not be written, one per line.
 juce::String renameCopiesInFiles (const juce::File& songFolder, const juce::File& stateFile, const juce::File& scratchFile,
                                   const std::string& sourceId, const std::string& oldName, const std::string& newName);

@@ -49,14 +49,16 @@ void MainComponent::askRenameEntry (const std::string& id)
         if (error.isNotEmpty())
             juce::AlertWindow::showMessageBoxAsync (juce::MessageBoxIconType::WarningIcon, "Umbenennen", error);
 
-        // the open workshop follows: the arranger's copies and song name, the raster's pattern
-        if (self.editorWindow != nullptr)
+        // the open workshop follows what was saved: the arranger's copies and song name, the raster's pattern
+        const int renamed = self.library.indexOf (id);
+        const bool saved = renamed >= 0 && juce::String (self.library.get (renamed).name) == name.trim();
+        if (saved && self.editorWindow != nullptr)
         {
             auto& arranger = self.editorWindow->getArranger();
             if (Library::areaOf (id) == FolderTree::Songs)
-                arranger.songRenamed (id, name.toStdString());
+                arranger.songRenamed (id, name.trim().toStdString());
             else
-                arranger.patternRenamed (id, oldName, name.toStdString());
+                arranger.patternRenamed (id, oldName, name.trim().toStdString());
             arranger.libraryChanged();
             auto& editor = self.editorWindow->getEditor();
             if (const int i = self.library.indexOf (id); i >= 0 && editor.getPattern().id == id && ! editor.hasUnsavedChanges())

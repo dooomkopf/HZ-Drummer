@@ -48,6 +48,7 @@ public:
 private:
     void timerCallback() override;
     void modelChanged();
+    void compareWithSavedFile();   // after a rename on disk: what counts as saved
     void rebuildSequence();
     void updateDetail();
 

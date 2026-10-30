@@ -17,6 +17,7 @@ int renameCopies (std::vector<SongPart>& parts, const std::string& sourceId, con
 juce::String renameCopiesInFiles (const juce::File& songFolder, const juce::File& stateFile, const juce::File& scratchFile,
                                   const std::string& sourceId, const std::string& oldName, const std::string& newName)
 {
+    juce::StringArray failed;   // one file that cannot be written does not stop the others
     auto songFiles = songFolder.findChildFiles (juce::File::findFiles, false, "*.json");
     songFiles.add (stateFile);
     for (auto& f : songFiles)
@@ -26,13 +27,13 @@ juce::String renameCopiesInFiles (const juce::File& songFolder, const juce::File
         if (! f.existsAsFile() || ! loadSong (f, song, error))
             continue;
         if (renameCopies (song.parts, sourceId, oldName, newName) > 0 && ! saveSong (song, f, error))
-            return f.getFileName() + ": " + error;
+            failed.add (f.getFileName() + ": " + error);
     }
 
     std::vector<SongPart> list;
     juce::String error;
     if (scratchFile.existsAsFile() && loadPartList (scratchFile, list, error)
         && renameCopies (list, sourceId, oldName, newName) > 0 && ! savePartList (list, scratchFile, error))
-        return scratchFile.getFileName() + ": " + error;
-    return {};
+        failed.add (scratchFile.getFileName() + ": " + error);
+    return failed.joinIntoString ("\n");
 }

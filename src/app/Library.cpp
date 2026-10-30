@@ -43,6 +43,7 @@ void Library::reload()
     // Songs are built from their parts; they reference patterns by id
     spansById.clear();
     songsById.clear();
+    songFilesById.clear();
     auto songFiles = songFolder().findChildFiles (juce::File::findFiles, false, "*.json");
     songFiles.sort();
     std::vector<hz::Pattern> built;
@@ -56,6 +57,7 @@ void Library::reload()
         {
             spansById[pattern.id] = std::move (spans);
             songsById[pattern.id] = s;
+            songFilesById[pattern.id] = f;
             built.push_back (std::move (pattern));
         }
         else
@@ -175,12 +177,18 @@ juce::String Library::rename (const std::string& id, const juce::String& newName
         return {};
 
     juce::String error;
-    if (const auto* s = song (i))
+    if (isSong (i))
     {
-        auto renamed = *s;
-        renamed.name = name;
-        if (! saveSong (renamed, songFolder().getChildFile (juce::String (renamed.id) + ".json"), error))
-            return error;
+        // only the name changes in the song's own file: an old reference song (v1) stays one
+        const auto file = songFilesById[id];
+        auto json = juce::JSON::parse (file);
+        auto* object = json.getDynamicObject();
+        if (object == nullptr)
+            return file.getFileName() + " ist nicht lesbar."_u;
+        object->setProperty ("name", juce::String (name));
+        juce::TemporaryFile temp (file);
+        if (! temp.getFile().replaceWithText (juce::JSON::toString (json)) || ! temp.overwriteTargetFileWithTemporary())
+            return file.getFileName() + " ist nicht speicherbar."_u;
         reload();
         return {};
     }
