@@ -215,9 +215,9 @@ void FindView::resized()
 {
     auto area = getLocalBounds();
     field.setBounds (area.removeFromTop (40));
-    area.removeFromTop (2);
-    chipLabel.setBounds (area.removeFromTop (18));   // the active filters ("7/8", "180 bpm")
-    area.removeFromTop (2);
+    area.removeFromTop (1);
+    chipLabel.setBounds (area.removeFromTop (16));   // the active filters ("7/8", "180 bpm")
+    area.removeFromTop (1);
 
     auto actions = area.removeFromBottom (buttonH);
     clearMarks.setBounds (actions.removeFromRight (96));
