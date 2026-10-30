@@ -39,7 +39,8 @@ public:
             return "#" + juce::String (place.id);
         if (kind == Kind::Folder)
             return place.path[place.path.size() - 1].toLowerCase();
-        return kind == Kind::Area ? juce::String (place.area == FolderTree::Songs ? "songs" : "patterns") : juce::String ("root");
+        const char* const areaNames[] = { "songs", "patterns", "library" };
+        return kind == Kind::Area ? juce::String (areaNames[place.area]) : juce::String ("root");
     }
 
     void paintItem (juce::Graphics& g, int width, int height) override
@@ -112,7 +113,7 @@ private:
         if (path == nullptr)
             return {};
         Place p;
-        p.area = (int) description["area"] == (int) FolderTree::Patterns ? FolderTree::Patterns : FolderTree::Songs;
+        p.area = (FolderTree::Area) juce::jlimit (0, (int) FolderTree::NumAreas - 1, (int) description["area"]);
         for (auto& name : *path)
             p.path.add (name.toString());
         p.id = description["id"].toString().toStdString();
@@ -188,15 +189,16 @@ void FolderPanel::rebuild (const std::optional<Place>& select)
     const auto state = tree.getOpennessState (true);
     tree.setRootItem (nullptr);
     root = std::make_unique<Item> (*this, Item::Kind::Root, Place(), juce::String(), 0);
-    for (auto area : { FolderTree::Songs, FolderTree::Patterns })
+    for (auto area : { FolderTree::Songs, FolderTree::Patterns, FolderTree::Bundled })
     {
         const auto node = library.folders (area);
         auto* item = new Item (*this, Item::Kind::Area, Place { area, {}, {} },
-                               area == FolderTree::Songs ? "Songs (Abläufe)"_u : juce::String ("Eigene Patterns (Bausteine)"),
+                               area == FolderTree::Songs ? "Songs (Abläufe)"_u
+                               : area == FolderTree::Patterns ? juce::String ("Eigene Patterns (Bausteine)") : juce::String ("Bibliothek (mitgeliefert)"),
                                folders::countItems (node));
         root->addSubItem (item);
         fill (*item, node, {});
-        item->setOpen (true);
+        item->setOpen (area != FolderTree::Bundled);   // the long library starts closed
     }
     tree.setRootItem (root.get());
     root->setOpen (true);

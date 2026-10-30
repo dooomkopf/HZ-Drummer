@@ -6,11 +6,12 @@
 #include <string>
 #include <vector>
 
-// The user's own folders for songs and own patterns (System → Ordnerstruktur), one tree per
-// area, entries referred to by id. Stored in ordner.json next to the patterns; the pattern and
-// song files themselves stay untouched. An entry that sits in no folder yet goes to its default
-// place (own patterns: band, then song), and folders of the same name merge, so the tree starts
-// out like the fixed menu it replaces. The first edit stores the whole tree of that area.
+// The user's own folders for songs, own patterns and the bundled library (System → Ordnerstruktur),
+// one tree per area, entries referred to by id. Stored in ordner.json next to the patterns; the
+// pattern and song files themselves stay untouched. An entry that sits in no folder yet goes to
+// its default place (own patterns: band, then song; bundled ones: their style), and folders of the
+// same name merge, so the tree starts out like the fixed menu it replaces. The first edit stores
+// the whole tree of that area.
 using FolderPath = juce::StringArray;   // folder names from the top down; empty = top level
 
 struct FolderNode
@@ -23,7 +24,7 @@ struct FolderNode
 class FolderTree
 {
 public:
-    enum Area { Songs, Patterns, NumAreas };
+    enum Area { Songs, Patterns, Bundled, NumAreas };
     struct Entry { std::string id; FolderPath defaultPath; };
 
     // The area's tree with exactly the given entries: stored ones in their place, the rest at

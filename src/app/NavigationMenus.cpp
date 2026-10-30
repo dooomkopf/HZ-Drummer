@@ -32,54 +32,6 @@ namespace
         juce::String text;
     };
 
-    // A folder in the pattern menu: opens its submenu like any other; a right click calls onContext
-    class FolderMenuItem : public juce::PopupMenu::CustomComponent
-    {
-    public:
-        FolderMenuItem (juce::String name, bool hasCurrent, std::function<void()> context)
-            : juce::PopupMenu::CustomComponent (false), text (std::move (name)), ticked (hasCurrent), onContext (std::move (context)) {}
-
-        void getIdealSize (int& w, int& h) override
-        {
-            w = 70 + (int) juce::GlyphArrangement::getStringWidth (juce::Font (juce::FontOptions (fontSize)), text);
-            h = 26;
-        }
-
-        void paint (juce::Graphics& g) override
-        {
-            if (isItemHighlighted())
-            {
-                g.setColour (juce::Colour (0xff2f4f7a));
-                g.fillRect (getLocalBounds());
-            }
-            auto r = getLocalBounds().reduced (6, 0);
-            auto mark = r.removeFromLeft (20);
-            g.setColour (theme::textMain);
-            g.setFont (juce::FontOptions (fontSize));
-            if (ticked)
-                g.drawText (juce::String (juce::CharPointer_UTF8 ("\xe2\x9c\x93")), mark, juce::Justification::centred);
-            const auto arrow = r.removeFromRight (14).toFloat().withSizeKeepingCentre (6.0f, 10.0f);
-            juce::Path tri;
-            tri.addTriangle (arrow.getX(), arrow.getY(), arrow.getX(), arrow.getBottom(), arrow.getRight(), arrow.getCentreY());
-            g.fillPath (tri);
-            g.drawFittedText (text, r, juce::Justification::centredLeft, 1);
-        }
-
-        void mouseDown (const juce::MouseEvent& e) override   { gesture.press (e.mods); }
-        void mouseUp (const juce::MouseEvent& e) override
-        {
-            if (gesture.release (e.mods, getLocalBounds().contains (e.getPosition())) == MenuClickGesture::Result::Context && onContext)
-                onContext();
-        }
-
-    private:
-        static constexpr float fontSize = 16.0f;
-        juce::String text;
-        bool ticked;
-        std::function<void()> onContext;
-        MenuClickGesture gesture;
-    };
-
     // runs after the menu has closed: an action from inside the menu must not delete it under itself
     std::function<void()> afterClosingMenus (std::function<void()> action)
     {
@@ -120,8 +72,8 @@ juce::PopupMenu buildPatternMenu (const Library& lib, int current, const Pattern
             if (*selectionAllowed) select (i);   // deferred JUCE actions cannot select after a right click
         });
         std::function<void()> context;
-        if ((lib.isSong (i) || lib.isUserPattern (i)) && actions.rename)
-            context = afterClosingMenus ([rename = actions.rename, id = p.id] { rename (id); });
+        if (actions.rename)
+            context = afterClosingMenus ([rename = actions.rename, id = p.id] { rename (id); });   // bundled: says why not
         it.setCustomComponent (new PreviewMenuItem (text, fav ? StarButton::gold : theme::textMain, i == current,
                                                     [preview = actions.preview, i] { if (preview) preview (i); },
                                                     [isPreviewing = actions.isPreviewing, i] { return isPreviewing && isPreviewing (i); },
@@ -147,11 +99,10 @@ juce::PopupMenu buildPatternMenu (const Library& lib, int current, const Pattern
     };
     section ("Favoriten", [&] (int i) { return lib.isFavorite (lib.get (i).id); });
 
-    // songs and own patterns in the user's folders
+    // songs, own patterns and the bundled library in the user's folders
     std::map<std::string, int> indexById;
     for (int i = 0; i < lib.size(); ++i)
-        if (lib.isSong (i) || lib.isUserPattern (i))
-            indexById[lib.get (i).id] = i;
+        indexById[lib.get (i).id] = i;
     auto entry = [&] (juce::PopupMenu& m, const std::string& id, const FolderPath& folder)
     {
         const auto it = indexById.find (id);
@@ -160,39 +111,15 @@ juce::PopupMenu buildPatternMenu (const Library& lib, int current, const Pattern
         item (m, it->second, folder);
         return it->second == current;
     };
-    for (auto area : { FolderTree::Songs, FolderTree::Patterns })
+    for (auto area : { FolderTree::Songs, FolderTree::Patterns, FolderTree::Bundled })
     {
         const auto root = lib.folders (area);
         if (folders::countItems (root) == 0)
             continue;
-        menu.addSectionHeader (area == FolderTree::Songs ? "Songs (Abläufe)"_u : juce::String ("Eigene Patterns (Bausteine)"));
-        std::function<void (const FolderPath&)> folderContext;
-        if (actions.renameFolder)
-            folderContext = [renameFolder = actions.renameFolder, area] (const FolderPath& path)
-            {
-                afterClosingMenus ([renameFolder, area, path] { renameFolder (area, path); }) ();
-            };
-        addFolderMenu (menu, root, entry, {}, folderContext);
+        menu.addSectionHeader (area == FolderTree::Songs ? "Songs (Abläufe)"_u
+                               : area == FolderTree::Patterns ? juce::String ("Eigene Patterns (Bausteine)") : juce::String ("Bibliothek"));
+        addFolderMenu (menu, root, entry);
     }
-
-    // bundled library, one submenu per style (entries are sorted by style)
-    menu.addSectionHeader ("Bibliothek");
-    std::map<std::string, juce::PopupMenu> styles;
-    std::map<std::string, bool> styleHasCurrent;
-    std::vector<std::string> order;
-    for (int i = 0; i < lib.size(); ++i)
-    {
-        if (lib.isUserPattern (i) || lib.isSong (i))
-            continue;
-        const auto& tags = lib.get (i).tags;
-        const auto style = tags.empty() ? std::string ("sonstige") : tags.front();
-        if (styles.count (style) == 0)
-            order.push_back (style);
-        item (styles[style], i);
-        styleHasCurrent[style] = styleHasCurrent[style] || i == current;
-    }
-    for (auto& style : order)
-        menu.addSubMenu (Library::styleTitle (style), styles[style], true, nullptr, styleHasCurrent[style]);
 
     if (! lib.errors().isEmpty())
     {
@@ -211,7 +138,7 @@ juce::PopupMenu buildPatternMenu (const Library& lib, int current, const Pattern
 
 bool addFolderMenu (juce::PopupMenu& menu, const FolderNode& node,
                     const std::function<bool (juce::PopupMenu&, const std::string&, const FolderPath&)>& addEntry,
-                    const FolderPath& path, const std::function<void (const FolderPath&)>& onFolderContext)
+                    const FolderPath& path)
 {
     bool hasCurrent = false;
     for (auto& f : node.folders)
@@ -221,13 +148,8 @@ bool addFolderMenu (juce::PopupMenu& menu, const FolderNode& node,
         auto sub = path;
         sub.add (f.name);
         juce::PopupMenu subMenu;
-        const bool inside = addFolderMenu (subMenu, f, addEntry, sub, onFolderContext);
-        if (onFolderContext)
-            menu.addCustomItem (300000 + menu.getNumItems(),
-                                std::make_unique<FolderMenuItem> (f.name, inside, [onFolderContext, sub] { onFolderContext (sub); }),
-                                std::make_unique<juce::PopupMenu> (std::move (subMenu)), f.name);
-        else
-            menu.addSubMenu (f.name, subMenu, true, nullptr, inside);
+        const bool inside = addFolderMenu (subMenu, f, addEntry, sub);
+        menu.addSubMenu (f.name, subMenu, true, nullptr, inside);
         hasCurrent = hasCurrent || inside;
     }
     for (auto& id : node.items)

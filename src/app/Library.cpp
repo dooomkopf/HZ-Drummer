@@ -203,16 +203,22 @@ FolderNode Library::folders (FolderTree::Area area) const
     std::vector<FolderTree::Entry> list;
     for (int i = 0; i < size(); ++i)
     {
-        if (area == FolderTree::Songs ? ! isSong (i) : ! isUserPattern (i))
+        const auto& p = entries[(size_t) i];
+        if (areaOf (p.id) != area)
             continue;
-        FolderPath place;   // songs: top level; own patterns: band, then song if they belong to one
+        // songs: top level; own patterns: band, then song if they belong to one; bundled: style
+        FolderPath place;
         if (area == FolderTree::Patterns)
         {
-            place.add (bandOf (entries[(size_t) i]));
-            if (const auto group = groupOf (entries[(size_t) i]); group.isNotEmpty())
+            place.add (bandOf (p));
+            if (const auto group = groupOf (p); group.isNotEmpty())
                 place.add (group);
         }
-        list.push_back ({ entries[(size_t) i].id, place });
+        else if (area == FolderTree::Bundled)
+        {
+            place.add (styleTitle (p.tags.empty() ? std::string ("sonstige") : p.tags.front()));
+        }
+        list.push_back ({ p.id, place });
     }
     return folderTree.resolve (area, list);
 }

@@ -47,9 +47,13 @@ public:
     juce::String favoritesToString() const;
     void favoritesFromString (const juce::String&);
 
-    // Folders of songs and own patterns (System → Ordnerstruktur); edits are saved at once
-    static FolderTree::Area areaOf (const std::string& id)   { return juce::String (id).startsWith ("song.") ? FolderTree::Songs : FolderTree::Patterns; }
-    FolderNode folders (FolderTree::Area) const;             // every song / own pattern in its place
+    // Folders of songs, own patterns and the bundled library (System → Ordnerstruktur); edits are saved at once
+    static FolderTree::Area areaOf (const std::string& id)
+    {
+        const juce::String s (id);
+        return s.startsWith ("song.") ? FolderTree::Songs : s.startsWith ("user.") ? FolderTree::Patterns : FolderTree::Bundled;
+    }
+    FolderNode folders (FolderTree::Area) const;             // every entry of the area in its place
     juce::String editFolders (FolderTree::Area, const std::function<juce::String (FolderNode&)>& edit);   // "" on success
 
     static juce::File userPatternFolder();   // ~/.config/HZ-Drummer/patterns

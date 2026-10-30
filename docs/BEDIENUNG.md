@@ -25,11 +25,11 @@ Zwei Betriebsarten:
 
 Im Menü ein Pattern wählen schaltet auf Pattern, eine Taktart wählen schaltet auf Metronom.
 
-**Umbenennen:** Rechtsklick im Pattern-Menü auf ein eigenes Pattern, einen Song oder einen Ordner. Ein umbenanntes Pattern heißt auch in den gespeicherten Songs, im Arbeitsstand des Arrangers und in der Ablage neu; Blöcke, die im Arranger einen eigenen Namen bekommen haben, behalten ihn. Bekommt ein Ordner den Namen eines Ordners daneben, werden beide zu einem zusammengelegt, etwa „techdeath“ in „Tech-Death“. Auch eine reine Änderung der Groß- und Kleinschreibung geht.
+**Umbenennen:** Rechtsklick im Pattern-Menü auf ein eigenes Pattern oder einen Song. Ein umbenanntes Pattern heißt auch in den gespeicherten Songs, im Arbeitsstand des Arrangers und in der Ablage neu; Blöcke, die im Arranger einen eigenen Namen bekommen haben, behalten ihn. Mitgelieferte Patterns lassen sich nicht umbenennen. Ordner benennst du unter **System › Ordnerstruktur** um.
 
 **Eigene Patterns und Songs löschen:** Rechtsklick auf den Eintrag im Pattern-Menü, oder der Knopf **Löschen** neben dem Titel, wenn ein eigener Eintrag geladen ist. Nichts wird endgültig gelöscht: Die Datei wandert in den Papierkorb (**System › Papierkorb**, dort „Wiederherstellen“). Ein Pattern, das ein gespeicherter Song, der Ablauf oder die Ablage noch verwendet, lässt sich nicht löschen; die Meldung sagt, wo es steckt.
 
-**Ordner für Songs und eigene Patterns:** Unter **System › Ordnerstruktur** stehen Songs und eigene Patterns als Baum. Dort legst du Ordner an, auch beliebig verschachtelt, benennst sie um und löschst leere. Einträge und Ordner ziehst du mit der Maus an ihren neuen Platz; **Hoch** und **Runter** ändern die Reihenfolge. Solange ein Eintrag keinem Ordner zugeordnet ist, steht er wie bisher: Songs oben, eigene Patterns nach Band und Song. Die Ordner stehen in `ordner.json`, die Pattern- und Song-Dateien bleiben dabei unverändert.
+**Ordner:** Unter **System › Ordnerstruktur** stehen Songs, eigene Patterns und die mitgelieferte Bibliothek als Baum. Dort legst du Ordner an, auch beliebig verschachtelt, benennst sie um und löschst leere. Bekommt ein Ordner den Namen eines Ordners daneben, werden beide zu einem zusammengelegt, etwa „techdeath“ in „Tech-Death“; auch eine reine Änderung der Groß- und Kleinschreibung geht. Einträge und Ordner ziehst du mit der Maus an ihren neuen Platz; **Hoch** und **Runter** ändern die Reihenfolge. Solange ein Eintrag keinem Ordner zugeordnet ist, steht er wie bisher: Songs oben, eigene Patterns nach Band und Song, die Bibliothek nach Stil. Die Ordner stehen in `ordner.json`, die Pattern- und Song-Dateien bleiben dabei unverändert.
 
 **System** zeigt außerdem die Audio-Einstellungen, die freien Abzeichen und die Logdateien (App-Protokoll und Startprotokoll), ganz unten die Versionsnummer. Sie lautet v0.1.X; X ist die Zahl der Commits und wird beim Bauen automatisch gesetzt.
 
@@ -86,7 +86,7 @@ Im Menü ein Pattern wählen schaltet auf Pattern, eine Taktart wählen schaltet
 | Eigene Patterns | `~/.config/HZ-Drummer/patterns/*.json` |
 | Eigene Songs (Abläufe) | `~/.config/HZ-Drummer/songs/*.json` |
 | Papierkorb (gelöschte Patterns und Songs, je ein Ordner mit `data.json` und `metadata.json`) | `~/.config/HZ-Drummer/trash/` |
-| Ordnerstruktur (Ordner für Songs und eigene Patterns) | `~/.config/HZ-Drummer/ordner.json` |
+| Ordnerstruktur (Ordner für Songs, eigene Patterns und Bibliothek) | `~/.config/HZ-Drummer/ordner.json` |
 | Abzeichen-Register | `~/.config/HZ-Drummer/abzeichen.json` |
 | App-Protokoll (Papierkorb, Fehler) | `~/.cache/HZ-Drummer/app.log` |
 | Mitgelieferte Patterns (lesbare Quelle) | `library-src/*.tab` |

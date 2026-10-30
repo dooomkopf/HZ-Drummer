@@ -8,7 +8,7 @@ namespace
 {
     constexpr int maxDepth = 24;         // a hand-edited file must not nest without end
     constexpr int maxNameLength = 60;
-    const char* const areaKeys[] = { "songs", "patterns" };
+    const char* const areaKeys[] = { "songs", "patterns", "library" };
 
     FolderNode* child (FolderNode& node, const juce::String& name)
     {

@@ -175,12 +175,21 @@ static void testFolderFile()
     auto root = tree.resolve (FolderTree::Patterns, patterns());
     CHECK (folders::addFolder (root, path ({ "Carcass" }), juce::String::fromUTF8 ("Übungen")).isEmpty());
     tree.set (FolderTree::Patterns, root);
+
+    // Bibliothek: Stil-Ordner "techdeath" geht durch Umbenennen in "Tech-Death" auf
+    const std::vector<FolderTree::Entry> bundled { { "lib.a", path ({ "Tech-Death" }) }, { "lib.b", path ({ "techdeath" }) } };
+    auto library = tree.resolve (FolderTree::Bundled, bundled);
+    CHECK (library.folders.size() == 2);
+    CHECK (folders::renameFolder (library, path ({ "techdeath" }), "Tech-Death").isEmpty());
+    CHECK (library.folders.size() == 1 && library.folders[0].name == "Tech-Death" && library.folders[0].items.size() == 2);
+    tree.set (FolderTree::Bundled, library);
     CHECK (tree.save (file).isEmpty());
 
     FolderTree loaded;
     CHECK (loaded.load (file).isEmpty());
     const auto back = loaded.resolve (FolderTree::Patterns, patterns());
     CHECK (folders::find (back, path ({ "Carcass", "Übungen" })) != nullptr);
+    CHECK (loaded.resolve (FolderTree::Bundled, bundled).folders.size() == 1);   // bleibt zusammengelegt
     CHECK (back.folders.size() == 2 && back.folders[1].name == "Exhorder");
 
     CHECK (file.replaceWithText ("{ kaputt"));

@@ -19,18 +19,16 @@ struct PatternMenuActions
     std::function<bool (int)> isPreviewing;
     std::function<void()> toggleFavorite;
     std::function<void()> showErrors;
-    std::function<void (const std::string& id)> rename;                        // right click on an own pattern or song
-    std::function<void (FolderTree::Area, const FolderPath&)> renameFolder;    // right click on a folder
+    std::function<void (const std::string& id)> rename;   // right click on an entry
 };
 
 juce::PopupMenu buildPatternMenu (const Library&, int currentIndex, const PatternMenuActions&);
 
 // A folder tree in a menu: subfolders as submenus (empty ones left out), then the entries.
 // addEntry adds one entry and says whether it is the current one; the result says whether any below is.
-// With onFolderContext, a right click on a folder calls it (the menu closes first).
 bool addFolderMenu (juce::PopupMenu&, const FolderNode&,
                     const std::function<bool (juce::PopupMenu&, const std::string& id, const FolderPath&)>& addEntry,
-                    const FolderPath& path = {}, const std::function<void (const FolderPath&)>& onFolderContext = {});
+                    const FolderPath& path = {});
 
 // Items for the quick search (patterns, songs, meters). Actions refer to ids, not indices,
 // because the library may be reloaded while the search is open.

@@ -165,7 +165,7 @@ Abläufe aus dem Arranger. Jeder Block trägt eine eigene **Kopie** seines Patte
 
 ## Ordner-JSON
 
-`ordner.json` hält die Ordner aus **System › Ordnerstruktur**, je ein Baum für Songs und für eigene Patterns. Einträge stehen über ihre Kennung darin, die Pattern- und Song-Dateien selbst bleiben unverändert.
+`ordner.json` hält die Ordner aus **System › Ordnerstruktur**, je ein Baum für Songs, für eigene Patterns und für die mitgelieferte Bibliothek. Einträge stehen über ihre Kennung darin, die Pattern- und Song-Dateien selbst bleiben unverändert.
 
 ```json
 {
@@ -174,11 +174,12 @@ Abläufe aus dem Arranger. Jeder Block trägt eine eigene **Kopie** seines Patte
     "folders": [ { "name": "Thrash", "folders": [], "items": [ "song.beispiel-1a2b3c4d" ] } ],
     "items": []
   },
-  "patterns": { "folders": [], "items": [] }
+  "patterns": { "folders": [], "items": [] },
+  "library": { "folders": [], "items": [] }
 }
 ```
 
 - Die Reihenfolge in `folders` und `items` ist die Reihenfolge im Menü; Ordner stehen vor den Einträgen.
 - Ordnernamen gelten ohne Rücksicht auf Groß- und Kleinschreibung; gleichnamige Geschwister werden beim Lesen zusammengelegt.
-- Ein Eintrag, der nirgends steht, kommt an seinen Standardplatz: Songs auf die oberste Ebene, eigene Patterns nach `band:` und `song:`. Kennungen gelöschter Einträge fallen beim nächsten Speichern weg.
+- Ein Eintrag, der nirgends steht, kommt an seinen Standardplatz: Songs auf die oberste Ebene, eigene Patterns nach `band:` und `song:`, mitgelieferte Patterns nach ihrem Stil. Kennungen gelöschter Einträge fallen beim nächsten Speichern weg.
 - Ist die Datei nicht lesbar, meldet die App das und überschreibt sie nicht.

@@ -1,4 +1,4 @@
-// MainComponent, part 6: renaming own patterns, songs and folders (right click in the pattern menu).
+// MainComponent, part 6: renaming own patterns and songs (right click in the pattern menu).
 
 #include "app/MainComponent.h"
 
@@ -28,6 +28,14 @@ void MainComponent::askRenameEntry (const std::string& id)
     const int index = library.indexOf (id);
     if (index < 0)
         return;
+    getTopLevelComponent()->toFront (true);   // the dialog appears in this window: not behind the workshop
+    if (! library.isSong (index) && ! library.isUserPattern (index))
+    {
+        juce::AlertWindow::showMessageBoxAsync (juce::MessageBoxIconType::InfoIcon, "Umbenennen",
+            "Mitgelieferte Patterns lassen sich nicht umbenennen. Im Raster macht \"Speichern unter\" eine eigene Kopie daraus, die sich umbenennen lässt."_u,
+            "OK", this);
+        return;
+    }
     const auto oldName = library.get (index).name;
     askName (this, library.isSong (index) ? "Song umbenennen" : "Pattern umbenennen", juce::String (oldName),
              [safe = juce::Component::SafePointer<MainComponent> (this), id, oldName] (const juce::String& name)
@@ -57,22 +65,5 @@ void MainComponent::askRenameEntry (const std::string& id)
         self.quickSearch.close();
         self.updateButtons();
         self.updateView();
-    });
-}
-
-void MainComponent::askRenameFolder (FolderTree::Area area, const FolderPath& path)
-{
-    if (path.isEmpty())
-        return;
-    askName (this, "Ordner umbenennen", path[path.size() - 1],
-             [safe = juce::Component::SafePointer<MainComponent> (this), area, path] (const juce::String& name)
-    {
-        if (safe == nullptr)
-            return;
-        // onto the name of a folder next to it: the two become one (see folders::renameFolder)
-        const auto error = safe->library.editFolders (area, [&] (FolderNode& root) { return folders::renameFolder (root, path, name); });
-        if (error.isNotEmpty())
-            juce::AlertWindow::showMessageBoxAsync (juce::MessageBoxIconType::WarningIcon, "Umbenennen", error);
-        safe->refreshFolders();
     });
 }
