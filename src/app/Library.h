@@ -32,6 +32,7 @@ public:
     bool isUserPattern (int index) const;
     const std::vector<SongSpan>* songSpans (int index) const;   // parts/repeats of a song, else nullptr
     const Song* song (int index) const;                         // the song structure, else nullptr
+    juce::File songFile (const std::string& songId) const;      // the file it was loaded from ("" if none: <id>.json)
     const juce::StringArray& errors() const        { return loadErrors; }
 
     // Own patterns: save (new id or next revision) and delete. Return "" on success.

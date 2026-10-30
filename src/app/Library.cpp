@@ -55,9 +55,10 @@ void Library::reload()
         std::vector<SongSpan> spans;
         if (loadSong (f, s, err) && buildSongPattern (s, entries, pattern, spans, err))
         {
-            spansById[pattern.id] = std::move (spans);
-            songsById[pattern.id] = s;
-            songFilesById[pattern.id] = f;
+            // a duplicate id keeps the first (as the entries do below)
+            spansById.emplace (pattern.id, std::move (spans));
+            songsById.emplace (pattern.id, s);
+            songFilesById.emplace (pattern.id, f);
             built.push_back (std::move (pattern));
         }
         else
@@ -119,6 +120,12 @@ const Song* Library::song (int index) const
         return nullptr;
     auto it = songsById.find (entries[(size_t) index].id);
     return it != songsById.end() ? &it->second : nullptr;
+}
+
+juce::File Library::songFile (const std::string& songId) const
+{
+    const auto it = songFilesById.find ("song." + songId);
+    return it != songFilesById.end() ? it->second : songFolder().getChildFile (juce::String (songId) + ".json");
 }
 
 juce::String Library::save (hz::Pattern& p, bool asNew)

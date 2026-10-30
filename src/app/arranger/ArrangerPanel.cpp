@@ -169,7 +169,7 @@ void ArrangerPanel::compareWithSavedFile()
     // "unsaved" compares with what the song file holds now (an old reference file gets its copies first)
     Song onDisk;
     juce::String err;
-    const auto saved = Library::songFolder().getChildFile (songFileName (model.song().id));
+    const auto saved = host.getLibrary().songFile (model.song().id);
     if (! model.song().id.empty() && saved.existsAsFile() && ::loadSong (saved, onDisk, err))
     {
         embedCopies (onDisk, host.getLibrary().all(), err);
