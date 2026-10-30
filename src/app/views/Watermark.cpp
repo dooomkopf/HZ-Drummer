@@ -4,7 +4,7 @@
 
 namespace
 {
-    constexpr float strength = 0.06f;        // letters; the kit gets half of it
+    constexpr float strength = 0.05f;        // letters; the kit gets half of it
     constexpr float fill = 0.95f;            // share of the window it may cover in either direction
     const juce::Colour letterColour { 0xffe12d2d };
 
