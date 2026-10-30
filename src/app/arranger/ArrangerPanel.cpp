@@ -181,7 +181,7 @@ void ArrangerPanel::loadSong (const Song& s)
         juce::String err;
         if (! embedCopies (copy, host.getLibrary().all(), err))
         {
-            juce::AlertWindow::showMessageBoxAsync (juce::MessageBoxIconType::WarningIcon, "Song laden", err);
+            juce::AlertWindow::showMessageBoxAsync (juce::MessageBoxIconType::WarningIcon, "Arrangement laden", err);
             return;
         }
         model.load (copy);

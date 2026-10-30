@@ -18,7 +18,7 @@ class QuickSearch : public juce::Component,
 public:
     struct Item
     {
-        juce::String kind;       // "Song", "Pattern", "Eigenes", "Taktart" ...
+        juce::String kind;       // "Arrangement", "Pattern", "Bibliothek", "Metronom"
         juce::String title, detail;
         juce::String haystack;   // searched text (name, tags, meter, tempo ...)
         bool favorite = false;

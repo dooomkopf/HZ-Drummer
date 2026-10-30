@@ -25,7 +25,7 @@ public:
         name.getProperties().set ("pill", true);        // drawn by HZLook as a pill
         name.setIndents (16, 0);      // text clear of the round ends; no top indent, so centred exactly
         name.setJustification (juce::Justification::centredLeft);   // the text in the middle, as in the buttons
-        name.setTextToShowWhenEmpty ("Song-Name", arrangerstyle::textDim);
+        name.setTextToShowWhenEmpty ("Name des Arrangements", arrangerstyle::textDim);
         name.onReturnKey = [this] { if (onRename) onRename (name.getText()); };
         name.onFocusLost = [this] { if (onRename) onRename (name.getText()); };
         for (auto* b : { &newButton, &loadButton, &clearScratchButton, &saveButton, &saveAsButton })
@@ -35,7 +35,7 @@ public:
         clearScratchButton.onClick = [this] { if (onClearScratch) onClearScratch(); };
         saveButton.onClick         = [this] { if (onSave) onSave(); };
         saveAsButton.onClick       = [this] { if (onSaveAs) onSaveAs(); };
-        saveButton.setTooltip ("Song speichern (Strg+S)");
+        saveButton.setTooltip ("Arrangement speichern (Strg+S)");
         clearScratchButton.setColour (juce::TextButton::buttonColourId, arrangerstyle::danger);
         clearScratchButton.setTooltip ("Alle gesammelten Bausteine aus der Ablage entfernen (Strg+Z holt sie zurück)"_u);
         addAndMakeVisible (status);
@@ -111,10 +111,10 @@ public:
             addAndMakeVisible (*b);
         edit.onClick       = [this] { if (onEdit) onEdit(); };
         fromSource.onClick = [this] { if (onUpdateFromSource) onUpdateFromSource(); };
-        edit.setTooltip ("Die Kopie dieses Blocks im Raster bearbeiten; die Änderung gilt nur in diesem Song");
-        fromSource.setTooltip ("Holt die aktuelle Fassung des Patterns aus der Bibliothek in diesen Block. Nur aktiv, wenn das "
+        edit.setTooltip ("Die Kopie dieses Blocks im Editor bearbeiten; die Änderung gilt nur in diesem Arrangement");
+        fromSource.setTooltip ("Holt die aktuelle Fassung des Bausteins in diesen Block. Nur aktiv, wenn das "
                                "Original seit dem Einfügen geändert wurde (\xe2\x86\xbb am Block). Änderungen, die du am Block in "
-                               "diesem Song gemacht hast, gehen dabei verloren; vorher kommt eine Rückfrage, Strg+Z macht es rückgängig."_u);
+                               "diesem Arrangement gemacht hast, gehen dabei verloren; vorher kommt eine Rückfrage, Strg+Z macht es rückgängig."_u);
         minus.onClick     = [this] { if (onRepeats) onRepeats (-1); };
         plus.onClick      = [this] { if (onRepeats) onRepeats (1); };
         range.onClick     = [this] { if (onRange) onRange(); };
@@ -145,8 +145,8 @@ public:
     {
         const bool has = part != nullptr;
         lastTitle = has ? "Block: " + partName
-                          + (! part->label.empty() && sourceName.isNotEmpty() ? "   (Pattern: " + sourceName + ")" : juce::String())
-                          + (part->edited ? juce::String ("   (im Song geändert)"_u) : juce::String())
+                          + (! part->label.empty() && sourceName.isNotEmpty() ? "   (Baustein: " + sourceName + ")" : juce::String())
+                          + (part->edited ? juce::String ("   (im Arrangement geändert)"_u) : juce::String())
                         : juce::String ("Kein Block gewählt (Klick im Ablauf)"_u);
         edit.setEnabled (has && part->kind == PartKind::Pattern && part->copy);
         fromSource.setEnabled (has && canUpdate);
@@ -217,5 +217,5 @@ private:
     juce::TextButton minus { juce::String (juce::CharPointer_UTF8 ("\xe2\x88\x92")) }, plus { "+" }, range { "Takte" },
                      duplicate { "Duplizieren" },
                      left { juce::String (juce::CharPointer_UTF8 ("\xe2\x97\x80")) }, right { juce::String (juce::CharPointer_UTF8 ("\xe2\x96\xb6")) },
-                     remove { "Entfernen" }, play { "Play" }, edit { "Raster" }, fromSource { "Original" };
+                     remove { "Entfernen" }, play { "Play" }, edit { "Editor" }, fromSource { "Original" };
 };

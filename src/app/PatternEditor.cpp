@@ -49,12 +49,12 @@ PatternEditor::PatternEditor (EditorHost& h) : host (h), help ("hilfezeile-raste
     saveAsButton.onClick = [this] { save (true); };
     renameButton.onClick = [this] { askRename(); };
     closeButton.onClick = [this] { closeRequested(); };
-    renameButton.setTooltip ("Das Pattern umbenennen (Dialog)");
-    closeButton.setTooltip ("Raster leeren, damit nichts aus Versehen geändert wird"_u);
+    renameButton.setTooltip ("Den Baustein umbenennen (Dialog)");
+    closeButton.setTooltip ("Editor leeren, damit nichts aus Versehen geändert wird"_u);
     deleteButton.onClick = [this]
     {
-        juce::AlertWindow::showOkCancelBox (juce::MessageBoxIconType::QuestionIcon, "Pattern löschen"_u,
-            "Eigenes Pattern \"" + juce::String (pattern.name) + "\" in den Papierkorb verschieben?"_u, "In Papierkorb", "Abbrechen", this,
+        juce::AlertWindow::showOkCancelBox (juce::MessageBoxIconType::QuestionIcon, "Baustein löschen"_u,
+            "Baustein \"" + juce::String (pattern.name) + "\" in den Papierkorb verschieben?"_u, "In Papierkorb", "Abbrechen", this,
             juce::ModalCallbackFunction::create ([safe = juce::Component::SafePointer<PatternEditor> (this)] (int r)
             {
                 if (safe == nullptr || r != 1)
@@ -210,8 +210,8 @@ void PatternEditor::updateControls()
 
     // what is being edited; a library pattern needs no word here
     const juce::String kind = cardMode ? "Karte in der Ablage: " + blockTitle
-                            : blockMode ? "Block im Ablauf: " + blockTitle + " (gilt nur in diesem Song)"
-                            : userPattern ? juce::String ("eigenes Pattern") : juce::String();
+                            : blockMode ? "Block im Ablauf: " + blockTitle + " (gilt nur in diesem Arrangement)"
+                            : userPattern ? juce::String ("Baustein") : juce::String();
     infoLabel.setText (juce::String ((int) pattern.tempo) + " BPM  ·  "_u + juce::String ((int) pattern.bars.size())
                            + (pattern.bars.size() == 1 ? " Takt" : " Takte") + "  ·  "_u + juce::String (events) + " Schläge"_u
                            + (kind.isNotEmpty() ? "  ·  "_u + kind : juce::String())
@@ -244,10 +244,10 @@ void PatternEditor::updateControls()
     tempoSlider.setValue (pattern.tempo, juce::dontSendNotification);
     // a block: in a song the song's tempo counts; a card: its tempo matters once it is saved as an own pattern
     tempoSlider.setEnabled (! pattern.bars.empty() && (! blockMode || cardMode));
-    tempoSlider.setTooltip (blockMode && ! cardMode ? "Im Song gilt das Song-Tempo, nicht das des einzelnen Blocks."
-                                      : "Tempo dieses Patterns: Damit startet es, wenn man es im Hauptfenster wählt. "
+    tempoSlider.setTooltip (blockMode && ! cardMode ? "Im Arrangement gilt das Arrangement-Tempo, nicht das des einzelnen Blocks."
+                                      : "Tempo dieses Bausteins: Damit startet er, wenn man ihn im Hauptfenster wählt. "
                                         "Schieben oder die Zahl anklicken und eintippen. Der Regler im Hauptfenster zieht mit, "
-                                        "\"Speichern\" speichert es mit dem Pattern."_u);
+                                        "\"Speichern\" speichert es mit dem Baustein."_u);
 
     updateWindowTitle();
 }

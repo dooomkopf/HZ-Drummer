@@ -65,7 +65,7 @@ QuickSearch::QuickSearch()
     field.setFont (juce::FontOptions (22.0f));
     field.getProperties().set ("pill", true);        // drawn by HZLook as a pill
     field.setIndents (18, field.getTopIndent());     // text clear of the round ends
-    field.setTextToShowWhenEmpty ("Suchen: Pattern, Song, Stil, Künstler, Taktart (z.B. 7/8) ..."_u, textDim);
+    field.setTextToShowWhenEmpty ("Suchen: Baustein, Arrangement, Stil, Künstler, Taktart (z.B. 7/8) ..."_u, textDim);
     field.onTextChange = [this] { update(); };
     field.onReturnKey = [this] { choose (selected); };
     field.onEscapeKey = [this] { close(); };
@@ -253,7 +253,7 @@ void QuickSearch::paint (juce::Graphics& g)
         auto inner = row.reduced (10, 0);
         g.setColour (textDim);
         g.setFont (juce::FontOptions (14.0f, juce::Font::bold));
-        g.drawText (it.kind, inner.removeFromLeft (78), juce::Justification::centredLeft);
+        g.drawText (it.kind, inner.removeFromLeft (104), juce::Justification::centredLeft);   // wide enough for "Arrangement"
 
         if (it.favorite)
         {

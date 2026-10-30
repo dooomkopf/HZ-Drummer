@@ -30,7 +30,7 @@ juce::String removeOwnLibraryFile (const std::string& libraryId, const juce::Fil
     const juce::String id (libraryId);
     const bool song = id.startsWith ("song.");
     if (! song && ! id.startsWith ("user."))
-        return "Mitgelieferte Patterns können nicht gelöscht werden."_u;
+        return "Bibliothek-Bausteine können nicht gelöscht werden."_u;
     const auto diskId = song ? id.substring (5) : id;
     if (diskId.isEmpty())
         return "Ungültige Kennung."_u;
@@ -63,7 +63,7 @@ juce::String removeOwnLibraryFile (const std::string& libraryId, const juce::Fil
             if (result.failed() || (! json.isObject() && ! json.isArray()))
                 return "Referenzen nicht prüfbar: "_u + file.getFileName() + ". Nichts gelöscht."_u;
             if (referencesPattern (json, id))
-                return "Dieses Pattern wird in " + file.getFileName()
+                return "Dieser Baustein wird in " + file.getFileName()
                      + " verwendet. Zuerst dort aus dem Ablauf bzw. der Ablage entfernen.";
         }
     }

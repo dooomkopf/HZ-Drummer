@@ -112,7 +112,7 @@ void SequenceView::paint (juce::Graphics& g)
         g.setColour (errorText.isNotEmpty() ? juce::Colour (0xffe0443a) : textDim);
         g.setFont (juce::FontOptions (fontText));
         g.drawFittedText (errorText.isNotEmpty() ? "Der Ablauf kann nicht gespielt werden: " + errorText
-                            : juce::String ("Der Ablauf ist leer. Bausteine aus \"Finden\" oder der Ablage hierher ziehen,\noder einen Song laden."_u),
+                            : juce::String ("Der Ablauf ist leer. Bausteine aus \"Finden\" oder der Ablage hierher ziehen,\noder ein Arrangement laden."_u),
                           getLocalBounds().reduced (12), juce::Justification::centred, 3);
         return;
     }

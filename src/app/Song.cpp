@@ -42,7 +42,7 @@ namespace
             part.sourceId = v["pattern"].toString().toStdString();   // reference into the library
             if (part.sourceId.empty())
             {
-                error = "Teil ohne Pattern";
+                error = "Teil ohne Baustein";
                 return false;
             }
             return true;
@@ -76,7 +76,7 @@ namespace
         }
         else if (part.sourceId.empty())
         {
-            error = "Pattern-Teil ohne Kopie und ohne Quelle";
+            error = "Baustein-Teil ohne Kopie und ohne Quelle";
             return false;
         }
 
@@ -143,7 +143,7 @@ bool loadSong (const juce::File& file, Song& song, juce::String& error)
     const int version = json.isObject() ? (int) json["formatVersion"] : 0;
     if (version != 1 && version != Song::formatVersion)
     {
-        error = file.getFileName() + ": kein gültiger Song"_u;
+        error = file.getFileName() + ": kein gültiges Arrangement"_u;
         return false;
     }
 
@@ -210,7 +210,7 @@ bool saveSong (const Song& song, const juce::File& file, juce::String& error)
     for (auto& p : song.parts)
         if (p.kind == PartKind::Pattern && ! p.copy)
         {
-            error = "Song enthält noch Verweise ohne Kopie (embedCopies fehlt)"_u;
+            error = "Arrangement enthält noch Verweise ohne Kopie (embedCopies fehlt)"_u;
             return false;
         }
     return writeJson (songToJson (song), file, error);
@@ -287,7 +287,7 @@ bool embedCopies (Song& song, const std::vector<hz::Pattern>& library, juce::Str
             const auto* src = findPattern (library, p.sourceId);
             if (src == nullptr)
             {
-                error = "Pattern fehlt: "_u + juce::String (p.sourceId);
+                error = "Baustein fehlt: "_u + juce::String (p.sourceId);
                 return false;
             }
             p.copy = std::make_shared<const hz::Pattern> (*src);
@@ -365,7 +365,7 @@ bool partPattern (const SongPart& part, const std::vector<hz::Pattern>& library,
     const hz::Pattern* src = part.copy ? part.copy.get() : findPattern (library, part.sourceId);
     if (src == nullptr)
     {
-        error = "Pattern fehlt: "_u + juce::String (part.sourceId);
+        error = "Baustein fehlt: "_u + juce::String (part.sourceId);
         return false;
     }
     if (part.numBars <= 0)
@@ -375,7 +375,7 @@ bool partPattern (const SongPart& part, const std::vector<hz::Pattern>& library,
     }
     if (part.firstBar < 0 || part.firstBar + part.numBars > (int) src->bars.size())
     {
-        error = juce::String (src->name) + ": Taktbereich passt nicht (Pattern hat "_u + juce::String ((int) src->bars.size()) + " Takte)";
+        error = juce::String (src->name) + ": Taktbereich passt nicht (Baustein hat "_u + juce::String ((int) src->bars.size()) + " Takte)";
         return false;
     }
     out = hz::sliceBars (*src, part.firstBar, part.numBars);
@@ -390,8 +390,8 @@ juce::String partTitle (const SongPart& part, const hz::Pattern& played)
         return juce::String (part.kind == PartKind::Rest ? "Pause " : "Klick ") + juce::String (hz::meterLabel (part.meter));
     juce::String title (played.name);
     if (part.numBars > 0)
-        title << " (T. " << (part.firstBar + 1)
-              << (part.numBars > 1 ? "–"_u + juce::String (part.firstBar + part.numBars) : juce::String()) << ")";
+        title << " (T" << (part.firstBar + 1)   // compact: "(T3-4)"
+              << (part.numBars > 1 ? "-" + juce::String (part.firstBar + part.numBars) : juce::String()) << ")";
     return title;
 }
 

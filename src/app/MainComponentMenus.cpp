@@ -86,7 +86,7 @@ void MainComponent::showPatternMenu()
     actions.rename = [this] (const std::string& id) { askRenameEntry (id); };
     actions.showErrors = [this]
     {
-        juce::AlertWindow::showMessageBoxAsync (juce::MessageBoxIconType::WarningIcon, "Fehlerhafte Pattern-Dateien",
+        juce::AlertWindow::showMessageBoxAsync (juce::MessageBoxIconType::WarningIcon, "Fehlerhafte Baustein-Dateien",
                                                 library.errors().joinIntoString ("\n"));
     };
     buildPatternMenu (library, currentPattern, actions).showMenuAsync (juce::PopupMenu::Options().withTargetComponent (&patternButton),
@@ -114,10 +114,10 @@ void MainComponent::confirmDeleteLibraryEntry (const std::string& id)
     const bool song = library.isSong (index);
     const auto name = juce::String (library.get (index).name);
     juce::AlertWindow::showOkCancelBox (juce::MessageBoxIconType::QuestionIcon,
-        song ? "Arrangement löschen"_u : "Pattern löschen"_u,
+        song ? "Arrangement löschen"_u : "Baustein löschen"_u,
         "\"" + name + "\" in den Papierkorb verschieben?\n\n"_u
-            + (song ? "Die verwendeten Patterns bleiben erhalten."
-                    : "Patterns, die noch in einem Ablauf oder der Ablage verwendet werden, können nicht gelöscht werden."_u),
+            + (song ? "Die verwendeten Bausteine bleiben erhalten."
+                    : "Bausteine, die noch in einem Ablauf oder der Ablage verwendet werden, können nicht gelöscht werden."_u),
         "In Papierkorb", "Abbrechen", this,
         juce::ModalCallbackFunction::create ([safe = juce::Component::SafePointer<MainComponent> (this), id] (int result)
         {
@@ -135,7 +135,7 @@ juce::String MainComponent::removeLibraryEntry (const std::string& id)
         return "Der Eintrag ist nicht mehr in der Bibliothek."_u;
     // the open arranger may hold the pattern unsaved; saved songs, arranger.json and ablage.json are checked by the library
     if (library.isUserPattern (index) && editorWindow != nullptr && editorWindow->getArranger().usesPattern (id))
-        return "Dieses Pattern ist noch im aktuellen Ablauf oder in der Ablage. Zuerst dort entfernen.";
+        return "Dieser Baustein ist noch im aktuellen Ablauf oder in der Ablage. Zuerst dort entfernen.";
 
     const auto entry = library.get (index);
     const auto selectedId = patternMode() ? library.get (currentPattern).id : std::string();
@@ -352,7 +352,7 @@ void MainComponent::showAudioSettings()
         // badges: how much of the colour x mark space is taken, and whether any two patterns share one
         const auto st = badges.stats (library.all());
         panel->badgeLine.rest = juce::String (st.total - st.used) + " frei von " + juce::String (st.total)
-                                + (st.shared > 0 ? "   (" + juce::String (st.shared) + " Patterns teilen sich eins!)" : juce::String());
+                                + (st.shared > 0 ? "   (" + juce::String (st.shared) + " Bausteine teilen sich eins!)" : juce::String());
         panel->badgeLine.repaint();
         juce::String text;
         text << "System: " << juce::SystemStats::getOperatingSystemName() << ", " << juce::SystemStats::getCpuModel()

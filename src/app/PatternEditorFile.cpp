@@ -53,7 +53,7 @@ void PatternEditor::askRename()
 {
     if (pattern.bars.empty() || blockMode)
         return;
-    auto* w = new InWindowDialog ("Pattern umbenennen", "Neuer Name:", juce::MessageBoxIconType::NoIcon, this);
+    auto* w = new InWindowDialog ("Baustein umbenennen", "Neuer Name:", juce::MessageBoxIconType::NoIcon, this);
     w->addTextEditor ("name", juce::String (pattern.name), "Name");
     w->addButton ("OK", 1, juce::KeyPress (juce::KeyPress::returnKey));
     w->addButton ("Abbrechen", 0, juce::KeyPress (juce::KeyPress::escapeKey));
@@ -88,7 +88,7 @@ juce::String PatternEditor::variantName() const
 
 void PatternEditor::askName (std::function<void (juce::String)> onOk)
 {
-    auto* w = new InWindowDialog ("Speichern unter", "Name für das neue Pattern:"_u, juce::MessageBoxIconType::NoIcon, this);
+    auto* w = new InWindowDialog ("Speichern unter", "Name für den neuen Baustein:"_u, juce::MessageBoxIconType::NoIcon, this);
     const auto suggestion = variantName();
     w->addTextEditor ("name", suggestion, "Name");
     w->addButton ("Speichern", 1, juce::KeyPress (juce::KeyPress::returnKey));

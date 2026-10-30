@@ -71,7 +71,7 @@ void MainComponent::openEditor()
     {
         // new pattern in the current meter
         hz::Pattern p;
-        p.name = "Neues Pattern";
+        p.name = "Neuer Baustein";
         p.tempo = control.tempoTenths / 10.0;
         hz::PatternBar bar;
         bar.meter = meters.get (currentMeter);

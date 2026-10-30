@@ -129,7 +129,7 @@ FolderPanel::FolderPanel (Library& lib) : library (lib)
 {
     addAndMakeVisible (hint);
     hint.setText ("Ziehen: Einträge und Ordner verschieben   ·   Hoch/Runter: Reihenfolge   ·   "
-                  "Löschen: eigene Patterns und Songs in den Papierkorb, Ordner nur wenn leer"_u,
+                  "Löschen: Bausteine und Arrangements in den Papierkorb, Ordner nur wenn leer"_u,
                   juce::dontSendNotification);
     hint.setColour (juce::Label::textColourId, juce::Colour (0xffe07a70));   // the light red of all help lines
     hint.setFont (juce::FontOptions (14.0f));
@@ -194,8 +194,8 @@ void FolderPanel::rebuild (const std::optional<Place>& select)
     {
         const auto node = library.folders (area);
         auto* item = new Item (*this, Item::Kind::Area, Place { area, {}, {} },
-                               area == FolderTree::Songs ? "Songs (Abläufe)"_u
-                               : area == FolderTree::Patterns ? juce::String ("Eigene Patterns (Bausteine)") : juce::String ("Bibliothek (mitgeliefert)"),
+                               area == FolderTree::Songs ? "Arrangements (Songs)"_u
+                               : area == FolderTree::Patterns ? juce::String ("Bausteine (Pattern)") : juce::String ("Bibliothek-Bausteine"),
                                folders::countItems (node));
         root->addSubItem (item);
         fill (*item, node, {});
@@ -391,10 +391,10 @@ void FolderPanel::removeEntry()
     const int i = library.indexOf (id);
     const bool song = library.isSong (i);
     // asked here, in this window: a question in the main window could hide behind it
-    juce::AlertWindow::showOkCancelBox (juce::MessageBoxIconType::QuestionIcon, song ? "Arrangement löschen"_u : "Pattern löschen"_u,
+    juce::AlertWindow::showOkCancelBox (juce::MessageBoxIconType::QuestionIcon, song ? "Arrangement löschen"_u : "Baustein löschen"_u,
         "\"" + juce::String (library.get (i).name) + "\" in den Papierkorb verschieben?\n\n"_u
-            + (song ? "Die verwendeten Patterns bleiben erhalten."
-                    : "Patterns, die noch in einem Ablauf oder der Ablage verwendet werden, können nicht gelöscht werden."_u),
+            + (song ? "Die verwendeten Bausteine bleiben erhalten."
+                    : "Bausteine, die noch in einem Ablauf oder der Ablage verwendet werden, können nicht gelöscht werden."_u),
         "In Papierkorb", "Abbrechen", this,
         juce::ModalCallbackFunction::create ([safe = juce::Component::SafePointer<FolderPanel> (this), id] (int r)
         {

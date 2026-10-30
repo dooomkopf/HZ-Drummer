@@ -16,7 +16,7 @@ class Library;
 // well under a few milliseconds). See docs/ARRANGER.md, "Intelligente Suche".
 struct SearchItem
 {
-    enum class Group { Songs, Sections, Bundled, Own };   // display order
+    enum class Group { Songs, Own, Bundled };   // display order (as in the main window)
 
     std::string id;                  // pattern/song id (stable across reloads)
     Group group = Group::Bundled;
@@ -36,7 +36,7 @@ struct SearchItem
 struct SearchGroup
 {
     SearchItem::Group group;
-    juce::String title;              // "Songs", "Song-Abschnitte", "Bibliothek", "Eigene Patterns"
+    juce::String title;              // "Arrangements", "Bausteine", "Bibliothek"
     std::vector<int> items;          // indices into SearchIndex, best first (cut to perGroup)
     int total = 0;                   // matches before the cut
 };

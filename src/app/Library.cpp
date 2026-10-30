@@ -200,7 +200,7 @@ juce::String Library::rename (const std::string& id, const juce::String& newName
         return {};
     }
     if (! isUserPattern (i))
-        return "Mitgelieferte Patterns lassen sich nicht umbenennen.";
+        return "Bibliothek-Bausteine lassen sich nicht umbenennen.";
 
     auto p = entries[(size_t) i];
     const auto oldName = p.name;

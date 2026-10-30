@@ -77,7 +77,7 @@ private:
         g.setColour (theme::textMain); g.setFont (juce::FontOptions (17.0f));
         g.drawFittedText (entry.name.isEmpty() ? entry.libraryId : entry.name, 10, 3, w - 20, h / 2, juce::Justification::centredLeft, 1);
         g.setColour (theme::textDim); g.setFont (juce::FontOptions (13.0f));
-        g.drawText ((entry.song ? "Arrangement" : "Pattern") + "  ·  "_u + entry.deletedAt,
+        g.drawText ((entry.song ? "Arrangement" : "Baustein") + "  ·  "_u + entry.deletedAt,
                     10, h / 2, w - 20, h / 2, juce::Justification::centredLeft);
     }
     juce::File data;

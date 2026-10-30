@@ -19,13 +19,13 @@ void ArrangerPanel::showCardMenu (int i)
     // listening (click) and removing (x) are on the card itself; the menu edits it or adds it to the sequence
     juce::PopupMenu menu;
     const auto& card = model.scratch()[(size_t) i];
-    menu.addItem (3, "Bearbeiten (Kopie im Raster)", card.kind == PartKind::Pattern && card.copy != nullptr);
+    menu.addItem (3, "Bearbeiten (Kopie im Editor)", card.kind == PartKind::Pattern && card.copy != nullptr);
     menu.addSeparator();
     // before / after a block marked in the sequence; without a mark only dragging with the mouse places it
     const bool hasMark = sequence.getSelected() >= 0 && sequence.getSelected() < (int) model.song().parts.size();
-    menu.addSectionHeader ("Pattern im Ablauf anklicken/markieren");
-    menu.addItem (2, juce::String (juce::CharPointer_UTF8 ("vor Pattern einf\xc3\xbcgen")), hasMark);
-    menu.addItem (4, juce::String (juce::CharPointer_UTF8 ("nach Pattern einf\xc3\xbcgen")), hasMark);
+    menu.addSectionHeader ("Baustein im Ablauf anklicken/markieren");
+    menu.addItem (2, juce::String (juce::CharPointer_UTF8 ("vor Baustein einf\xc3\xbcgen")), hasMark);
+    menu.addItem (4, juce::String (juce::CharPointer_UTF8 ("nach Baustein einf\xc3\xbcgen")), hasMark);
     menu.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (&scratch).withMousePosition(),
                         [safe = juce::Component::SafePointer<ArrangerPanel> (this), i] (int r)
     {
@@ -57,7 +57,7 @@ void ArrangerPanel::askRange()
     w->addTextEditor ("from", juce::String (from), "von Takt:");
     w->addTextEditor ("to", juce::String (to), "bis Takt:");
     w->addButton ("OK", 1, juce::KeyPress (juce::KeyPress::returnKey));
-    w->addButton ("Ganzes Pattern", 2);
+    w->addButton ("Ganzer Baustein", 2);
     w->addButton ("Abbrechen", 0, juce::KeyPress (juce::KeyPress::escapeKey));
     const auto uid = part.uid;
     w->enterModalState (true, juce::ModalCallbackFunction::create ([safe = juce::Component::SafePointer<ArrangerPanel> (this), w, uid, total] (int r)
@@ -113,7 +113,7 @@ void ArrangerPanel::editBlock()
         {
             // asked, not decided here: the raster keeps its edit until the answer arrives
             juce::AlertWindow::showOkCancelBox (juce::MessageBoxIconType::QuestionIcon, "In Ablauf übernehmen"_u,
-                "Der Block wurde inzwischen im Arranger geändert (Rückgängig oder \"Original\"). Trotzdem mit der Raster-Fassung ersetzen?"_u,
+                "Der Block wurde inzwischen im Arranger geändert (Rückgängig oder \"Original\"). Trotzdem mit der Editor-Fassung ersetzen?"_u,
                 "Ersetzen", "Abbrechen", safe,
                 juce::ModalCallbackFunction::create ([safe, uid, edited, basis] (int r)
                 {
@@ -155,7 +155,7 @@ void ArrangerPanel::showBlockMenu (int part)
 
     juce::PopupMenu menu;
     menu.addItem (7, "Lokale Umbenennung");
-    menu.addItem (1, "Bearbeiten (Kopie im Raster)", p.kind == PartKind::Pattern && p.copy != nullptr);
+    menu.addItem (1, "Bearbeiten (Kopie im Editor)", p.kind == PartKind::Pattern && p.copy != nullptr);
     menu.addItem (2, "Duplizieren");
     menu.addItem (3, "Takte eingrenzen", p.kind == PartKind::Pattern && p.copy && p.copy->bars.size() > 1);
     menu.addItem (4, "Original", canUpdate);
@@ -215,7 +215,7 @@ void ArrangerPanel::editScratchCard (int index)
         if (safe->model.scratch()[(size_t) i].copy != *basis)
         {
             juce::AlertWindow::showOkCancelBox (juce::MessageBoxIconType::QuestionIcon, "In Ablage übernehmen"_u,
-                "Die Karte wurde inzwischen geändert (Rückgängig). Trotzdem mit der Raster-Fassung ersetzen?"_u,
+                "Die Karte wurde inzwischen geändert (Rückgängig). Trotzdem mit der Editor-Fassung ersetzen?"_u,
                 "Ersetzen", "Abbrechen", safe,
                 juce::ModalCallbackFunction::create ([safe, uid, edited, basis] (int r)
                 {
@@ -260,9 +260,9 @@ void ArrangerPanel::updateFromSource()
         sourceName = juce::String (host.getLibrary().get (i).name);
 
     // the warning the user asked for: this replaces the copy, local edits included
-    juce::String text = "Der Block wird durch die aktuelle Fassung von \""_u + sourceName + "\" aus der Bibliothek ersetzt.";
+    juce::String text = "Der Block wird durch die aktuelle Fassung von \""_u + sourceName + "\" ersetzt.";
     if (part.edited)
-        text << "\n\nAchtung: Die Änderungen, die du an diesem Block im Song gemacht hast, gehen dabei verloren."_u;
+        text << "\n\nAchtung: Die Änderungen, die du an diesem Block im Arrangement gemacht hast, gehen dabei verloren."_u;
     text << "\n\n(Strg+Z macht es rückgängig.)"_u;
 
     auto* w = new InWindowDialog ("Original", text, juce::MessageBoxIconType::WarningIcon, this);
@@ -294,8 +294,8 @@ void ArrangerPanel::askRename (int p)
     const juce::String sourceName = part.copy ? juce::String (part.copy->name) : juce::String (part.sourceId);
 
     auto* w = new InWindowDialog ("Block umbenennen",
-                                     "Name dieses Blocks im Ablauf. Das Pattern selbst (\"" + sourceName + "\") wird nicht umbenannt.\n"
-                                     "Leer lassen = Pattern-Name anzeigen. Strg+Z macht es rückgängig."_u,
+                                     "Name dieses Blocks im Ablauf. Der Baustein selbst (\"" + sourceName + "\") wird nicht umbenannt.\n"
+                                     "Leer lassen = Name des Bausteins anzeigen. Strg+Z macht es rückgängig."_u,
                                      juce::MessageBoxIconType::NoIcon, this);
     w->addTextEditor ("name", juce::String (part.label), "Name im Ablauf:");
     w->addButton ("OK", 1, juce::KeyPress (juce::KeyPress::returnKey));

@@ -97,7 +97,7 @@ bool sourceDiffers (const SongPart&, const std::vector<hz::Pattern>& library);
 // parts give empty bars in their meter. Fails for a missing v1 source or an invalid range.
 bool partPattern (const SongPart&, const std::vector<hz::Pattern>& library, hz::Pattern& out, juce::String& error);
 
-// Display name of a part: its label, otherwise derived ("Groove A (T. 3–4)", "Pause 4/4")
+// Display name of a part: its label, otherwise derived ("Groove A (T3-4)", "Pause 4/4")
 juce::String partTitle (const SongPart&, const hz::Pattern& played);
 
 // Joins the parts (with repeats) into one pattern for display and editing.

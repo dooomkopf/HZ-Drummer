@@ -34,13 +34,13 @@ void MainComponent::askRenameEntry (const std::string& id)
     if (! library.isSong (index) && ! library.isUserPattern (index))
     {
         juce::AlertWindow::showMessageBoxAsync (juce::MessageBoxIconType::InfoIcon, "Umbenennen",
-            "Mitgelieferte Patterns lassen sich nicht umbenennen. Im Raster macht \"Speichern unter\" eine eigene Kopie daraus, die sich umbenennen lässt. "
+            "Bibliothek-Bausteine lassen sich nicht umbenennen. Im Editor macht \"Speichern unter\" eine Kopie daraus, die sich umbenennen lässt. "
             "Ordnerstruktur und Ordnernamen lassen sich unter \"System\" anpassen."_u,
             "OK", this);
         return;
     }
     const auto oldName = library.get (index).name;
-    askName (this, library.isSong (index) ? "Song umbenennen" : "Pattern umbenennen", juce::String (oldName),
+    askName (this, library.isSong (index) ? "Arrangement umbenennen" : "Baustein umbenennen", juce::String (oldName),
              [safe = juce::Component::SafePointer<MainComponent> (this), id, oldName] (const juce::String& name)
     {
         if (safe == nullptr)

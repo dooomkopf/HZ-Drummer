@@ -142,7 +142,7 @@ static void testBarRange()
     CHECK (partPattern (p, lib, out, err));
     CHECK (out.bars.size() == 2 && countEvents (out) == 2);
     CHECK (out.layers[0].events[0].pos == hz::Rational (0));     // shifted to the start
-    CHECK (partTitle (p, out) == juce::String ("Groove A (T. 2") + juce::String (juce::CharPointer_UTF8 ("\xe2\x80\x93")) + "3)");
+    CHECK (partTitle (p, out) == "Groove A (T2-3)");
 
     p.numBars = 9;   // beyond the pattern
     CHECK (! partPattern (p, lib, out, err));

@@ -38,7 +38,7 @@ MainComponent::MainComponent()
     addAndMakeVisible (countInButton);
     countInButton.onClick = [this] { cycleCountIn(); };
     countInButton.getProperties().set ("metronome", true);   // drawn by HZLook
-    countInButton.setTooltip ("Ein Takt Klicks vor dem Start: aus, nur am Anfang des Songs, oder vor jedem Start"_u);
+    countInButton.setTooltip ("Ein Takt Klicks vor dem Start: aus, nur am Anfang des Arrangements, oder vor jedem Start"_u);
     updateCountInButton();
     for (auto* b : { &playButton, &tapButton, &mixerButton, &audioButton, &countInButton })
         b->getProperties().set ("bold", true);   // only the first row is bold (HZLook::getTextButtonFont)
@@ -55,9 +55,9 @@ MainComponent::MainComponent()
     patternButton.onClick = [this] { showPatternMenu(); };
     addAndMakeVisible (searchButton);
     searchButton.onClick = [this] { openSearch(); };
-    searchButton.setTooltip ("Patterns und Songs suchen (Strg+K oder /)");
+    searchButton.setTooltip ("Bausteine und Arrangements suchen (Strg+K oder /)");
     addAndMakeVisible (deleteEntryButton);
-    deleteEntryButton.setTooltip ("Geladenen eigenen Eintrag in den Papierkorb verschieben");
+    deleteEntryButton.setTooltip ("Geladenen Eintrag in den Papierkorb verschieben");
     deleteEntryButton.setColour (juce::TextButton::buttonColourId, juce::Colour (0xff713a40));
     deleteEntryButton.setColour (juce::TextButton::textColourOffId, juce::Colour (0xffffeeee));
     deleteEntryButton.onClick = [this]
@@ -67,7 +67,7 @@ MainComponent::MainComponent()
             confirmDeleteLibraryEntry (library.get (currentPattern).id);
     };
     addAndMakeVisible (renameEntryButton);
-    renameEntryButton.setTooltip ("Geladenen eigenen Eintrag umbenennen (wie Rechtsklick im Pattern-Menü)"_u);
+    renameEntryButton.setTooltip ("Geladenen Eintrag umbenennen (wie Rechtsklick im Baustein-Menü)"_u);
     renameEntryButton.onClick = [this]
     {
         if (patternMode())

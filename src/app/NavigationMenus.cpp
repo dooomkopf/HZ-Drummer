@@ -120,15 +120,15 @@ juce::PopupMenu buildPatternMenu (const Library& lib, int current, const Pattern
         const auto root = lib.folders (area);
         if (folders::countItems (root) == 0)
             continue;
-        menu.addSectionHeader (area == FolderTree::Songs ? "Songs (Abläufe)"_u
-                               : area == FolderTree::Patterns ? juce::String ("Eigene Patterns (Bausteine)") : juce::String ("Bibliothek"));
+        menu.addSectionHeader (area == FolderTree::Songs ? "Arrangements (Songs)"_u
+                               : area == FolderTree::Patterns ? juce::String ("Bausteine (Pattern)") : juce::String ("Bibliothek-Bausteine"));
         addFolderMenu (menu, root, entry);
     }
 
     if (! lib.errors().isEmpty())
     {
         menu.addSeparator();
-        menu.addItem (juce::PopupMenu::Item (juce::String (lib.errors().size()) + " Pattern-Datei(en) fehlerhaft ...")
+        menu.addItem (juce::PopupMenu::Item (juce::String (lib.errors().size()) + " Baustein-Datei(en) fehlerhaft ...")
                           .setID (100000).setAction (actions.showErrors));
     }
 
@@ -136,7 +136,7 @@ juce::PopupMenu buildPatternMenu (const Library& lib, int current, const Pattern
     menu.addSeparator();
     addHint (menu, 100001, "Play/Pause Sample: Mausover + P");
     addHint (menu, 100002, "Toggle Favorit: Strg+F");
-    addHint (menu, 100003, "Umbenennen (eigenes Pattern): Rechtsklick");
+    addHint (menu, 100003, "Umbenennen (Baustein): Rechtsklick");
     return menu;
 }
 
@@ -181,9 +181,8 @@ std::vector<QuickSearch::Item> buildSearchItems (const Library& lib, const Meter
     {
         const auto& source = index.item (i);
         QuickSearch::Item it;
-        it.kind = source.group == SearchItem::Group::Songs ? "Song"
-                : source.group == SearchItem::Group::Sections ? "Abschnitt"
-                : source.group == SearchItem::Group::Own ? "Eigenes" : "Pattern";
+        it.kind = source.group == SearchItem::Group::Songs ? "Arrangement"
+                : source.group == SearchItem::Group::Own ? "Pattern" : "Bibliothek";
         it.title = source.title;
         it.detail = source.detail;
         it.haystack = source.haystack;
@@ -199,10 +198,10 @@ std::vector<QuickSearch::Item> buildSearchItems (const Library& lib, const Meter
     for (int i = 0; i < meters.size(); ++i)
     {
         QuickSearch::Item it;
-        it.kind = "Taktart";
+        it.kind = "Metronom";   // what it selects; the second line says what the title is (and keeps the rows even)
         it.meters = { { meters.get (i).numerator, meters.get (i).denominator } };
         it.title = meters.label (i);
-        it.detail = meters.isCustom (i) ? "eigene" : "";
+        it.detail = meters.isCustom (i) ? "eigene Taktart" : "Taktart";
         it.haystack = it.title + " taktart metronom";
         it.favorite = meters.isFavorite (i);
         it.action = [selectMeter, i] { selectMeter (i); };

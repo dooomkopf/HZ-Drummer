@@ -150,9 +150,9 @@ void PatternEditor::paint (juce::Graphics& g)
     {
         g.setColour (textDim);
         g.setFont (juce::FontOptions (17.0f));
-        g.drawFittedText ("Kein Pattern geladen.\n\nIm Hauptfenster ein Pattern wählen und E drücken (oder \"Bearbeiten\"),\n"
-                          "oder im Arranger einen Block wählen und \"Raster\" klicken (oder Rechtsklick, \"Bearbeiten\").\n"
-                          "Dann erscheint es hier im Raster."_u,
+        g.drawFittedText ("Kein Baustein geladen.\n\nIm Hauptfenster einen Baustein wählen und E drücken (oder \"Bearbeiten\"),\n"
+                          "oder im Arranger einen Block wählen und \"Editor\" klicken (oder Rechtsklick, \"Bearbeiten\").\n"
+                          "Dann erscheint er hier im Editor."_u,
                           viewport.getBounds().reduced (20), juce::Justification::centred, 5);
         return;
     }
@@ -204,9 +204,9 @@ void PatternEditor::paint (juce::Graphics& g)
         g.setColour (textMain);
         g.setFont (juce::FontOptions (15.0f, juce::Font::bold));
         g.drawFittedText (cardMode ? "Kopie der Karte \"" + blockTitle + "\" aus der Ablage. \"In Ablage übernehmen\" schreibt die Änderung in die Karte, "
-                                     "\"Speichern unter\" macht daraus ein eigenes Pattern und legt es als neue Karte daneben."_u
-                                   : "Lokale Kopie: Block \"" + blockTitle + "\" aus dem Ablauf. Änderungen gelten nur in diesem Song. "
-                                     "\"In Ablauf übernehmen\" schreibt sie in den Block, \"Speichern unter\" macht daraus ein eigenes Pattern."_u,
+                                     "\"Speichern unter\" macht daraus einen neuen Baustein und legt ihn als neue Karte daneben."_u
+                                   : "Lokale Kopie: Block \"" + blockTitle + "\" aus dem Ablauf. Änderungen gelten nur in diesem Arrangement. "
+                                     "\"In Ablauf übernehmen\" schreibt sie in den Block, \"Speichern unter\" macht daraus einen neuen Baustein."_u,
                           banner.reduced (12, 0), juce::Justification::centredLeft, 2);
     }
 

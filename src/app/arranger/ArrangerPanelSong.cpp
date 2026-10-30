@@ -27,7 +27,7 @@ void ArrangerPanel::save (bool asNew)
     Song copy = model.song();
     if (asNew || copy.id.empty())
     {
-        auto* w = new InWindowDialog ("Song speichern", "Name des Songs:", juce::MessageBoxIconType::NoIcon, this);
+        auto* w = new InWindowDialog ("Arrangement speichern", "Name des Arrangements:", juce::MessageBoxIconType::NoIcon, this);
         w->addTextEditor ("name", juce::String (copy.name), "Name:");
         w->addButton ("Speichern", 1, juce::KeyPress (juce::KeyPress::returnKey));
         w->addButton ("Abbrechen", 0, juce::KeyPress (juce::KeyPress::escapeKey));
@@ -63,7 +63,7 @@ void ArrangerPanel::newSong()
     confirmDiscard ([this]
     {
         Song s;
-        s.name = "Neuer Song";
+        s.name = "Neues Arrangement";
         model.load (s);
         selectPart (-1);
     });
@@ -84,7 +84,7 @@ void ArrangerPanel::showLoadMenu()
         return false;
     });
     if (ids.empty())
-        menu.addItem (1, "(keine gespeicherten Songs)", false);
+        menu.addItem (1, "(keine gespeicherten Arrangements)", false);
     menu.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (&toolbar),
                         [safe = juce::Component::SafePointer<ArrangerPanel> (this), ids] (int r)
     {
@@ -118,7 +118,7 @@ void ArrangerPanel::saveState()
     juce::String err;
     Song s = model.song();
     if (s.name.empty())
-        s.name = "Neuer Song";
+        s.name = "Neues Arrangement";
     if (saveSong (s, stateFile(), err))
     {
         stateDirty = false;
@@ -178,13 +178,13 @@ void ArrangerPanel::loadState()
             toolbar.setWarning ("Arbeitsstand defekt, Kopie: " + keep.getFileName()
                                 + (stateFile().copyFileTo (keep) ? "" : " (Kopie fehlgeschlagen!)"));
             s = {};
-            s.name = "Neuer Song";
+            s.name = "Neues Arrangement";
             model.load (s);
         }
     }
     else
     {
-        s.name = "Neuer Song";
+        s.name = "Neues Arrangement";
         model.load (s);
     }
     modelChanged();

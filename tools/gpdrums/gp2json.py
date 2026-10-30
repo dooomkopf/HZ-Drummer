@@ -203,7 +203,7 @@ def main():
         if not part:
             continue
         pid = f"{prefix}-{k + 1:02d}-{slug(name)}"
-        pat = make_pattern(pid, f"{title} – {k + 1:02d} {name} (T. {start}–{end})", ["song", "abschnitt"], tempo, part, seed + k)
+        pat = make_pattern(pid, f"{title} – {k + 1:02d} {name} (T{start}-{end})", ["song", "abschnitt"], tempo, part, seed + k)
         path = os.path.join(outdir, f"{pid}.json")
         json.dump(pat, open(path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         written.append((path, len(part)))
@@ -213,7 +213,7 @@ def main():
     songs_dir = os.path.join(os.path.dirname(os.path.abspath(outdir)), "songs")
     os.makedirs(songs_dir, exist_ok=True)
     song_id = prefix.split(".", 1)[-1]
-    song = {"formatVersion": 1, "id": song_id, "name": f"{title} (ganzer Song)", "tempo": tempo, "parts": song_parts}
+    song = {"formatVersion": 1, "id": song_id, "name": f"{title} (Song)", "tempo": tempo, "parts": song_parts}
     path = os.path.join(songs_dir, f"{song_id}.json")
     json.dump(song, open(path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     written.append((path, len(song)))

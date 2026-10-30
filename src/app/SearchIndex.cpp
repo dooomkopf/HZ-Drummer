@@ -13,10 +13,9 @@ juce::String SearchIndex::groupTitle (SearchItem::Group g)
 {
     switch (g)
     {
-        case SearchItem::Group::Songs:    return "Songs";
-        case SearchItem::Group::Sections: return "Song-Abschnitte";
+        case SearchItem::Group::Songs:    return "Arrangements";
+        case SearchItem::Group::Own:      return "Bausteine";
         case SearchItem::Group::Bundled:  return "Bibliothek";
-        case SearchItem::Group::Own:      return "Eigene Patterns";
     }
     return {};
 }
@@ -40,11 +39,11 @@ void SearchIndex::build (const Library& lib)
             it.group = SearchItem::Group::Songs;
         else if (lib.isUserPattern (i))
         {
+            // one group for all own building blocks; parts of a song keep "band – song" next to the name
             const auto group = Library::groupOf (p);
-            it.group = group.isEmpty() ? SearchItem::Group::Own : SearchItem::Group::Sections;
-            it.origin = it.group == SearchItem::Group::Sections
-                ? (Library::bandOf (p) == Library::otherBand ? group : Library::bandOf (p) + " – " + group)
-                : juce::String();
+            it.group = SearchItem::Group::Own;
+            it.origin = group.isEmpty() ? juce::String()
+                      : Library::bandOf (p) == Library::otherBand ? group : Library::bandOf (p) + " – " + group;
         }
         else
         {
@@ -106,7 +105,7 @@ std::vector<SearchGroup> SearchIndex::search (const juce::String& text, int perG
     });
 
     std::vector<SearchGroup> groups;
-    for (auto g : { SearchItem::Group::Songs, SearchItem::Group::Sections, SearchItem::Group::Bundled, SearchItem::Group::Own })
+    for (auto g : { SearchItem::Group::Songs, SearchItem::Group::Own, SearchItem::Group::Bundled })
     {
         SearchGroup sg { g, groupTitle (g), {}, 0 };
         const bool unlimited = perGroup <= 0 || expanded.count (g) > 0;

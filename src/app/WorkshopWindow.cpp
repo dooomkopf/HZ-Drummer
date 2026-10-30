@@ -42,7 +42,7 @@ WorkshopWindow::WorkshopWindow (EditorHost& h, ArrangerHost& ah, juce::Propertie
     tabs.getTabbedButtonBar().setLookAndFeel (&tabLook);
     tabs.setTabBarDepth (32);
     tabs.setOutline (0);
-    tabs.addTab ("Raster", windowBackground, editor, true);
+    tabs.addTab ("Editor", windowBackground, editor, true);
     tabs.addTab ("Arranger", windowBackground, arranger, true);
 
     arranger->onBlockApplied = [this] (const hz::Pattern& applied) { editor->blockApplied (applied); };
@@ -62,7 +62,7 @@ WorkshopWindow::WorkshopWindow (EditorHost& h, ArrangerHost& ah, juce::Propertie
             return;
         }
         juce::AlertWindow::showOkCancelBox (juce::MessageBoxIconType::QuestionIcon, "Ungespeicherte Änderungen"_u,
-            "Im Raster gibt es ungespeicherte Änderungen an \""_u + juce::String (editor->getPattern().name) + "\". Verwerfen und die Karte laden?",
+            "Im Editor gibt es ungespeicherte Änderungen an \""_u + juce::String (editor->getPattern().name) + "\". Verwerfen und die Karte laden?",
             "Verwerfen", "Behalten", this,
             juce::ModalCallbackFunction::create ([safe = juce::Component::SafePointer<WorkshopWindow> (this), open] (int r)
             {
@@ -85,7 +85,7 @@ WorkshopWindow::WorkshopWindow (EditorHost& h, ArrangerHost& ah, juce::Propertie
             return;
         }
         juce::AlertWindow::showOkCancelBox (juce::MessageBoxIconType::QuestionIcon, "Ungespeicherte Änderungen"_u,
-            "Im Raster gibt es ungespeicherte Änderungen an \""_u + juce::String (editor->getPattern().name) + "\". Verwerfen und den Block laden?",
+            "Im Editor gibt es ungespeicherte Änderungen an \""_u + juce::String (editor->getPattern().name) + "\". Verwerfen und den Block laden?",
             "Verwerfen", "Behalten", this,
             juce::ModalCallbackFunction::create ([safe = juce::Component::SafePointer<WorkshopWindow> (this), open] (int r)
             {
@@ -149,8 +149,8 @@ void WorkshopWindow::updateRasterTab()
         return;
     button->setEnabled (canEdit);
     button->setTooltip (canEdit ? juce::String()
-                                : "Erst etwas zum Bearbeiten wählen: im Hauptfenster ein Pattern und \"Bearbeiten\" (E), "
-                                  "oder im Arranger einen Block und \"Raster\""_u);
+                                : "Erst etwas zum Bearbeiten wählen: im Hauptfenster einen Baustein und \"Bearbeiten\" (E), "
+                                  "oder im Arranger einen Block und \"Editor\""_u);
 }
 
 WorkshopWindow::~WorkshopWindow()

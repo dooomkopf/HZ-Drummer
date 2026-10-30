@@ -73,7 +73,7 @@ private:
     void askRange();
     void askRename (int part);
     void editBlock();
-    void editScratchCard (int index);   // "Bearbeiten (Kopie im Raster)" on a card of the Ablage
+    void editScratchCard (int index);   // "Bearbeiten (Kopie im Editor)" on a card of the Ablage
     void showCardMenu (int index);      // right click on a card of the Ablage
     void updateFromSource();
     void showBlockMenu (int part);
