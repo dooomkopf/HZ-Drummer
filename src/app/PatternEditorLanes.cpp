@@ -214,7 +214,7 @@ void PatternEditor::paint (juce::Graphics& g)
 
 juce::String PatternEditor::defaultHelp() const
 {
-    return "Klick: Schlag setzen/löschen  ·  Shift+Klick: Akzent  ·  Alt+Klick: Ghost  ·  Strg(+Shift)+Klick: später (früher), je 20 ms bis 100  ·  hoch/runter ziehen: Lautstärke\n"
-           "Rechtsklick: Ghost/Normal/Akzent  ·  M/S an der Spur: stumm/solo (Reset darüber)  ·  Klick auf Spurname: Probeklang  ·  Kopfzeile: Taktart, Raster, Takt-Menü  ·  Strg+Z/Y  ·  Strg+S "_u
+    return "Klick: Schlag setzen/löschen  ·  Shift+Klick: Akzent  ·  Alt+Klick: Ghost  ·  Strg(+Shift)+Klick: später (früher), je 10 ms bis 100  ·  hoch/runter ziehen: Lautstärke\n"
+           "Rechtsklick: Ghost/Normal/Akzent, mit Strg: Flam  ·  M/S an der Spur: stumm/solo (Reset darüber)  ·  Klick auf Spurname: Probeklang  ·  Kopfzeile: Taktart, Raster, Takt-Menü  ·  Strg+Z/Y  ·  Strg+S "_u
            + (cardMode ? juce::String ("in Ablage übernehmen"_u) : blockMode ? juce::String ("in Ablauf übernehmen"_u) : juce::String ("speichern"));
 }

@@ -462,6 +462,14 @@ static void testLaggedHit()
     CHECK (! bad.validate().empty());
     bad.layers[0].events[0].lagMs = -150.0f;
     CHECK (! bad.validate().empty());
+
+    // Strg+Rechtsklick: Flam an und wieder aus; der Plan bekommt dafür den Vorschlag dazu
+    const auto hitsBefore = buildPlan (p).events.size();
+    CHECK (setEventFlam (p, kick, Rational (0), true));
+    CHECK (buildPlan (p).events.size() == hitsBefore + 1);
+    CHECK (setEventFlam (p, kick, Rational (0), false));
+    CHECK (buildPlan (p).events.size() == hitsBefore);
+    CHECK (! setEventFlam (p, kick, Rational (1, 3), true));   // dort liegt kein Schlag
 }
 
 static void testSeek()

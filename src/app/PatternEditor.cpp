@@ -75,8 +75,8 @@ PatternEditor::PatternEditor (EditorHost& h) : host (h), help ("hilfezeile-raste
     swingBox.setWantsKeyboardFocus (false);
     swingBox.setTooltip ("Swing: Jeder zweite Schlag der Unterteilung kommt später, bei Achteln das \"und\", bei 16teln \"e\" und \"a\". "
                          "Die Prozent sagen, wie viel vom Paar der erste Schlag bekommt: 50 % = gerade, 58 % = leicht, "
-                         "67 % = triolisch (Shuffle), 72 % = stark. Im Editor stehen diese Schläge versetzt da, "
-                         "ihr Platz im Raster bleibt als blasser Rahmen."_u);
+                         "67 % = triolisch (Shuffle), 72 % = stark. Im Editor stehen diese Schläge versetzt da, mit den ms "
+                         "beim Tempo des Bausteins; ihr Platz im Raster bleibt als blasser Rahmen."_u);
     for (int i = 0; i < (int) std::size (swingOptions); ++i)
         swingBox.addItem (juce::String (juce::CharPointer_UTF8 (swingOptions[i].label)), i + 1);
     swingBox.onChange = [this]

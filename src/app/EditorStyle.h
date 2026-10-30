@@ -28,8 +28,17 @@ namespace editorstyle
     constexpr int maxUndo = 200;
 
     constexpr float ghostVel = 0.3f, normalVel = 0.75f, accentVel = 1.0f;
-    constexpr float lagStepMs = 20.0f;   // Ctrl+click on a hit: this much later per click, Ctrl+Shift+click earlier ...
+    constexpr float lagStepMs = 10.0f;   // Ctrl+click on a hit: this much later per click, Ctrl+Shift+click earlier ...
     constexpr float maxLagMs = 100.0f;   // ... up to this far in either direction
+
+    // The offset after a Ctrl(+Shift)+click: the next step in the click direction. An exact value (an import,
+    // e.g. +40.8 ms) stays as it is and is shown as it is until it is edited; then it lands on the steps.
+    inline float steppedLag (float lagMs, bool earlier)
+    {
+        const float steps = lagMs / lagStepMs;
+        const float next = earlier ? std::ceil (steps - 0.001f) - 1.0f : std::floor (steps + 0.001f) + 1.0f;
+        return juce::jlimit (-maxLagMs, maxLagMs, next * lagStepMs);
+    }
 
     // Content of a pattern without its identity (id, revision, origin): compared to decide "unsaved?"
     inline juce::String contentKey (hz::Pattern p)

@@ -60,7 +60,9 @@ Im Menü einen Baustein wählen schaltet auf Baustein, eine Taktart wählen scha
   - **Shift + Klick** setzt einen Akzent, **Alt + Klick** eine Ghost-Note.
   - **Ziehen nach oben/unten** ändert die Lautstärke. Größe und Helligkeit des Kästchens zeigen sie an.
   - **Rechtsklick** schaltet zwischen Ghost, normal und Akzent um.
-  - **Strg + Klick** auf einen Schlag lässt ihn etwas später klingen („laid back“), **Strg + Shift + Klick** früher, je 20 ms pro Klick bis ±100 ms; zurück auf das Raster mit Klicks in die Gegenrichtung. Die ms stehen im Kästchen. Ganz am Anfang und Ende der Baustein-Schleife wird der Schlag auf die Schleifengrenze begrenzt.
+  - **Strg + Rechtsklick** schaltet den Flam ein oder aus, einen leisen Vorschlag kurz vor dem Schlag. Er steht als kleiner Strich vor dem Kästchen.
+  - **Strg + Klick** auf einen Schlag lässt ihn etwas später klingen („laid back“), **Strg + Shift + Klick** früher, je 10 ms pro Klick bis ±100 ms; zurück auf das Raster mit Klicks in die Gegenrichtung. Ein genauer Wert aus einem Import (z. B. +40,8 ms) bleibt, bis man ihn bearbeitet; der erste Klick springt dann auf die nächste 10er-Stufe. Ganz am Anfang und Ende der Baustein-Schleife wird der Schlag auf die Schleifengrenze begrenzt.
+  - Die **ms im Kästchen** sagen, wie viel später (−: früher) der Schlag klingt als sein Rasterplatz, Swing eingerechnet, beim Tempo des Bausteins. Das Kästchen steht dort, wo der Schlag klingt; sein Rasterplatz, auf den man klickt, bleibt als blasser Rahmen.
 - **Rauten** sind Schläge außerhalb des Rasters, z.B. die drei Becken bei „3 gegen 2“. Rechtsklick löscht sie.
 - **Kopfzeile je Takt:**
   - Klick auf die Taktart (z.B. `4/4 ▾`) ändert sie, auch auf eine eigene.

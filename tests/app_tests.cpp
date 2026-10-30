@@ -274,6 +274,18 @@ static void testSwingFindsPlace()
     CHECK (! swingFindsPlace (eighths));     // no swing
 }
 
+// Strg(+Shift)+Klick im Editor: 10-ms-Stufen; ein genauer Wert aus einem Import springt erst auf die nächste Stufe
+static void testSteppedLag()
+{
+    using editorstyle::steppedLag;
+    CHECK (steppedLag (0.0f, false) == 10.0f && steppedLag (0.0f, true) == -10.0f);
+    CHECK (steppedLag (20.0f, false) == 30.0f && steppedLag (20.0f, true) == 10.0f);
+    CHECK (steppedLag (40.8f, false) == 50.0f && steppedLag (40.8f, true) == 40.0f);      // AC/DC-Import
+    CHECK (steppedLag (-40.8f, false) == -40.0f && steppedLag (-40.8f, true) == -50.0f);
+    CHECK (steppedLag (95.0f, false) == 100.0f && steppedLag (100.0f, false) == 100.0f);   // nicht über ±100
+    CHECK (steppedLag (-100.0f, true) == -100.0f);
+}
+
 // the grid the editor suggests for a bar with diamonds
 static void testFittingGrid()
 {
@@ -321,6 +333,7 @@ int main (int argc, char* argv[])
     testMenuClickSeparation();
     testChannelsInUse();
     testSwingFindsPlace();
+    testSteppedLag();
     testFittingGrid();
     runSongTests();
     runFolderTests();

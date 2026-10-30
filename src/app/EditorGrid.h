@@ -81,14 +81,22 @@ public:
     }
 
     // how far right a hit at pos sounds because of the swing (0 if it does not swing)
-    float swingOffsetPx (hz::Rational pos) const
+    // how far a hit is drawn from its grid place: its swing plus its own offset (lag), at the tempo of the pattern
+    float offsetPx (hz::Rational pos, float lagMs) const
     {
         const auto& p = owner.pattern;
-        const double shift = hz::swingShift (p, pos);
-        if (shift <= 0.0)
+        const double shift = hz::swingShift (p, pos) + (p.tempo > 0.0 ? (double) lagMs * p.tempo / 60000.0 : 0.0);
+        if (shift == 0.0)
             return 0.0f;
         const int bi = p.barAt (pos);
         return (float) (shift / p.bars[(size_t) bi].lengthInQuarters().toDouble()) * (float) headers[(size_t) bi].area.getWidth();
+    }
+
+    // the same in ms, at the tempo of the pattern
+    float swingMs (hz::Rational pos) const
+    {
+        const auto& p = owner.pattern;
+        return p.tempo > 0.0 ? (float) (hz::swingShift (p, pos) * 60000.0 / p.tempo) : 0.0f;
     }
 
     float xForPos (hz::Rational pos) const
@@ -221,13 +229,20 @@ public:
                     const float size = 0.35f + 0.65f * e.velocity;
                     auto r = juce::Rectangle<float> (c.x + 2, y + 2, c.w - 4, (float) owner.rowH - 4);
                     r = r.withSizeKeepingCentre (r.getWidth() * size, r.getHeight() * size);
-                    // swing: drawn where it sounds; its grid place (where it is clicked) stays as a faint outline
-                    const float swingDx = swingOffsetPx (e.pos);
-                    if (swingDx > 0.0f)
+                    // swing and own offset: drawn where it sounds; its grid place (where it is clicked) stays as a faint outline
+                    const float dx = offsetPx (e.pos, e.lagMs);
+                    if (dx != 0.0f)
                     {
                         g.setColour (col.withAlpha (0.35f));
                         g.drawRoundedRectangle (r, 3.0f, 1.0f);
-                        r = r.translated (swingDx, 0.0f);
+                        r = r.translated (dx, 0.0f);
+                    }
+                    if (e.flam)   // a flam: a small grace stroke in front of the hit, inside its place
+                    {
+                        const auto grace = r.removeFromLeft (r.getWidth() * 0.22f);
+                        r.removeFromLeft (juce::jmin (2.0f, r.getWidth() * 0.1f));
+                        g.setColour (col.withAlpha (0.75f));
+                        g.fillRoundedRectangle (grace.withSizeKeepingCentre (grace.getWidth(), grace.getHeight() * 0.6f), 1.5f);
                     }
                     g.setColour (col.withAlpha (0.45f + 0.55f * e.velocity));
                     g.fillRoundedRectangle (r, 3.0f);
@@ -236,18 +251,19 @@ public:
                         g.setColour (juce::Colours::white);
                         g.drawRoundedRectangle (r, 3.0f, 1.5f);
                     }
-                    if (const int ms = juce::roundToInt (e.lagMs); ms != 0)   // played later/earlier: the ms on the hit
+                    // the ms on the hit: how much later (earlier) it sounds than its grid place, swing included
+                    if (const int ms = juce::roundToInt (e.lagMs + swingMs (e.pos)); ms != 0)
                     {
                         // dark on light hits (snare), white on the others
                         g.setColour (col.getPerceivedBrightness() > 0.6f ? juce::Colour (0xff1c1c20) : juce::Colours::white);
-                        drawLag (ms, juce::Rectangle<float> (c.x + swingDx, y, c.w, (float) owner.rowH), juce::Justification::centred);
+                        drawLag (ms, juce::Rectangle<float> (c.x + dx, y, c.w, (float) owner.rowH), juce::Justification::centred);
                     }
                 }
                 else
                 {
-                    // not on the grid (e.g. polyrhythm): diamond at the exact position. Swing as on the grid:
-                    // drawn where it sounds, its place (where it is clicked) stays as a faint outline
-                    const float x = xForPos (e.pos), swingDx = swingOffsetPx (e.pos);
+                    // not on the grid (e.g. polyrhythm): diamond at the exact position. Swing and offset as on the
+                    // grid: drawn where it sounds, its place (where it is clicked) stays as a faint outline
+                    const float x = xForPos (e.pos), dx = offsetPx (e.pos, e.lagMs);
                     const float s = 5.0f + 4.0f * e.velocity, cy = y + owner.rowH * 0.5f;
                     auto diamond = [s, cy] (float centre)
                     {
@@ -259,17 +275,29 @@ public:
                         d.closeSubPath();
                         return d;
                     };
-                    if (swingDx > 0.0f)
+                    if (dx != 0.0f)
                     {
                         g.setColour (col.withAlpha (0.35f));
                         g.strokePath (diamond (x), juce::PathStrokeType (1.0f));
                     }
                     g.setColour (col.withAlpha (0.5f + 0.5f * e.velocity));
-                    g.fillPath (diamond (x + swingDx));
-                    if (const int ms = juce::roundToInt (e.lagMs); ms != 0)
+                    g.fillPath (diamond (x + dx));
+                    if (e.flam)   // the grace stroke: a small diamond in front
+                    {
+                        juce::Path grace;
+                        const float gs = s * 0.5f, gx = x + dx - s - gs - 1.0f;
+                        grace.startNewSubPath (gx - gs, cy);
+                        grace.lineTo (gx, cy - gs);
+                        grace.lineTo (gx + gs, cy);
+                        grace.lineTo (gx, cy + gs);
+                        grace.closeSubPath();
+                        g.setColour (col.withAlpha (0.75f));
+                        g.fillPath (grace);
+                    }
+                    if (const int ms = juce::roundToInt (e.lagMs + swingMs (e.pos)); ms != 0)
                     {
                         g.setColour (juce::Colours::white);   // beside the small diamond, on the dark cells
-                        drawLag (ms, juce::Rectangle<float> (x + swingDx + s + 2.0f, y, 44.0f, (float) owner.rowH), juce::Justification::centredLeft);
+                        drawLag (ms, juce::Rectangle<float> (x + dx + s + 2.0f, y, 44.0f, (float) owner.rowH), juce::Justification::centredLeft);
                     }
                 }
             }
@@ -336,6 +364,18 @@ public:
         if (e.mods.isPopupMenu())
         {
             const auto before = owner.pattern;
+            if (e.mods.isCommandDown())   // Ctrl+right click on a hit or a diamond: flam on/off; elsewhere nothing
+            {
+                const auto* ev = offGridNear (voice, (float) pt.x);
+                if (ev == nullptr && ci >= 0)
+                    ev = hz::findEvent (owner.pattern, voice, columns[(size_t) ci].pos);
+                if (ev != nullptr)
+                {
+                    hz::setEventFlam (owner.pattern, voice, ev->pos, ! ev->flam);
+                    owner.changed (before);
+                }
+                return;
+            }
             if (const auto* off = offGridNear (voice, (float) pt.x))
             {
                 hz::removeEvent (owner.pattern, voice, off->pos);
@@ -361,14 +401,14 @@ public:
             return;
 
         // Ctrl+click on a hit: play it a little later ("laid back"), Ctrl+Shift+click earlier; one step per click
+        // (an exact imported offset first lands on the next step)
         if (e.mods.isCommandDown())
         {
             const auto pos = columns[(size_t) ci].pos;
             if (const auto* ev = hz::findEvent (owner.pattern, voice, pos))
             {
                 const auto before = owner.pattern;
-                const float step = e.mods.isShiftDown() ? -lagStepMs : lagStepMs;
-                hz::setEventLag (owner.pattern, voice, pos, juce::jlimit (-maxLagMs, maxLagMs, ev->lagMs + step));
+                hz::setEventLag (owner.pattern, voice, pos, steppedLag (ev->lagMs, e.mods.isShiftDown()));
                 owner.changed (before);
             }
             return;

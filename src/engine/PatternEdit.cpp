@@ -115,6 +115,18 @@ bool setEventLag (Pattern& p, Voice v, Rational pos, float lagMs)
     return false;
 }
 
+bool setEventFlam (Pattern& p, Voice v, Rational pos, bool flam)
+{
+    for (auto& l : p.layers)
+        for (auto& e : l.events)
+            if (e.voice == v && e.pos == pos)
+            {
+                e.flam = flam;
+                return true;
+            }
+    return false;
+}
+
 void insertBar (Pattern& p, int afterBar, bool copyContent)
 {
     if (p.bars.empty())
