@@ -6,7 +6,9 @@
 #include "app/Song.h"
 #include "engine/TabParser.h"
 
+#include <algorithm>
 #include <cstdio>
+#include <string>
 
 extern int songTestFailures;
 int songTestFailures = 0;
@@ -27,6 +29,19 @@ namespace
     juce::File tempFile (const juce::String& name)
     {
         return juce::File::getSpecialLocation (juce::File::tempDirectory).getChildFile ("hz-song-test-" + name);
+    }
+
+    // Erste abweichende Stelle, byteweise: juce::String::operator[] läuft jedes Mal von vorn durch
+    // das UTF-8, bei Songs mit 500 KB wäre die Suche quadratisch langsam (Minuten)
+    size_t firstDifference (const std::string& a, const std::string& b)
+    {
+        const auto n = std::min (a.size(), b.size());
+        return (size_t) (std::mismatch (a.begin(), a.begin() + (std::ptrdiff_t) n, b.begin()).first - a.begin());
+    }
+
+    std::string around (const std::string& s, size_t at)
+    {
+        return s.substr (at > 60 ? at - 60 : 0, 140);
     }
 
     int countEvents (const hz::Pattern& p)
@@ -405,19 +420,16 @@ void checkSongFolder (const juce::File& songs, const std::vector<hz::Pattern>& l
         const auto tmp = tempFile ("roundtrip.json");
         CHECK (saveSong (withCopies, tmp, err) && loadSong (tmp, reread, err));
         tmp.deleteFile();
-        const auto key = ArrangerModel::contentKey (withCopies);
-        const juce::String keys[] = { ArrangerModel::contentKey (again), ArrangerModel::contentKey (reread) };
+        const auto key = ArrangerModel::contentKey (withCopies).toStdString();
+        const std::string keys[] = { ArrangerModel::contentKey (again).toStdString(), ArrangerModel::contentKey (reread).toStdString() };
         const char* names[] = { "zweites Laden", "Schreiben und Lesen" };
         for (int i = 0; i < 2; ++i)
             if (keys[i] != key)
             {
                 // show where the keys start to differ
-                int at = 0;
-                while (at < key.length() && at < keys[i].length() && key[at] == keys[i][at])
-                    ++at;
-                const int from = juce::jmax (0, at - 60);
-                std::printf ("  UNGLEICH %s nach %s, Zeichen %d:\n    %s\n    %s\n", f.getFileName().toRawUTF8(), names[i], at,
-                             key.substring (from, at + 80).toRawUTF8(), keys[i].substring (from, at + 80).toRawUTF8());
+                const auto at = firstDifference (key, keys[i]);
+                std::printf ("  UNGLEICH %s nach %s, Byte %d:\n    %s\n    %s\n", f.getFileName().toRawUTF8(), names[i], (int) at,
+                             around (key, at).c_str(), around (keys[i], at).c_str());
                 ++bad;
             }
     }
@@ -439,15 +451,13 @@ void checkSongFolder (const juce::File& songs, const std::vector<hz::Pattern>& l
         else
         {
             embedCopies (onDisk, library, err);
-            const auto a = ArrangerModel::contentKey (work), b = ArrangerModel::contentKey (onDisk);
-            int at = 0;
-            while (at < a.length() && at < b.length() && a[at] == b[at])
-                ++at;
+            const auto a = ArrangerModel::contentKey (work).toStdString(), b = ArrangerModel::contentKey (onDisk).toStdString();
+            const auto at = firstDifference (a, b);
             if (a == b)
                 std::printf ("Arbeitsstand \"%s\": entspricht %s\n", work.name.c_str(), file.getFileName().toRawUTF8());
             else
-                std::printf ("Arbeitsstand \"%s\": weicht von %s ab, Zeichen %d:\n    %s\n    %s\n", work.name.c_str(), file.getFileName().toRawUTF8(),
-                             at, a.substring (juce::jmax (0, at - 60), at + 80).toRawUTF8(), b.substring (juce::jmax (0, at - 60), at + 80).toRawUTF8());
+                std::printf ("Arbeitsstand \"%s\": weicht von %s ab, Byte %d:\n    %s\n    %s\n", work.name.c_str(), file.getFileName().toRawUTF8(),
+                             (int) at, around (a, at).c_str(), around (b, at).c_str());
         }
     }
 }
