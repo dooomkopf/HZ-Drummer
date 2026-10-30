@@ -16,8 +16,10 @@ namespace
         w->addButton ("Abbrechen", 0, juce::KeyPress (juce::KeyPress::escapeKey));
         w->enterModalState (true, juce::ModalCallbackFunction::create ([w, done] (int r)
         {
+            if (r != 1)
+                return;   // read the dialog only when OK was pressed: on cancel it may already be gone
             const auto name = w->getTextEditorContents ("name").trim();
-            if (r == 1 && name.isNotEmpty())
+            if (name.isNotEmpty())
                 done (name);
         }), true);
     }
@@ -32,7 +34,8 @@ void MainComponent::askRenameEntry (const std::string& id)
     if (! library.isSong (index) && ! library.isUserPattern (index))
     {
         juce::AlertWindow::showMessageBoxAsync (juce::MessageBoxIconType::InfoIcon, "Umbenennen",
-            "Mitgelieferte Patterns lassen sich nicht umbenennen. Im Raster macht \"Speichern unter\" eine eigene Kopie daraus, die sich umbenennen lässt."_u,
+            "Mitgelieferte Patterns lassen sich nicht umbenennen. Im Raster macht \"Speichern unter\" eine eigene Kopie daraus, die sich umbenennen lässt. "
+            "Ordnerstruktur und Ordnernamen lassen sich unter \"System\" anpassen."_u,
             "OK", this);
         return;
     }

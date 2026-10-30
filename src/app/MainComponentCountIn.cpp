@@ -57,7 +57,6 @@ bool MainComponent::startWithCountIn()
     publishControl();
     pendingDisplay.clear();
     hasShown = false;
-    playButton.setButtonText ("Pause");
     updateView();
     return true;
 }

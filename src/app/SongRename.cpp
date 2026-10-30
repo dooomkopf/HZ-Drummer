@@ -18,7 +18,7 @@ juce::String renameCopiesInFiles (const juce::File& songFolder, const juce::File
                                   const std::string& sourceId, const std::string& oldName, const std::string& newName)
 {
     juce::StringArray failed;   // one file that cannot be written does not stop the others
-    auto songFiles = songFolder.findChildFiles (juce::File::findFiles, false, "*.json");
+    auto songFiles = songFolder.findChildFiles (juce::File::findFiles | juce::File::ignoreHiddenFiles, false, "*.json");
     songFiles.add (stateFile);
     for (auto& f : songFiles)
     {

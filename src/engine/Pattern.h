@@ -57,6 +57,7 @@ struct PatternEvent
     float velocity = 0.75f;        // 0..1
     Limb limb = Limb::Auto;
     bool flam = false;             // Grace note is generated during planning
+    float lagMs = 0.0f;            // ms later (+, "laid back") or earlier (-) than its position, -100..100; 0 = on the grid
 };
 
 struct PatternLayer

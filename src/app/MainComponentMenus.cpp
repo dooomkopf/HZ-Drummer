@@ -277,19 +277,49 @@ void MainComponent::showAudioSettings()
 {
     if (audioWindow == nullptr)
     {
+        // "Abzeichen (a, b, c, …): …" with three real badges for a, b, c, so that one sees what is meant
+        struct BadgeLine : juce::Component
+        {
+            juce::String rest;   // after the colon: how many are free
+            void paint (juce::Graphics& g) override
+            {
+                const juce::Font font (juce::FontOptions (20.0f, juce::Font::bold));
+                g.setFont (font);
+                g.setColour (theme::textMain);
+                auto r = getLocalBounds().toFloat();
+                auto text = [&] (const juce::String& s)
+                {
+                    g.setColour (theme::textMain);   // a badge leaves its own colour behind
+                    g.drawText (s, r.removeFromLeft (juce::GlyphArrangement::getStringWidth (font, s) + 1.0f), juce::Justification::centredLeft, false);
+                };
+                auto badge = [&] (int colour, int shape)
+                {
+                    theme::drawSourceBadge (g, r.removeFromLeft (24.0f).withSizeKeepingCentre (18.0f, 18.0f), colour, shape);
+                };
+                text ("Abzeichen (");
+                badge (0, 0);   // a: one colour
+                text (", ");
+                badge (5, 7);   // b: a horizontal bar, like a flag
+                text (", ");
+                badge (9, 9);   // c: a dot
+                text (", …): "_u);
+                g.setColour (theme::textMain);
+                g.drawFittedText (rest, r.toNearestInt(), juce::Justification::centredLeft, 1, 0.7f);
+            }
+        };
+
         // the audio settings plus a few lines about the system and the badges in use
         struct SystemPanel : juce::Component
         {
             AudioSettingsPanel selector;
-            juce::Label badgeLine, info, version;
-            juce::TextButton trash { "Papierkorb" }, logs { "Logdateien" }, structure { "Ordnerstruktur" };
+            BadgeLine badgeLine;
+            juce::Label info, version;
+            juce::TextButton trash { "Papierkorb" }, logs { "Log-Dateien" }, structure { "Ordnerstruktur" };
             explicit SystemPanel (juce::AudioDeviceManager& dm) : selector (dm)
             {
                 addAndMakeVisible (selector);
                 addAndMakeVisible (trash); addAndMakeVisible (logs); addAndMakeVisible (structure);
                 addAndMakeVisible (badgeLine);
-                badgeLine.setFont (juce::FontOptions (20.0f, juce::Font::bold));
-                badgeLine.setColour (juce::Label::textColourId, theme::textMain);
                 addAndMakeVisible (info);
                 info.setFont (juce::FontOptions (14.0f));
                 info.setColour (juce::Label::textColourId, theme::textDim);
@@ -321,9 +351,9 @@ void MainComponent::showAudioSettings()
 
         // badges: how much of the colour x mark space is taken, and whether any two patterns share one
         const auto st = badges.stats (library.all());
-        panel->badgeLine.setText ("Freie Abzeichen: " + juce::String (st.total - st.used) + " von " + juce::String (st.total)
-                                  + (st.shared > 0 ? "   (" + juce::String (st.shared) + " Patterns teilen sich eins!)" : juce::String()),
-                                  juce::dontSendNotification);
+        panel->badgeLine.rest = juce::String (st.total - st.used) + " frei von " + juce::String (st.total)
+                                + (st.shared > 0 ? "   (" + juce::String (st.shared) + " Patterns teilen sich eins!)" : juce::String());
+        panel->badgeLine.repaint();
         juce::String text;
         text << "System: " << juce::SystemStats::getOperatingSystemName() << ", " << juce::SystemStats::getCpuModel()
              << ", " << juce::SystemStats::getNumCpus() << " Kerne, " << juce::SystemStats::getMemorySizeInMegabytes() << " MB\n";
@@ -364,11 +394,22 @@ void MainComponent::showDataTools (int tab)
             });
         }
         else if (tab == 1) panel = new LogPanel();
-        else panel = new FolderPanel (library);
+        else
+        {
+            auto* folders = new FolderPanel (library);
+            folders->onDeleteEntry = [safe = juce::Component::SafePointer<MainComponent> (this)] (const std::string& id)
+            {
+                if (safe == nullptr)
+                    return juce::String();
+                safe->cancelPreview();
+                return safe->removeLibraryEntry (id);
+            };
+            panel = folders;
+        }
         panel->setSize (tab == 1 ? 1000 : 820, tab == 0 ? 500 : 640);
         juce::DialogWindow::LaunchOptions options;
         options.content.setOwned (new GlowFrame (panel));
-        options.dialogTitle = tab == 0 ? "Papierkorb" : tab == 1 ? "Logdateien" : "Ordnerstruktur";
+        options.dialogTitle = tab == 0 ? "Papierkorb" : tab == 1 ? "Log-Dateien" : "Ordnerstruktur";
         options.dialogBackgroundColour = theme::panel; options.useNativeTitleBar = true; options.resizable = true;
         window.reset (options.create());
     }

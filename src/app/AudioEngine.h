@@ -56,6 +56,15 @@ public:
     const hz::DrumKit* kitInUse() const           { return kitInUseByAudio.load(); }
     double deviceSampleRate() const               { return deviceRate.load(); }
     void seek (double quarters)                   { seekTarget = quarters; ++seekSerial; }   // in the playing plan
+    // one hit right now, outside any pattern (a click on a lane name in the raster); the newest request wins
+    // (message thread only)
+    void previewVoice (hz::Voice v, float velocity)
+    {
+        const std::uint32_t hit = (std::uint32_t) v.instrument | ((std::uint32_t) v.articulation << 8)
+                                | ((std::uint32_t) juce::roundToInt (juce::jlimit (0.0f, 1.0f, velocity) * 255.0f) << 16);
+        // request number and hit in one atomic: the audio thread never pairs a number with another request's hit
+        previewRequest = ((std::uint64_t) ++previewCount << 32) | hit;
+    }
     void sendPlan (std::unique_ptr<hz::PatternPlan>);
     void collectRetiredPlans();                   // frees plans the audio thread has released
     void popDisplayEvents (std::vector<DisplayEvent>& out);
@@ -77,6 +86,8 @@ private:
     std::atomic<double> deviceRate { 0.0 };
     std::atomic<double> seekTarget { 0.0 };
     std::atomic<std::uint32_t> seekSerial { 0 };   // incremented per request; the audio thread compares
+    std::atomic<std::uint64_t> previewRequest { 0 };   // request number << 32 | voice and velocity of previewVoice
+    std::uint32_t previewCount = 0;                     // message thread
     static_assert (std::atomic<std::uint64_t>::is_always_lock_free);
     static_assert (std::atomic<const hz::DrumKit*>::is_always_lock_free);
 
@@ -109,6 +120,7 @@ private:
     int latencySamples = 0;
     std::uint16_t appliedGeneration = 0;
     std::uint32_t appliedSeek = 0;
+    std::uint32_t appliedPreview = 0;
     std::int64_t audioClock = 0;
     std::int64_t lastKickSample = -1000000;
     bool lastKickLeft = true;

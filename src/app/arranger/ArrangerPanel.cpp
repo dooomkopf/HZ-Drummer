@@ -13,13 +13,16 @@ using namespace arrangerstyle;
 
 namespace
 {
-    juce::File stateFile()   { return Library::songFolder().getSiblingFile ("arranger.json"); }
-    juce::File scratchFile() { return Library::songFolder().getSiblingFile ("ablage.json"); }
 
-    juce::String songFileName (const std::string& id) { return juce::String (id) + ".json"; }
+    juce::String defaultHint()
+    {
+        return "Klick in Liste: Play/Pause   ·   Drag 'n Drop in Ablage/Ablauf   ·   Rechtsklick im Ablauf: Lokale Umbenennung   ·   "
+               "Strg+K Suche   ·   Strg+S Speichern   ·   Strg+Z/Y Rückgängig/Wiederholen   ·   Alt+←/→ Block verschieben   ·   +/-   ·   Esc Stopp"_u;
+    }
+
 }
 
-ArrangerPanel::ArrangerPanel (ArrangerHost& h) : host (h)
+ArrangerPanel::ArrangerPanel (ArrangerHost& h) : host (h), hint ("hilfezeile.txt", defaultHint, fontHint, 1)
 {
     setLookAndFeel (&look);
     setWantsKeyboardFocus (true);   // holds the focus when no child does, so the shortcuts keep working
@@ -30,11 +33,6 @@ ArrangerPanel::ArrangerPanel (ArrangerHost& h) : host (h)
     sequenceViewport.setScrollBarsShown (true, false);
     sequence.setWantsKeyboardFocus (true);
 
-    hint.setFont (juce::FontOptions (fontHint));
-    hint.setColour (juce::Label::textColourId, textDim);
-    hint.setText ("Klick: anhören (nochmal: Stopp)   ·   Kästchen: markieren   ·   Ziehen in Ablage/Ablauf   ·   Rechtsklick/Doppelklick auf Block: Menü/Umbenennen   ·   "
-                  "Strg+K Suche   ·   Strg+S Speichern   ·   Strg+Z/Y Rückgängig/Wiederholen   ·   Entf   ·   Alt+Pfeile   ·   +/-   ·   Esc Stopp"_u,
-                  juce::dontSendNotification);
 
     // model -> views
     model.validateSong = [this] (const Song& song)
@@ -80,30 +78,13 @@ ArrangerPanel::ArrangerPanel (ArrangerHost& h) : host (h)
     scratch.onToSequence = [this] (int i) { addToSequence ({ model.scratch()[(size_t) i] }, insertIndex()); };
     scratch.onRemove     = [this] (int i) { model.removeFromScratch (i); };
     scratch.onDrop       = [this] (const juce::var& d) { model.addToScratch (partsForDrag (d)); };
-    scratch.onContextMenu = [this] (int i)
-    {
-        juce::PopupMenu menu;
-        menu.addItem (1, juce::String (juce::CharPointer_UTF8 ("Anh\xc3\xb6ren / Stopp")));
-        menu.addItem (2, "+ in Ablauf (nach der Auswahl)");
-        menu.addSeparator();
-        menu.addItem (3, "Aus Ablage entfernen");
-        menu.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (&scratch).withMousePosition(),
-                            [safe = juce::Component::SafePointer<ArrangerPanel> (this), i] (int r)
-        {
-            if (safe == nullptr || r == 0 || i >= (int) safe->model.scratch().size())
-                return;
-            if (r == 1) safe->toggleAudition ("scratch:" + std::to_string (i), safe->model.scratch()[(size_t) i]);
-            if (r == 2) safe->addToSequence ({ safe->model.scratch()[(size_t) i] }, safe->insertIndex());
-            if (r == 3) safe->model.removeFromScratch (i);
-        });
-    };
+    scratch.onContextMenu = [this] (int i) { showCardMenu (i); };
 
     // Ablauf
     sequence.onSelect   = [this] (int part) { selectPart (part); };
     sequence.onMove     = [this] (int from, int to) { model.movePart (from, to); selectPart (to); };
     sequence.onDrop     = [this] (const juce::var& d, int index) { addToSequence (partsForDrag (d), index); };
     sequence.onRepeats  = [this] (int part, int delta) { model.setRepeats (part, model.song().parts[(size_t) part].repeats + delta); };
-    sequence.onDoubleClick = [this] (int part) { pendingSeekPart = -1; askRename (part); };
     sequence.onClick    = [this] (int part)
     {
         // like the song strip, but a moment later: the first click of a double-click must not jump
@@ -139,7 +120,6 @@ ArrangerPanel::~ArrangerPanel()
     setLookAndFeel (nullptr);
 }
 
-//==============================================================================
 void ArrangerPanel::songDeleted (const std::string& libraryId)
 {
     if (libraryId == "song." + model.song().id)
@@ -326,7 +306,6 @@ void ArrangerPanel::timerCallback()
     }
 }
 
-//==============================================================================
 std::vector<SongPart> ArrangerPanel::partsForIds (const std::vector<std::string>& ids) const
 {
     std::vector<SongPart> parts;
@@ -449,394 +428,6 @@ void ArrangerPanel::playFrom (int part)
     updateDetail();
 }
 
-//==============================================================================
-void ArrangerPanel::askRange()
-{
-    const int p = sequence.getSelected();
-    if (p < 0 || p >= (int) model.song().parts.size())
-        return;
-    const auto& part = model.song().parts[(size_t) p];
-    if (part.kind != PartKind::Pattern || ! part.copy)
-        return;
-    const int total = (int) part.copy->bars.size();
-    const int from = part.numBars > 0 ? part.firstBar + 1 : 1;
-    const int to = part.numBars > 0 ? part.firstBar + part.numBars : total;
-
-    auto* w = new InWindowDialog ("Takte eingrenzen", "Welche Takte von \""_u + juce::String (part.copy->name) + "\" sollen gespielt werden? (1 bis "
-                                     + juce::String (total) + ")", juce::MessageBoxIconType::NoIcon, this);
-    w->addTextEditor ("from", juce::String (from), "von Takt:");
-    w->addTextEditor ("to", juce::String (to), "bis Takt:");
-    w->addButton ("OK", 1, juce::KeyPress (juce::KeyPress::returnKey));
-    w->addButton ("Ganzes Pattern", 2);
-    w->addButton ("Abbrechen", 0, juce::KeyPress (juce::KeyPress::escapeKey));
-    const auto uid = part.uid;
-    w->enterModalState (true, juce::ModalCallbackFunction::create ([safe = juce::Component::SafePointer<ArrangerPanel> (this), w, uid, total] (int r)
-    {
-        if (safe == nullptr || r == 0)
-            return;
-        // the block is found by its identity, wherever it moved meanwhile; gone = nothing happens
-        const int p = safe->model.indexOfUid (uid);
-        if (p < 0 || ! safe->model.song().parts[(size_t) p].copy || (int) safe->model.song().parts[(size_t) p].copy->bars.size() != total)
-            return;
-        if (r == 2)
-            safe->model.setRange (p, 0, 0);
-        else
-        {
-            const int a = juce::jlimit (1, total, w->getTextEditorContents ("from").getIntValue());
-            const int b = juce::jlimit (a, total, w->getTextEditorContents ("to").getIntValue());
-            safe->model.setRange (p, a - 1, b - a + 1);
-        }
-    }), true);
-}
-
-void ArrangerPanel::editBlock()
-{
-    const int p = sequence.getSelected();
-    if (p < 0 || p >= (int) model.song().parts.size() || ! onEditInRaster)
-        return;
-    const auto& part = model.song().parts[(size_t) p];
-    if (part.kind != PartKind::Pattern || ! part.copy)
-        return;
-
-    juce::String title;
-    for (auto& sp : spans)
-        if (sp.part == p) { title = sp.label; break; }
-
-    // The edit comes back later. The block is found by its identity; if its copy changed in the
-    // meantime (undo, "Aus Quelle"), the user decides instead of losing that silently.
-    const auto uid = part.uid;
-    const auto opened = part.copy;
-    onEditInRaster (*part.copy, title, [safe = juce::Component::SafePointer<ArrangerPanel> (this), uid, opened] (const hz::Pattern& edited)
-    {
-        if (safe == nullptr)
-            return false;
-        const int p = safe->model.indexOfUid (uid);
-        if (p < 0)
-        {
-            juce::AlertWindow::showMessageBoxAsync (juce::MessageBoxIconType::WarningIcon, "In Ablauf übernehmen"_u,
-                                                    "Der Block ist nicht mehr im Ablauf. Nichts geändert."_u);
-            return false;
-        }
-        if (safe->model.song().parts[(size_t) p].copy != opened)
-        {
-            // asked, not decided here: the raster keeps its edit until the answer arrives
-            juce::AlertWindow::showOkCancelBox (juce::MessageBoxIconType::QuestionIcon, "In Ablauf übernehmen"_u,
-                "Der Block wurde inzwischen im Arranger geändert (Rückgängig oder \"Aus Quelle\"). Trotzdem mit der Raster-Fassung ersetzen?"_u,
-                "Ersetzen", "Abbrechen", safe,
-                juce::ModalCallbackFunction::create ([safe, uid, edited] (int r)
-                {
-                    if (safe == nullptr || r != 1)
-                        return;
-                    if (const int q = safe->model.indexOfUid (uid); q >= 0)
-                        safe->model.setCopy (q, edited, true);
-                }));
-            return false;
-        }
-        return safe->model.setCopy (p, edited, true);
-    });
-}
-
-bool ArrangerPanel::editSelectedBlock()
-{
-    const int p = sequence.getSelected();
-    if (p < 0 || p >= (int) model.song().parts.size() || model.song().parts[(size_t) p].kind != PartKind::Pattern)
-        return false;
-    editBlock();
-    return true;
-}
-
-void ArrangerPanel::showBlockMenu (int part)
-{
-    if (part < 0 || part >= (int) model.song().parts.size())
-        return;
-    const auto& p = model.song().parts[(size_t) part];
-    bool canUpdate = false;
-    for (auto& sp : spans)
-        if (sp.part == part) { canUpdate = sp.sourceDiffers; break; }
-
-    juce::PopupMenu menu;
-    menu.addItem (7, "Umbenennen");
-    menu.addItem (1, "Bearbeiten (Kopie im Raster)", p.kind == PartKind::Pattern && p.copy != nullptr);
-    menu.addItem (2, "Duplizieren");
-    menu.addItem (3, "Takte eingrenzen", p.kind == PartKind::Pattern && p.copy && p.copy->bars.size() > 1);
-    menu.addItem (4, "Aus Quelle aktualisieren", canUpdate);
-    menu.addItem (8, "In die Ablage legen");
-    menu.addSeparator();
-    menu.addItem (5, "Play ab hier");
-    menu.addSeparator();
-    menu.addItem (6, "Entfernen");
-    const auto uid = p.uid;
-    menu.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (&sequence).withMousePosition(),
-                        [safe = juce::Component::SafePointer<ArrangerPanel> (this), uid] (int r)
-    {
-        if (safe == nullptr || r == 0)
-            return;
-        const int part = safe->model.indexOfUid (uid);
-        if (part < 0)
-            return;
-        safe->sequence.setSelected (part);
-        switch (r)
-        {
-            case 1: safe->editBlock(); break;
-            case 2: safe->addToSequence ({ safe->model.song().parts[(size_t) part] }, part + 1); break;
-            case 3: safe->askRange(); break;
-            case 4: safe->updateFromSource(); break;
-            case 5: safe->playFrom (part); break;
-            case 6: safe->model.removePart (part); safe->selectPart (juce::jmin (part, (int) safe->model.song().parts.size() - 1)); break;
-            case 7: safe->askRename (part); break;
-            case 8: safe->model.addToScratch ({ safe->model.song().parts[(size_t) part] }); break;
-            default: break;
-        }
-    });
-}
-
-void ArrangerPanel::updateFromSource()
-{
-    const int p = sequence.getSelected();
-    if (p < 0 || p >= (int) model.song().parts.size())
-        return;
-    const auto& part = model.song().parts[(size_t) p];
-    if (part.kind != PartKind::Pattern || ! sourceDiffers (part, host.getLibrary().all()))
-        return;
-    const auto all = model.partsWithSource (part.sourceId);
-    juce::String sourceName (part.copy ? part.copy->name : part.sourceId);
-    if (const int i = host.getLibrary().indexOf (part.sourceId); i >= 0)
-        sourceName = juce::String (host.getLibrary().get (i).name);
-
-    // the warning the user asked for: this replaces the copy, local edits included
-    juce::String text = "Der Block wird durch die aktuelle Fassung von \""_u + sourceName + "\" aus der Bibliothek ersetzt.";
-    if (part.edited)
-        text << "\n\nAchtung: Die Änderungen, die du an diesem Block im Song gemacht hast, gehen dabei verloren."_u;
-    text << "\n\n(Strg+Z macht es rückgängig.)"_u;
-
-    auto* w = new InWindowDialog ("Aus Quelle aktualisieren", text, juce::MessageBoxIconType::WarningIcon, this);
-    w->addButton ("Nur diesen Block", 1, juce::KeyPress (juce::KeyPress::returnKey));
-    if (all.size() > 1)
-        w->addButton ("Alle " + juce::String ((int) all.size()) + " Bl" + juce::String (juce::CharPointer_UTF8 ("\xc3\xb6")) + "cke dieser Quelle", 2);
-    w->addButton ("Abbrechen", 0, juce::KeyPress (juce::KeyPress::escapeKey));
-    const auto sourceId = part.sourceId;
-    const auto uid = part.uid;
-    w->enterModalState (true, juce::ModalCallbackFunction::create ([safe = juce::Component::SafePointer<ArrangerPanel> (this), uid, sourceId] (int r)
-    {
-        if (safe == nullptr || r == 0)
-            return;
-        const int p = safe->model.indexOfUid (uid);
-        if (p < 0)
-            return;
-        safe->model.updateFromSource (r == 2 ? safe->model.partsWithSource (sourceId) : std::vector<int> { p }, safe->host.getLibrary().all());
-    }), true);
-}
-
-void ArrangerPanel::askRename (int p)
-{
-    if (p < 0 || p >= (int) model.song().parts.size())
-        return;
-    const auto& part = model.song().parts[(size_t) p];
-    juce::String origin;
-    for (auto& sp : spans)
-        if (sp.part == p) { origin = sp.label; break; }
-    const juce::String sourceName = part.copy ? juce::String (part.copy->name) : juce::String (part.sourceId);
-
-    auto* w = new InWindowDialog ("Block umbenennen",
-                                     "Name dieses Blocks im Ablauf. Das Pattern selbst (\"" + sourceName + "\") wird nicht umbenannt.\n"
-                                     "Leer lassen = Pattern-Name anzeigen. Strg+Z macht es rückgängig."_u,
-                                     juce::MessageBoxIconType::NoIcon, this);
-    w->addTextEditor ("name", juce::String (part.label), "Name im Ablauf:");
-    w->addButton ("OK", 1, juce::KeyPress (juce::KeyPress::returnKey));
-    w->addButton ("Pattern-Name verwenden", 2);
-    w->addButton ("Abbrechen", 0, juce::KeyPress (juce::KeyPress::escapeKey));
-    const auto uid = part.uid;
-    w->enterModalState (true, juce::ModalCallbackFunction::create ([safe = juce::Component::SafePointer<ArrangerPanel> (this), w, uid] (int r)
-    {
-        if (safe == nullptr || r == 0)
-            return;
-        const int p = safe->model.indexOfUid (uid);
-        if (p < 0)
-            return;
-        safe->model.setLabel (p, r == 2 ? std::string() : w->getTextEditorContents ("name").trim().toStdString());
-    }), true);
-}
-
-void ArrangerPanel::save (bool asNew)
-{
-    if (model.song().parts.empty())
-        return;
-    Song copy = model.song();
-    if (asNew || copy.id.empty())
-    {
-        auto* w = new InWindowDialog ("Song speichern", "Name des Songs:", juce::MessageBoxIconType::NoIcon, this);
-        w->addTextEditor ("name", juce::String (copy.name), "Name:");
-        w->addButton ("Speichern", 1, juce::KeyPress (juce::KeyPress::returnKey));
-        w->addButton ("Abbrechen", 0, juce::KeyPress (juce::KeyPress::escapeKey));
-        w->enterModalState (true, juce::ModalCallbackFunction::create ([safe = juce::Component::SafePointer<ArrangerPanel> (this), w, copy] (int r) mutable
-        {
-            if (safe == nullptr || r != 1)
-                return;
-            copy.name = w->getTextEditorContents ("name").trim().toStdString();
-            if (copy.name.empty())
-                return;
-            copy.id.clear();   // a new file
-            if (auto err = safe->host.arrangerSaveSong (copy); err.isNotEmpty())
-                juce::AlertWindow::showMessageBoxAsync (juce::MessageBoxIconType::WarningIcon, "Speichern", err);
-            else
-            {
-                safe->model.adoptSaved (copy);
-                safe->libraryChanged();
-            }
-        }), true);
-        return;
-    }
-    if (auto err = host.arrangerSaveSong (copy); err.isNotEmpty())
-        juce::AlertWindow::showMessageBoxAsync (juce::MessageBoxIconType::WarningIcon, "Speichern", err);
-    else
-    {
-        model.adoptSaved (copy);
-        libraryChanged();
-    }
-}
-
-void ArrangerPanel::newSong()
-{
-    confirmDiscard ([this]
-    {
-        Song s;
-        s.name = "Neuer Song";
-        model.load (s);
-        selectPart (-1);
-    });
-}
-
-void ArrangerPanel::showLoadMenu()
-{
-    juce::PopupMenu menu;
-    const auto& lib = host.getLibrary();
-    std::vector<std::string> ids;   // by id: the library may reload before the choice arrives
-    addFolderMenu (menu, lib.folders (FolderTree::Songs), [&] (juce::PopupMenu& m, const std::string& id, const FolderPath& folder)
-    {
-        if (const int i = lib.indexOf (id); i >= 0)
-        {
-            ids.push_back (id);
-            m.addItem ((int) ids.size(), folders::shortName (juce::String (lib.get (i).name), folder));
-        }
-        return false;
-    });
-    if (ids.empty())
-        menu.addItem (1, "(keine gespeicherten Songs)", false);
-    menu.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (&toolbar),
-                        [safe = juce::Component::SafePointer<ArrangerPanel> (this), ids] (int r)
-    {
-        if (safe == nullptr || r <= 0 || r > (int) ids.size())
-            return;
-        const auto& lib = safe->host.getLibrary();
-        if (const auto* song = lib.song (lib.indexOf (ids[(size_t) r - 1])); song != nullptr)
-            safe->loadSong (*song);
-    });
-}
-
-void ArrangerPanel::confirmDiscard (std::function<void()> then)
-{
-    if (! model.hasUnsavedChanges())
-    {
-        then();
-        return;
-    }
-    juce::AlertWindow::showOkCancelBox (juce::MessageBoxIconType::QuestionIcon, "Ungespeicherte Änderungen"_u,
-        "Der Ablauf \""_u + juce::String (model.song().name) + "\" ist nicht gespeichert. Verwerfen?",
-        "Verwerfen", "Behalten", this,
-        juce::ModalCallbackFunction::create ([safe = juce::Component::SafePointer<ArrangerPanel> (this), then] (int r)
-        {
-            if (safe != nullptr && r == 1)
-                then();
-        }));
-}
-
-//==============================================================================
-void ArrangerPanel::saveState()
-{
-    juce::String err;
-    Song s = model.song();
-    if (s.name.empty())
-        s.name = "Neuer Song";
-    if (saveSong (s, stateFile(), err))
-    {
-        stateDirty = false;
-        toolbar.setWarning ({});
-        return;
-    }
-    // keep trying, and say so: this is the safety net for unsaved work
-    stateDueMs = juce::Time::getMillisecondCounterHiRes() + 5000.0;
-    toolbar.setWarning ("Arbeitsstand nicht gesichert: " + err);
-}
-
-void ArrangerPanel::loadState()
-{
-    juce::String err;
-    std::vector<SongPart> list;
-    if (loadPartList (scratchFile(), list, err))
-        model.loadScratch (std::move (list));
-    else
-    {
-        const auto keep = scratchFile().getSiblingFile ("ablage.defekt-" + juce::Time::getCurrentTime().formatted ("%Y-%m-%d_%H%M%S") + ".json");
-        toolbar.setWarning ("Ablage nicht lesbar (" + err + "), Kopie: " + keep.getFileName()
-                            + (scratchFile().copyFileTo (keep) ? "" : " (Kopie fehlgeschlagen!)"));
-    }
-
-    Song s;
-    if (stateFile().existsAsFile())
-    {
-        if (::loadSong (stateFile(), s, err))
-        {
-            juce::String ignored;
-            embedCopies (s, host.getLibrary().all(), ignored);   // an old reference song: copies, so it can be saved again
-            model.load (s);
-            // "unsaved" compares with the song file of the same id, if there is one. That file may still
-            // hold references only (v1), so it gets its copies the same way before the comparison.
-            Song onDisk;
-            juce::String err2;
-            const auto saved = Library::songFolder().getChildFile (songFileName (s.id));
-            if (! s.id.empty() && saved.existsAsFile() && ::loadSong (saved, onDisk, err2))
-            {
-                embedCopies (onDisk, host.getLibrary().all(), ignored);
-                model.markSavedAs (onDisk);
-                if (model.hasUnsavedChanges())
-                    juce::Logger::writeToLog ("Arranger: Arbeitsstand \"" + juce::String (s.name) + "\" weicht von "
-                                              + saved.getFileName() + " ab, gilt als ungespeichert");
-            }
-            else if (! s.id.empty() || ! s.parts.empty())
-            {
-                model.markUnsaved();
-                juce::Logger::writeToLog ("Arranger: Arbeitsstand \"" + juce::String (s.name) + "\" hat keine gespeicherte Datei"
-                                          + (err2.isNotEmpty() ? " (" + err2 + ")" : juce::String()) + ", gilt als ungespeichert");
-            }
-        }
-        else
-        {
-            // never overwrite a damaged state silently: keep it aside and say so
-            const auto keep = stateFile().getSiblingFile ("arranger.defekt-" + juce::Time::getCurrentTime().formatted ("%Y-%m-%d_%H%M%S") + ".json");
-            toolbar.setWarning ("Arbeitsstand defekt, Kopie: " + keep.getFileName()
-                                + (stateFile().copyFileTo (keep) ? "" : " (Kopie fehlgeschlagen!)"));
-            s = {};
-            s.name = "Neuer Song";
-            model.load (s);
-        }
-    }
-    else
-    {
-        s.name = "Neuer Song";
-        model.load (s);
-    }
-    modelChanged();
-    stateDirty = false;
-}
-
-void ArrangerPanel::saveScratch()
-{
-    juce::String err;
-    if (! savePartList (model.scratch(), scratchFile(), err))
-        toolbar.setWarning ("Ablage nicht gesichert: " + err);
-}
-
-//==============================================================================
 void ArrangerPanel::resized()
 {
     auto area = getLocalBounds().reduced (12);
@@ -864,7 +455,7 @@ void ArrangerPanel::paint (juce::Graphics& g)
 {
     g.fillAll (background);
     g.setColour (textDim);
-    g.setFont (juce::FontOptions (fontSmall, juce::Font::bold));
+    g.setFont (juce::FontOptions (fontSmall));
     auto heading = juce::Rectangle<int> (sequenceViewport.getX(), sequenceViewport.getY() - 24,
                                          sequenceViewport.getWidth(), 20);
     g.drawText ("ABLAUF", heading.removeFromLeft (76), juce::Justification::centredLeft);
@@ -892,52 +483,4 @@ void ArrangerPanel::paint (juce::Graphics& g)
     g.setFont (juce::FontOptions (fontSmall));
     g.drawFittedText (juce::String ((int) (used * 100.0 + 0.5)) + " % belegt  ·  "_u + remaining,
                      heading, juce::Justification::centredLeft, 1);
-}
-
-bool ArrangerPanel::keyPressed (const juce::KeyPress& key)
-{
-    // Linux sends lowercase letter key codes for Ctrl shortcuts (as in the raster editor).
-    const int c = juce::CharacterFunctions::toUpperCase ((juce::juce_wchar) key.getKeyCode());
-    const auto mods = key.getModifiers();
-    const int p = sequence.getSelected();
-    const int n = (int) model.song().parts.size();
-
-    if (mods.isCommandDown())
-    {
-        if (c == 'Z' && mods.isShiftDown()) { model.redo(); return true; }
-        if (c == 'Z') { model.undo(); return true; }
-        if (c == 'Y') { model.redo(); return true; }
-        if (c == 'S') { save (false); return true; }
-        if (c == 'K') { find.focusField(); return true; }
-        return false;
-    }
-    if (c == juce::KeyPress::escapeKey) { stopAudition(); return true; }
-    if (c == juce::KeyPress::F2Key && p >= 0) { askRename (p); return true; }
-    if (c == juce::KeyPress::spaceKey && ! mods.isAnyModifierKeyDown())
-    {
-        // Space here means the sequence: start it if the transport holds something else, otherwise pause/resume
-        if (! host.arrangerPlanLoaded() && n > 0 && buildError.isEmpty())
-        {
-            playFrom (juce::jmax (0, p));
-            return true;
-        }
-        return host.handleTransportKey (key);
-    }
-
-    if (sequence.hasKeyboardFocus (true) && n > 0)
-    {
-        if (mods.isAltDown() && c == juce::KeyPress::leftKey)  { if (p > 0) { model.movePart (p, p - 1); selectPart (p - 1); } return true; }
-        if (mods.isAltDown() && c == juce::KeyPress::rightKey) { if (p >= 0 && p + 1 < n) { model.movePart (p, p + 1); selectPart (p + 1); } return true; }
-        if (c == juce::KeyPress::leftKey)  { selectPart (p < 0 ? 0 : juce::jmax (0, p - 1)); return true; }
-        if (c == juce::KeyPress::rightKey) { selectPart (p < 0 ? 0 : juce::jmin (n - 1, p + 1)); return true; }
-        if (c == juce::KeyPress::deleteKey || c == juce::KeyPress::backspaceKey)
-        {
-            if (p >= 0) { model.removePart (p); selectPart (juce::jmin (p, n - 2)); }
-            return true;
-        }
-        const auto ch = key.getTextCharacter();
-        if ((ch == '+' || ch == '-') && p >= 0) { model.setRepeats (p, model.song().parts[(size_t) p].repeats + (ch == '+' ? 1 : -1)); return true; }
-        if (c == juce::KeyPress::returnKey) { playFrom (juce::jmax (0, p)); return true; }
-    }
-    return host.handleTransportKey (key);
 }

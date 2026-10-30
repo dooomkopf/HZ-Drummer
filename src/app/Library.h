@@ -88,3 +88,4 @@ struct LibraryTrashEntry
 };
 std::vector<LibraryTrashEntry> listOwnTrash (const juce::File& dataFolder);
 juce::String restoreOwnTrash (const juce::String& key, const juce::File& dataFolder);
+bool emptyOwnTrash (const juce::File& dataFolder);   // deletes the whole trash for good; false if something stayed

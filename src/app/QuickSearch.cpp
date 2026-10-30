@@ -63,6 +63,8 @@ QuickSearch::QuickSearch()
 {
     addAndMakeVisible (field);
     field.setFont (juce::FontOptions (22.0f));
+    field.getProperties().set ("pill", true);        // drawn by HZLook as a pill
+    field.setIndents (18, field.getTopIndent());     // text clear of the round ends
     field.setTextToShowWhenEmpty ("Suchen: Pattern, Song, Stil, Künstler, Taktart (z.B. 7/8) ..."_u, textDim);
     field.onTextChange = [this] { update(); };
     field.onReturnKey = [this] { choose (selected); };

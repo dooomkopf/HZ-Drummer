@@ -4,6 +4,39 @@
 
 #include "app/Text.h"
 
+void MainComponent::requestQuit()
+{
+    // the Werkstatt's own X asks about unsaved raster changes; quitting the whole program must too
+    if (editorWindow == nullptr || ! editorWindow->getEditor().hasUnsavedChanges())
+    {
+        juce::JUCEApplication::quit();
+        return;
+    }
+    if (quitQuestionOpen)
+        return;
+    quitQuestionOpen = true;
+    editorWindow->toFront (true);
+    juce::AlertWindow::showOkCancelBox (juce::MessageBoxIconType::QuestionIcon, "Ungespeicherte Änderungen"_u,
+        "Die Änderungen an \""_u + juce::String (editorWindow->getEditor().getPattern().name) + "\" sind nicht gespeichert. Trotzdem beenden?"_u,
+        "Verwerfen", "Weiter bearbeiten", editorWindow.get(),
+        juce::ModalCallbackFunction::create ([safe = juce::Component::SafePointer<MainComponent> (this)] (int r)
+        {
+            if (safe == nullptr)
+                return;
+            safe->quitQuestionOpen = false;
+            if (r == 1)
+                juce::JUCEApplication::quit();
+        }));
+}
+
+bool MainComponent::patternNameTaken (const juce::String& name) const
+{
+    for (int i = 0; i < library.size(); ++i)
+        if (! library.isSong (i) && juce::String (library.get (i).name) == name)
+            return true;
+    return false;
+}
+
 void MainComponent::openEditor()
 {
     // a song goes to the arranger, a pattern to the raster editor

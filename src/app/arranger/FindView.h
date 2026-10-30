@@ -86,7 +86,7 @@ private:
 
     juce::TextEditor field;
     juce::Label chipLabel, markedLabel;
-    juce::TextButton toScratch { "+ Ablage" }, toSequence { "+ in Ablauf" }, clearMarks { "Abwählen"_u };
+    juce::TextButton toScratch { "+ Ablage" }, toSequence { "+ Ablauf" }, clearMarks { "Abwählen"_u };
     juce::Viewport viewport;
     List list;
 

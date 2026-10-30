@@ -31,31 +31,39 @@ Das Programm ist ein Übungswerkzeug, kein Drum-Computer für Aufnahmen: Es soll
 Die Schritte sind so geschrieben, dass sie ein Mensch oder ein KI-Assistent direkt ausführen kann. Getestet unter Ubuntu 22.04.
 
 ```bash
-sudo apt install -y build-essential cmake ninja-build git pkg-config libasound2-dev libjack-jackd2-dev pipewire-audio-client-libraries libfreetype-dev libfontconfig1-dev libx11-dev libxcomposite-dev libxcursor-dev libxext-dev libxinerama-dev libxrandr-dev libxrender-dev libxi-dev libglu1-mesa-dev mesa-common-dev
-git clone --recurse-submodules https://github.com/dooomkopf/HZ-Drummer.git
+sudo apt install -y build-essential cmake git pkg-config ninja-build libasound2-dev libjack-jackd2-dev libfreetype-dev libfontconfig1-dev libx11-dev libxcursor-dev libxext-dev libxinerama-dev libxrandr-dev libxrender-dev libxi-dev
+git clone --recurse-submodules --shallow-submodules https://github.com/dooomkopf/HZ-Drummer.git
 cd HZ-Drummer
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
-cmake --build build
+cmake --build build                           # einige Minuten, build/ belegt rund 140 MB
 (cd build && ctest --output-on-failure)       # Engine- und App-Tests
 ./tools/install-desktop.sh                    # Starter im Anwendungsmenü (optional)
 ./tools/run.sh                                # oder direkt starten
 ```
 
-Ohne Kit startet das Programm, spielt aber nichts. Deshalb einmalig:
+- **Pakete:** Das sind alle, die der Build braucht, geprüft an den System-Headern, die der Compiler tatsächlich liest. `ninja-build` ist nur für `-G Ninja` nötig, ohne den Schalter baut CMake mit make. OpenGL-, Mesa- und XComposite-Pakete braucht HZ-Drummer nicht.
+- **Klonen:** `--shallow-submodules` holt von JUCE nur den aktuellen Stand statt der ganzen Historie. Das Repo selbst bitte **nicht** mit `--depth 1` klonen: Die Versionsnummer (v0.1.‹Anzahl Commits›) zählt die Commits.
+- **Audio:** Gebaut wird mit JACK-Unterstützung, zum Abspielen reicht ALSA. Wer JACK über PipeWire nutzen will, installiert `pipewire-audio-client-libraries` und schaltet es unter 22.04 einmalig frei: `sudo cp /usr/share/doc/pipewire/examples/ld.so.conf.d/pipewire-jack-*.conf /etc/ld.so.conf.d/ && sudo ldconfig`.
+
+Ohne Kit startet das Programm, spielt dann aber nur den Klick. Deshalb einmalig:
 
 ## Drum-Kit einrichten
 
-Die Samples sind nicht Teil dieses Repos. Das Programm nutzt das **Aasimonster**-Kit von [DrumGizmo](https://drumgizmo.org) (CC-BY 4.0), ein mehrfach mikrofoniertes Metal-Kit. Das Werkzeug `kitprep` mischt es einmalig auf Stereo-Samples herunter.
+Die Samples sind nicht Teil dieses Repos. Das Programm nutzt das **Aasimonster**-Kit von [DrumGizmo](https://drumgizmo.org) (CC-BY 4.0), ein mehrfach mikrofoniertes Metal-Kit, auf Stereo-Samples heruntergemischt. Zwei Wege:
+
+**A) Fertiges Kit kopieren**, etwa von einem Rechner, auf dem es schon eingerichtet ist: den Ordner `kits/aasimonster/` (etwa 400 MB, eine `kit.json` und je ein Unterordner mit WAV-Dateien pro Instrument) in den Ordner `kits/` dieses Klons kopieren. Fertig.
+
+**B) Selbst erzeugen** mit dem Werkzeug `kitprep` (einmalig, 2,4 GB Download, [Kit-Seite](https://drumgizmo.org/wiki/doku.php?id=kits:the_aasimonster)):
 
 ```bash
 mkdir -p kits-src && cd kits-src
-# Aasimonster-Kit von drumgizmo.org herunterladen (Seite "Kits") und hier entpacken,
-# es entsteht ein Ordner wie kits-src/aasimonster2 mit einer aasimonster.xml
+wget https://drumgizmo.org/kits/Aasimonster/aasimonster2_1.zip
+unzip aasimonster2_1.zip                      # ergibt aasimonster2/ mit aasimonster.xml
 cd aasimonster2
 ../../build/kitprep_artefacts/Release/kitprep aasimonster.xml ../../kits/aasimonster "Aasimonster (Metal)"
 ```
 
-Danach liegt das fertige Kit unter `kits/aasimonster/` (etwa 400 MB), das Programm findet es beim Start. Ordner `kits/` und `kits-src/` bleiben außerhalb der Versionsverwaltung.
+Danach liegt das fertige Kit unter `kits/aasimonster/`, das Programm findet es beim Start. Ordner `kits/` und `kits-src/` bleiben außerhalb der Versionsverwaltung.
 
 ## Aufbau
 

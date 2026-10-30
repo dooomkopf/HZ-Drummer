@@ -8,9 +8,11 @@
 #include "app/arranger/ScratchView.h"
 #include "app/arranger/ArrangerStyle.h"
 #include "app/arranger/SequenceView.h"
+#include "app/views/HelpLine.h"
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -26,6 +28,10 @@ class ArrangerPanel : public juce::Component,
 public:
     // Set by the workshop window: shows a block's copy in the raster tab; 'apply' takes the edit back
     std::function<void (const hz::Pattern&, const juce::String& title, std::function<bool (const hz::Pattern&)> apply)> onEditInRaster;
+    std::function<void (const hz::Pattern&)> onBlockApplied;   // 'apply' said "not yet" and asked; the answer was yes
+    // a card of the Ablage into the raster: like onEditInRaster; savedAsNew gets an own pattern saved from it
+    std::function<void (const hz::Pattern&, const juce::String& title, std::function<bool (const hz::Pattern&)> apply,
+                        std::function<void (const hz::Pattern&)> savedAsNew)> onEditCardInRaster;
 
     explicit ArrangerPanel (ArrangerHost&);
     ~ArrangerPanel() override;
@@ -67,6 +73,8 @@ private:
     void askRange();
     void askRename (int part);
     void editBlock();
+    void editScratchCard (int index);   // "Bearbeiten (Kopie im Raster)" on a card of the Ablage
+    void showCardMenu (int index);      // right click on a card of the Ablage
     void updateFromSource();
     void showBlockMenu (int part);
     void save (bool asNew);
@@ -89,13 +97,14 @@ private:
     juce::Viewport sequenceViewport;   // long songs scroll instead of shrinking
     SequenceView sequence;
     BlockDetailRow detail;
-    juce::Label hint;
+    HelpLine hint;                     // own text: hilfezeile.txt in the data folder
 
     hz::Pattern built;                 // the sequence as one pattern (length, spans)
     std::vector<SongSpan> spans;
     juce::String buildError;
     std::string auditionKey;           // "find:<id>" or "scratch:<index>" while auditioning
     juce::String lastSentKey;          // content of the sequence last handed to the transport
+    std::optional<SongPart> copiedBlock;   // Ctrl+C/X in the sequence; kept across songs, not saved
     int pendingSeekPart = -1;          // a click on a block seeks after a short delay (a double-click must not)
     double seekDueMs = 0.0;
     bool stateDirty = false;

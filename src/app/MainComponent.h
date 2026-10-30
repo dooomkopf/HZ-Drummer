@@ -52,6 +52,9 @@ public:
     void resized() override;
     bool keyPressed (const juce::KeyPress&) override;
 
+    // main window X or a quit from the system: asks first if the raster holds unsaved changes
+    void requestQuit();
+
     // test hooks (command line: --editor, --play, --mixer)
     void openEditorForTesting() { openEditor(); }
     void openArrangerForTesting();
@@ -66,6 +69,10 @@ public:
     Playhead getPlayhead() const override;
     bool handleTransportKey (const juce::KeyPress&) override;
     double getCurrentTempo() const override { return control.tempoTenths / 10.0; }
+    void setPlaybackTempo (double bpm) override { setTempo (bpm); }
+    bool patternNameTaken (const juce::String&) const override;
+    void previewVoice (hz::Voice v) override { engine.previewVoice (v, 0.75f); }
+    const hz::DrumKit* currentKit() const override { return kits != nullptr ? kits->kit() : nullptr; }
     MeterLibrary& getMeters() override { return meters; }
     void editorClosed() override;
 
@@ -188,14 +195,16 @@ private:
     std::vector<AudioEngine::DisplayEvent> incoming;
     AudioEngine::DisplayEvent shown;
     bool hasShown = false;
+    bool quitQuestionOpen = false;   // the "unsaved changes" question of requestQuit is showing
     PlaybackView view;
 
     // windows and widgets
+    juce::TooltipWindow tooltipWindow { nullptr, 700 };   // shows the setTooltip texts, in every window of the app
     std::unique_ptr<WorkshopWindow> editorWindow;
     std::unique_ptr<juce::DialogWindow> mixerWindow, audioWindow, trashWindow, logsWindow, foldersWindow;
     juce::TextButton playButton { "Start" }, tapButton { "Tap" }, audioButton { "System" },
                      editButton { "Bearbeiten" }, mixerButton { "Mixer" }, searchButton { "Suchen" }, deleteEntryButton { "Löschen"_u },
-                     countInButton;
+                     renameEntryButton { "Umbenennen" }, countInButton;
     StarButton patternButton, meterButton;
     juce::Slider tempoSlider;
     juce::ComboBox soundBox;

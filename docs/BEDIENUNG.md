@@ -21,7 +21,7 @@
 Zwei Betriebsarten:
 
 - **Pattern:** spielt einen Groove aus der Bibliothek oder ein eigenes Pattern.
-- **Metronom:** spielt nur die Taktart, als Klick, Bassdrum, Snare oder Kick+Snare.
+- **Metronom:** spielt nur die Taktart, als Klick, Bassdrum, Snare oder Bass+Snare.
 
 Im Menü ein Pattern wählen schaltet auf Pattern, eine Taktart wählen schaltet auf Metronom.
 
@@ -31,7 +31,7 @@ Im Menü ein Pattern wählen schaltet auf Pattern, eine Taktart wählen schaltet
 
 **Ordner:** Unter **System › Ordnerstruktur** stehen Songs, eigene Patterns und die mitgelieferte Bibliothek als Baum. Dort legst du Ordner an, auch beliebig verschachtelt, benennst sie um und löschst leere. Bekommt ein Ordner den Namen eines Ordners daneben, werden beide zu einem zusammengelegt, etwa „techdeath“ in „Tech-Death“; auch eine reine Änderung der Groß- und Kleinschreibung geht. Einträge und Ordner ziehst du mit der Maus an ihren neuen Platz; **Hoch** und **Runter** ändern die Reihenfolge. Solange ein Eintrag keinem Ordner zugeordnet ist, steht er wie bisher: Songs oben, eigene Patterns nach Band und Song, die Bibliothek nach Stil. Die Ordner stehen in `ordner.json`, die Pattern- und Song-Dateien bleiben dabei unverändert.
 
-**System** zeigt außerdem die Audio-Einstellungen, die freien Abzeichen und die Logdateien (App-Protokoll und Startprotokoll), ganz unten die Versionsnummer. Sie lautet v0.1.X; X ist die Zahl der Commits und wird beim Bauen automatisch gesetzt.
+**System** zeigt außerdem die Audio-Einstellungen, die freien Abzeichen und die Log-Dateien (App-Protokoll und Startprotokoll), ganz unten die Versionsnummer. Sie lautet v0.1.X; X ist die Zahl der Commits und wird beim Bauen automatisch gesetzt.
 
 **Einzählen (Knopf „Click“):** Der Knopf schaltet durch drei Stellungen: grau *Click* = aus, blau *START* = ein Takt Klicks, wenn der Song oder das Pattern von vorn startet, grün *AN* = vor jedem Start, auch nach einer Pause mitten im Song. Der Klick-Takt hat die Taktart des Takts, an dem es losgeht, und der Song setzt danach genau dort ein. Zeit genug, vom Laptop zur Gitarre zu greifen. Gilt nur für den Hauptplayer, nicht für Raster, Arranger oder Vorhören.
 
@@ -55,11 +55,12 @@ Im Menü ein Pattern wählen schaltet auf Pattern, eine Taktart wählen schaltet
 
 ## Raster-Editor (eigenes Fenster, Taste E)
 
-- **Zeilen** sind Instrumente (Becken, HiHat, Toms, Snare, Kick), **Spalten** die Rasterschritte. Dicke Linien sind Taktstriche, mittlere die Zählzeiten.
+- **Zeilen** sind Instrumente (Becken, HiHat, Snare, Toms, Bass), **Spalten** die Rasterschritte. Ein **Klick auf den Spurnamen** spielt einen Probeklang des Instruments, ohne etwas zu setzen. Die Namen zeigen, was das Kit wirklich spielt (beim Aasimonster: „Zil-Bel“ statt Kuhglocke, „China 8"“ für den Splash). Spuren ohne eigenen Klang im Kit (Sidestick, HiHat-Pedal) oder mit demselben Klang wie eine andere (HiHat halb) erscheinen nur, wenn das Pattern sie benutzt, dann kursiv. Dicke Linien sind Taktstriche, mittlere die Zählzeiten.
 - **Klick** in ein leeres Feld setzt einen Schlag, ein Klick auf einen Schlag löscht ihn.
   - **Shift + Klick** setzt einen Akzent, **Alt + Klick** eine Ghost-Note.
   - **Ziehen nach oben/unten** ändert die Lautstärke. Größe und Helligkeit des Kästchens zeigen sie an.
   - **Rechtsklick** schaltet zwischen Ghost, normal und Akzent um.
+  - **Strg + Klick** auf einen Schlag lässt ihn etwas später klingen („laid back“), **Strg + Shift + Klick** früher, je 20 ms pro Klick bis ±100 ms; zurück auf das Raster mit Klicks in die Gegenrichtung. Die ms stehen im Kästchen. Ganz am Anfang und Ende der Pattern-Schleife wird der Schlag auf die Schleifengrenze begrenzt.
 - **Rauten** sind Schläge außerhalb des Rasters, z.B. die drei Becken bei „3 gegen 2“. Rechtsklick löscht sie.
 - **Kopfzeile je Takt:**
   - Klick auf die Taktart (z.B. `4/4 ▾`) ändert sie, auch auf eine eigene.
@@ -67,7 +68,7 @@ Im Menü ein Pattern wählen schaltet auf Pattern, eine Taktart wählen schaltet
   - Klick auf „Takt n“ öffnet das Takt-Menü: Takt kopieren, leeren Takt einfügen, Takt löschen, Spur leeren.
 - **Oben:**
   - Name
-  - „Tempo übernehmen“: Das aktuelle Tempo wird das empfohlene Tempo des Patterns.
+  - **Tempo** (Schieberegler mit „… BPM“): das eigene Tempo des Patterns, mit dem es startet, wenn man es im Hauptfenster wählt. Schieben oder die Zahl anklicken und eintippen; der Regler im Hauptfenster zieht mit, „Speichern“ speichert es mit, Strg+Z nimmt es zurück. Tempo-Änderungen im Hauptfenster (auch Tap) ändern das Pattern nicht. Bei einem Block aus dem Arranger gilt das Song-Tempo, das Feld ist dann gesperrt.
   - Swing
   - „Menschlich“: wie stark Timing und Lautstärke leicht schwanken
 - **Alle Spuren** blendet auch selten genutzte Instrumente ein (Splash, Kuhglocke, Sidestick …).
@@ -107,7 +108,7 @@ sn    | . . . . X . . . . . . . X . . . |
 bd    | x . x x x . x x x . x x x . x x |
 ```
 
-Spuren: `bd` Kick, `sn` Snare, `sr` Rimshot, `hh` HiHat (`o` = offen), `rd` Ride, `rb` Ride-Glocke, `cr`/`c2` Crash, `ch` China, `t1`–`t4` Toms, `cb` Kuhglocke. Zeichen: `x` normal, `X` Akzent, `g` Ghost, `f` Flam, `.` Pause. Polyrhythmus: `cr(3) | X x x |`.
+Spuren: `bd` Bass, `sn` Snare, `sr` Rimshot, `hh` HiHat (`o` = offen), `rd` Ride, `rb` Ride-Glocke, `cr`/`c2` Crash, `ch` China, `t1`–`t4` Toms, `cb` Kuhglocke. Zeichen: `x` normal, `X` Akzent, `g` Ghost, `f` Flam, `.` Pause. Polyrhythmus: `cr(3) | X x x |`.
 
 Datei in `library-src/` ablegen, dann übersetzen:
 
@@ -119,13 +120,13 @@ cd ~/HZ-Drummer && ./build/patternc_artefacts/Release/patternc library-src libra
 
 Songs aus Bausteinen bauen: **Finden → Ablage → Ablauf.** Öffnen mit **E**, wenn ein Song gewählt ist, oder über den Reiter in der Werkstatt.
 
-- **Finden (links):** tippen, Treffer kommen gruppiert (Songs, Song-Abschnitte, Bibliothek, eigene Patterns). `7/8` filtert die Taktart, `180 bpm` oder `160-190 bpm` das Tempo. Klick auf eine Zeile = anhören, nochmal = Stopp. Kästchen = markieren. „+ Ablage“ / „+ in Ablauf“ übernehmen die markierten Zeilen (ohne Markierung: die aktuelle), „Abwählen“ leert die Markierung. Tastatur: Pfeile, Leertaste anhören, X markieren, Enter in die Ablage, Strg+K ins Suchfeld.
-- **Ablage (rechts oben):** gesammelte Bausteine, bleiben auch nach dem Schließen erhalten. Klick = anhören, „+ Ablauf“ hängt an, × entfernt, „Leeren“ leert alles (rückgängig machbar).
-- **Ablauf (rechts unten):** der Song. Bausteine aus Finden oder Ablage **hierher ziehen** (Einfügemarke zeigt die Stelle), Blöcke per Ziehen umsortieren. Klick wählt einen Block, [−] [+] ändern die Wiederholungen. **Rechtsklick** öffnet das Block-Menü (Umbenennen, Bearbeiten, Duplizieren, Takte, Aus Quelle, Play ab hier, Entfernen), **Doppelklick** benennt den Block um (nur für diesen Song, das Pattern bleibt). Detailzeile darunter: Wiederholungen, „Takte“ (nur einen Taktbereich spielen), Duplizieren, ◀ ▶ verschieben, Entfernen, Bearbeiten, Aus Quelle, Play, Stopp.
+- **Finden (links):** tippen, Treffer kommen gruppiert (Songs, Song-Abschnitte, Bibliothek, eigene Patterns). `7/8` filtert die Taktart, `180 bpm` oder `160-190 bpm` das Tempo. Klick auf eine Zeile = anhören, nochmal = Stopp. Kästchen = markieren. „+ Ablage“ / „+ Ablauf“ übernehmen die markierten Zeilen (ohne Markierung: die aktuelle), „Abwählen“ leert die Markierung. Tastatur: Pfeile, Leertaste anhören, X markieren, Enter in die Ablage, Strg+K ins Suchfeld.
+- **Ablage (rechts oben):** gesammelte Bausteine, bleiben auch nach dem Schließen erhalten. Klick = anhören, „+ Ablauf“ hängt an, × entfernt, „Leeren“ leert alles (rückgängig machbar). Rechtsklick auf eine Karte: „Bearbeiten (Kopie im Raster)“, darunter „vor Pattern einfügen“ und „nach Pattern einfügen“: neben dem im Ablauf angeklickten/markierten Block, ohne Markierung gesperrt (dann nur per Ziehen mit der Maus). Beim Bearbeiten einer Karte schreibt „In Ablage übernehmen“ die Änderung in die Karte (Strg+Z im Arranger nimmt es zurück); „Speichern unter“ legt ein eigenes Pattern („… mod1“) an und dieses als neue Karte direkt daneben, danach bearbeitet das Raster das neue Pattern. Ein Block im Ablauf bleibt davon unberührt.
+- **Ablauf (rechts unten):** der Song. Bausteine aus Finden oder Ablage **hierher ziehen** (Einfügemarke zeigt die Stelle), Blöcke per Ziehen umsortieren. Klick wählt einen Block, [−] [+] ändern die Wiederholungen. **Rechtsklick** öffnet das Block-Menü (Lokale Umbenennung, Bearbeiten, Duplizieren, Takte, Original, Play ab hier, Entfernen); „Lokale Umbenennung“ benennt den Block nur in diesem Song um, das Pattern bleibt. Tastatur im Ablauf: Strg+C kopiert den gewählten Block, Strg+V fügt die Kopie hinter dem gewählten ein, Strg+X nimmt ihn aus dem Ablauf und legt ihn in die Ablage (nur, wenn derselbe Baustein dort noch fehlt); Strg+Z macht es rückgängig. Detailzeile darunter: Wiederholungen, „Takte“ (nur einen Taktbereich spielen), Duplizieren, ◀ ▶ verschieben, Entfernen, Raster, Original, Play/Stopp (ein Knopf, zeigt > bzw. ||).
 - **Tasten im Ablauf:** ← → wählen, Alt+← → verschieben, + / − Wiederholungen, Entf entfernen, Enter abspielen, Esc Stopp, Strg+Z/Y Rückgängig/Wiederholen, Strg+S speichern.
 - **Speichern** legt den Song unter `~/.config/HZ-Drummer/songs/` ab; er erscheint danach im Pattern-Menü und in der Suche. „Speichern unter“ fragt nach einem Namen. Der Song speichert **Kopien** seiner Bausteine, Änderungen an den Quell-Patterns ändern ihn nicht.
 - Der aktuelle Arbeitsstand (auch ungespeichert) und die Ablage werden automatisch gemerkt und beim nächsten Öffnen wiederhergestellt.
-- **Patterns im Song ändern:** Ein Song bleibt fix, auch wenn du das Pattern in der Bibliothek später änderst. „Bearbeiten“ (oder Rechtsklick auf den Block, oder Wechsel auf den Raster-Reiter) öffnet die Kopie des Blocks im Raster; „In Ablauf übernehmen“ ändert nur diesen Block (Markierung ✎). „Aus Quelle“ holt mit Rückfrage die aktuelle Bibliotheks-Fassung in den Block oder in alle Blöcke dieser Quelle (Markierung ↻ zeigt, dass die Quelle neuer ist).
+- **Patterns im Song ändern:** Ein Song bleibt fix, auch wenn du das Pattern in der Bibliothek später änderst. „Raster“ (oder Rechtsklick auf den Block, „Bearbeiten“) öffnet die Kopie des Blocks im Raster; „In Ablauf übernehmen“ ändert nur diesen Block (Markierung ✎). „Original“ holt mit Rückfrage die aktuelle Bibliotheks-Fassung in den Block oder in alle Blöcke dieser Quelle (Markierung ↻ zeigt, dass die Quelle neuer ist).
 
 ## Vorhören im Pattern-Menü
 

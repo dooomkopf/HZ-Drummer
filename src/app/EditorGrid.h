@@ -196,6 +196,16 @@ public:
                         g.setColour (juce::Colours::white);
                         g.drawRoundedRectangle (r, 3.0f, 1.5f);
                     }
+                    if (const int ms = juce::roundToInt (e.lagMs); ms != 0)   // played later/earlier: the ms on the hit
+                    {
+                        // dark on light hits (snare), white on the others
+                        g.setColour (col.getPerceivedBrightness() > 0.6f ? juce::Colour (0xff1c1c20) : juce::Colours::white);
+                        // "+20ms" in one line; in a narrow cell it gets narrower rather than cut off
+                        g.setFont (juce::FontOptions (13.0f));
+                        g.drawFittedText ((ms > 0 ? juce::String ("+") : juce::String (juce::CharPointer_UTF8 ("\xe2\x88\x92"))) + juce::String (std::abs (ms)) + "ms",
+                                          juce::Rectangle<float> (c.x, y, c.w, (float) owner.rowH).toNearestInt(),
+                                          juce::Justification::centred, 1, 0.5f);
+                    }
                 }
                 else
                 {
@@ -295,6 +305,20 @@ public:
 
         if (ci < 0)
             return;
+
+        // Ctrl+click on a hit: play it a little later ("laid back"), Ctrl+Shift+click earlier; one step per click
+        if (e.mods.isCommandDown())
+        {
+            const auto pos = columns[(size_t) ci].pos;
+            if (const auto* ev = hz::findEvent (owner.pattern, voice, pos))
+            {
+                const auto before = owner.pattern;
+                const float step = e.mods.isShiftDown() ? -lagStepMs : lagStepMs;
+                hz::setEventLag (owner.pattern, voice, pos, juce::jlimit (-maxLagMs, maxLagMs, ev->lagMs + step));
+                owner.changed (before);
+            }
+            return;
+        }
 
         drag.active = true;
         drag.before = owner.pattern;

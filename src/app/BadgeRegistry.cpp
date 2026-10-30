@@ -126,6 +126,6 @@ bool BadgeRegistry::save() const
         map->setProperty (juce::String (id), juce::Array<juce::var> { b.colour, b.shape });
     root->setProperty ("badges", juce::var (map));
 
-    juce::TemporaryFile temp (file);
+    juce::TemporaryFile temp (file, juce::TemporaryFile::useHiddenFile);   // hidden: a leftover after a crash is never loaded
     return temp.getFile().replaceWithText (juce::JSON::toString (juce::var (root))) && temp.overwriteTargetFileWithTemporary();
 }

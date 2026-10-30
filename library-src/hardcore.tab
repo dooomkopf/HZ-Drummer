@@ -16,7 +16,8 @@ hh | X x x x X x x x |
 sn | . . X . . . X . |
 bd | x . . x x . . x |
 ---
-name:  Hardcore Mosh-Halbzeit
+name:  Hardcore Mosh Half-Time
+id:    lib.hardcore-mosh-halbzeit
 tags:  hardcore, mosh, half-time
 tempo: 150 (120-170)
 grid:  1/16

@@ -331,7 +331,7 @@ int main (int argc, char* argv[])
         { "ride", "ride" }, { "ride.bell", "ride_bell1" },
         { "crash1", "crash1" }, { "crash2", "crash2" }, { "china", "china_18_inch" },
         { "tom1", "tom_1" }, { "tom2", "tom_2" }, { "tom3", "tom_3" }, { "tom4", "tom_4" },
-        { "cowbell", "zilbel" },
+        { "cowbell", "zilbel" }, { "splash", "china_8_inch" },   // no real splash: the 8" china is the nearest
     };
     auto* voices = new juce::DynamicObject();
     for (const auto& [voice, inst] : voiceCandidates)

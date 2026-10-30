@@ -16,7 +16,7 @@ class SequenceView : public juce::Component,
                      public juce::DragAndDropTarget
 {
 public:
-    std::function<void (int part)> onSelect, onContextMenu, onDoubleClick;   // right-click / double-click on a block
+    std::function<void (int part)> onSelect, onContextMenu;   // right-click on a block
     std::function<void (int part)> onClick;   // a completed click on a block (no drag, not on [-] [+])
     std::function<void (int from, int to)> onMove;
     std::function<void (const juce::var& description, int insertIndex)> onDrop;
@@ -36,7 +36,6 @@ public:
     void mouseDown (const juce::MouseEvent&) override;
     void mouseDrag (const juce::MouseEvent&) override;
     void mouseUp (const juce::MouseEvent&) override;
-    void mouseDoubleClick (const juce::MouseEvent&) override;
 
     bool isInterestedInDragSource (const SourceDetails&) override;
     void itemDragMove (const SourceDetails&) override;

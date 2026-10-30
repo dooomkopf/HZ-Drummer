@@ -48,4 +48,10 @@ private:
     PatternEditor* editor = nullptr;     // owned by 'tabs'
     ArrangerPanel* arranger = nullptr;   // owned by 'tabs'
     ActiveGlow activeGlow;
+
+    // the raster tab is only clickable when a pattern is loaded in it
+    void updateRasterTab();
+    // "Werkstatt: <song name>", following renames at once
+    void updateTitle();
+    juce::TimedCallback stateCheck { [this] { updateRasterTab(); updateTitle(); } };
 };

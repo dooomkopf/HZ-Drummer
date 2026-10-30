@@ -128,9 +128,10 @@ private:
 FolderPanel::FolderPanel (Library& lib) : library (lib)
 {
     addAndMakeVisible (hint);
-    hint.setText ("Ziehen: Einträge und Ordner verschieben   ·   Hoch/Runter: Reihenfolge   ·   löschen lassen sich nur leere Ordner"_u,
+    hint.setText ("Ziehen: Einträge und Ordner verschieben   ·   Hoch/Runter: Reihenfolge   ·   "
+                  "Löschen: eigene Patterns und Songs in den Papierkorb, Ordner nur wenn leer"_u,
                   juce::dontSendNotification);
-    hint.setColour (juce::Label::textColourId, theme::textDim);
+    hint.setColour (juce::Label::textColourId, juce::Colour (0xffe07a70));   // the light red of all help lines
     hint.setFont (juce::FontOptions (14.0f));
 
     addAndMakeVisible (tree);
@@ -146,7 +147,7 @@ FolderPanel::FolderPanel (Library& lib) : library (lib)
     newButton.setTooltip ("Neuer Ordner im gewählten Ordner");
     newButton.onClick = [this] { addFolder(); };
     renameButton.onClick = [this] { renameFolder(); };
-    removeButton.onClick = [this] { removeFolder(); };
+    removeButton.onClick = [this] { if (const auto* item = selected(); item != nullptr && item->kind == Item::Kind::Entry) removeEntry(); else removeFolder(); };
     upButton.onClick = [this] { shift (-1); };
     downButton.onClick = [this] { shift (1); };
 
@@ -267,7 +268,8 @@ void FolderPanel::updateButtons()
     const auto kind = item != nullptr ? item->kind : Item::Kind::Root;
     newButton.setEnabled (item != nullptr);
     renameButton.setEnabled (kind == Item::Kind::Folder);
-    removeButton.setEnabled (kind == Item::Kind::Folder && item->count == 0);
+    removeButton.setEnabled ((kind == Item::Kind::Folder && item->count == 0)
+                             || (kind == Item::Kind::Entry && deletableEntry (item->place.id)));
 
     // up/down among the siblings of the same kind (folders and entries are sorted apart)
     int index = -1, siblings = 0;
@@ -325,8 +327,10 @@ void FolderPanel::askName (const juce::String& title, const juce::String& initia
     w->addButton ("Abbrechen", 0, juce::KeyPress (juce::KeyPress::escapeKey));
     w->enterModalState (true, juce::ModalCallbackFunction::create ([safe = juce::Component::SafePointer<FolderPanel> (this), w, done] (int r)
     {
+        if (safe == nullptr || r != 1)
+            return;   // read the dialog only when OK was pressed: on cancel it may already be gone
         const auto name = w->getTextEditorContents ("name").trim();
-        if (safe != nullptr && r == 1 && name.isNotEmpty())
+        if (name.isNotEmpty())
             done (name);
     }), true);
 }
@@ -369,6 +373,38 @@ void FolderPanel::removeFolder()
     const auto place = item->place;
     apply (place.area, [place] (FolderNode& r) { return folders::removeFolder (r, place.path); },
            Place { place.area, parentOf (place.path), {} });
+}
+
+bool FolderPanel::deletableEntry (const std::string& id) const
+{
+    // own patterns and songs; the bundled library stays
+    const int i = library.indexOf (id);
+    return onDeleteEntry != nullptr && i >= 0 && (library.isUserPattern (i) || library.isSong (i));
+}
+
+void FolderPanel::removeEntry()
+{
+    const auto* item = selected();
+    if (item == nullptr || item->kind != Item::Kind::Entry || ! deletableEntry (item->place.id))
+        return;
+    const auto id = item->place.id;
+    const int i = library.indexOf (id);
+    const bool song = library.isSong (i);
+    // asked here, in this window: a question in the main window could hide behind it
+    juce::AlertWindow::showOkCancelBox (juce::MessageBoxIconType::QuestionIcon, song ? "Arrangement löschen"_u : "Pattern löschen"_u,
+        "\"" + juce::String (library.get (i).name) + "\" in den Papierkorb verschieben?\n\n"_u
+            + (song ? "Die verwendeten Patterns bleiben erhalten."
+                    : "Patterns, die noch in einem Ablauf oder der Ablage verwendet werden, können nicht gelöscht werden."_u),
+        "In Papierkorb", "Abbrechen", this,
+        juce::ModalCallbackFunction::create ([safe = juce::Component::SafePointer<FolderPanel> (this), id] (int r)
+        {
+            if (safe == nullptr || r != 1 || ! safe->onDeleteEntry)
+                return;
+            if (const auto error = safe->onDeleteEntry (id); error.isNotEmpty())
+                juce::AlertWindow::showMessageBoxAsync (juce::MessageBoxIconType::WarningIcon, "Löschen nicht möglich"_u, error, "OK", safe.getComponent());
+            if (safe != nullptr)
+                safe->refresh();
+        }));
 }
 
 void FolderPanel::shift (int delta)

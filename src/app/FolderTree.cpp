@@ -198,7 +198,7 @@ juce::String FolderTree::save (const juce::File& file) const
     for (int a = 0; a < NumAreas; ++a)
         root->setProperty (areaKeys[a], toVar (roots[(size_t) a], true));
 
-    juce::TemporaryFile temp (file);
+    juce::TemporaryFile temp (file, juce::TemporaryFile::useHiddenFile);   // hidden: a leftover after a crash is never loaded
     if (! file.getParentDirectory().createDirectory()
         || ! temp.getFile().replaceWithText (juce::JSON::toString (juce::var (root)))
         || ! temp.overwriteTargetFileWithTemporary())

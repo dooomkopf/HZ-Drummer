@@ -52,6 +52,12 @@ public:
 
     // Ablage; the same building block is kept only once
     int addToScratch (std::vector<SongPart>);   // returns how many were new (one undo step)
+    // Ctrl+X in the sequence: the block leaves it and goes into the Ablage, unless the same block
+    // (sameBlock: source, bar range and content) is already there; one undo step for both
+    void moveToScratch (int index);
+    int indexOfScratchUid (const std::string& uid) const;                // -1 if the card is gone
+    bool setScratchCopy (int index, const hz::Pattern&, bool edited);   // a card edited in the raster (one undo step)
+    bool insertIntoScratch (int index, SongPart);                       // at a place; false if the same block is there
     void removeFromScratch (int index);
     void clearScratch();
 

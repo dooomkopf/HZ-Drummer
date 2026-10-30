@@ -43,7 +43,8 @@ static bool samePattern (const hz::Pattern& a, const hz::Pattern& b)
         if (a.layers[l].role != b.layers[l].role || ea.size() != eb.size()) return false;
         for (size_t i = 0; i < ea.size(); ++i)
             if (ea[i].id != eb[i].id || ! (ea[i].voice == eb[i].voice) || ea[i].pos != eb[i].pos
-                || std::abs (ea[i].velocity - eb[i].velocity) > 1e-3f || ea[i].limb != eb[i].limb || ea[i].flam != eb[i].flam)
+                || std::abs (ea[i].velocity - eb[i].velocity) > 1e-3f || ea[i].limb != eb[i].limb || ea[i].flam != eb[i].flam
+                || std::abs (ea[i].lagMs - eb[i].lagMs) > 1e-3f)
                 return false;
     }
     return true;
@@ -89,6 +90,19 @@ static void testSaveLoadFile()
     CHECK (samePattern (p, back));
     CHECK (back.name == "Prüfung äöü");
     file.deleteFile();
+
+    // a hit played later (Strg+Klick im Raster): "lag" in ms, only written when set
+    auto lagged = p;
+    const auto& first = lagged.layers[0].events[0];
+    CHECK (hz::setEventLag (lagged, first.voice, first.pos, 20.0f));
+    const auto json = juce::JSON::toString (patternToJson (lagged));
+    CHECK (json.contains ("\"lag\"") && ! juce::JSON::toString (patternToJson (p)).contains ("\"lag\""));
+    CHECK (patternFromJson (juce::JSON::parse (json), back, err) && samePattern (lagged, back));
+    CHECK (std::abs (back.layers[0].events[0].lagMs - 20.0f) < 1e-3f);
+    CHECK (hz::setEventLag (lagged, first.voice, first.pos, -60.0f));   // earlier: negative
+    CHECK (patternFromJson (juce::JSON::parse (juce::JSON::toString (patternToJson (lagged))), back, err) && samePattern (lagged, back));
+    auto damaged = juce::JSON::toString (patternToJson (lagged)).replace ("\"lag\": -60.0", "\"lag\": \"kaputt\"");
+    CHECK (damaged.contains ("kaputt") && ! patternFromJson (juce::JSON::parse (damaged), back, err));   // not silently 0
 
     // kaputte Dateien werden abgelehnt, nicht übernommen
     auto bad = juce::File::createTempFile (".json");
@@ -195,6 +209,7 @@ static void testLibraryDeletion()
         CHECK (listOwnTrash (folder).size() == 1);
     }
     CHECK (restoreOwnTrash ("../escape", folder).isNotEmpty());
+    CHECK (emptyOwnTrash (folder) && listOwnTrash (folder).empty() && emptyOwnTrash (folder));   // also when already empty
     CHECK (removeOwnLibraryFile ("user.missing", folder).isNotEmpty());
     CHECK (folder.deleteRecursively());
 }

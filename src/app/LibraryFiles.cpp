@@ -38,7 +38,7 @@ juce::String removeOwnLibraryFile (const std::string& libraryId, const juce::Fil
     // Files may live in subfolders or have names unrelated to their ids.
     juce::Array<juce::File> matches;
     for (const auto& file : dataFolder.getChildFile (song ? "songs" : "patterns")
-                                   .findChildFiles (juce::File::findFiles, true, "*.json"))
+                                   .findChildFiles (juce::File::findFiles | juce::File::ignoreHiddenFiles, true, "*.json"))
     {
         const auto json = juce::JSON::parse (file.loadFileAsString());
         if (json.isObject() && json["id"].toString() == diskId)
@@ -50,7 +50,7 @@ juce::String removeOwnLibraryFile (const std::string& libraryId, const juce::Fil
 
     if (! song)
     {
-        auto dependencies = dataFolder.getChildFile ("songs").findChildFiles (juce::File::findFiles, true, "*.json");
+        auto dependencies = dataFolder.getChildFile ("songs").findChildFiles (juce::File::findFiles | juce::File::ignoreHiddenFiles, true, "*.json");
         for (const auto* name : { "arranger.json", "ablage.json" })
         {
             const auto file = dataFolder.getChildFile (name);
@@ -99,6 +99,12 @@ std::vector<LibraryTrashEntry> listOwnTrash (const juce::File& dataFolder)
     return entries;
 }
 
+bool emptyOwnTrash (const juce::File& dataFolder)
+{
+    const auto trash = dataFolder.getChildFile ("trash");   // created again by the next deletion
+    return ! trash.exists() || trash.deleteRecursively();
+}
+
 juce::String restoreOwnTrash (const juce::String& key, const juce::File& dataFolder)
 {
     if (key.isEmpty() || ! key.containsOnly ("0123456789abcdef-"))
@@ -118,7 +124,7 @@ juce::String restoreOwnTrash (const juce::String& key, const juce::File& dataFol
     const auto content = juce::JSON::parse (folder.getChildFile ("data.json").loadFileAsString());
     if (content.getDynamicObject() == nullptr || content["id"].toString().isEmpty())
         return "Gesicherte Datei ist ungültig."_u;
-    for (const auto& file : originals.findChildFiles (juce::File::findFiles, true, "*.json"))
+    for (const auto& file : originals.findChildFiles (juce::File::findFiles | juce::File::ignoreHiddenFiles, true, "*.json"))
         if (juce::JSON::parse (file.loadFileAsString())["id"].toString() == content["id"].toString())
             return "Ein Eintrag mit dieser Kennung existiert bereits. Nichts überschrieben."_u;
     if (target.exists()) return "Die ursprüngliche Datei existiert bereits. Nichts überschrieben."_u;

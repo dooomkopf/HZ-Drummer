@@ -19,7 +19,11 @@ namespace
     public:
         explicit HintMenuItem (juce::String t) : juce::PopupMenu::CustomComponent (false), text (std::move (t)) {}
 
-        void getIdealSize (int& w, int& h) override { w = 220; h = 22; }
+        void getIdealSize (int& w, int& h) override
+        {
+            w = juce::jmax (220, 52 + (int) std::ceil (juce::GlyphArrangement::getStringWidth (juce::Font (juce::FontOptions (14.0f)), text)));
+            h = 22;
+        }
 
         void paint (juce::Graphics& g) override
         {
@@ -130,9 +134,9 @@ juce::PopupMenu buildPatternMenu (const Library& lib, int current, const Pattern
 
     // key hints instead of a favourite toggle entry: Strg+F and the star on the button do that
     menu.addSeparator();
-    addHint (menu, 100001, "Anhören (P)"_u);
-    addHint (menu, 100002, "Favoriten (Strg+F)");
-    addHint (menu, 100003, "Umbenennen (Rechtsklick)");
+    addHint (menu, 100001, "Play/Pause Sample: Mausover + P");
+    addHint (menu, 100002, "Toggle Favorit: Strg+F");
+    addHint (menu, 100003, "Umbenennen (eigenes Pattern): Rechtsklick");
     return menu;
 }
 

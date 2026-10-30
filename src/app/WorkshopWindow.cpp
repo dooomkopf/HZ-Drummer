@@ -13,7 +13,7 @@ void WorkshopWindow::TabLook::drawTabButton (juce::TabBarButton& button, juce::G
     const bool front = button.isFrontTab();
     const juce::Colour glow (0xff48a0ff);
 
-    g.setColour (front ? juce::Colour (0xff1c1c20) : isMouseOver ? juce::Colour (0xff17171a) : windowBackground);
+    g.setColour (front ? juce::Colour (0xff1c1c20) : isMouseOver && button.isEnabled() ? juce::Colour (0xff17171a) : windowBackground);
     g.fillRect (area);
 
     if (front)
@@ -26,7 +26,7 @@ void WorkshopWindow::TabLook::drawTabButton (juce::TabBarButton& button, juce::G
         g.fillRect (area.withTop (area.getBottom() - 2.0f));
     }
 
-    g.setColour (front ? juce::Colours::white : juce::Colour (0xff8a8a92));
+    g.setColour (front ? juce::Colours::white : button.isEnabled() ? juce::Colour (0xff8a8a92) : juce::Colour (0xff45454c));
     g.setFont (juce::FontOptions (15.0f, front ? juce::Font::bold : juce::Font::plain));
     g.drawText (button.getButtonText(), area, juce::Justification::centred);
 }
@@ -44,6 +44,32 @@ WorkshopWindow::WorkshopWindow (EditorHost& h, ArrangerHost& ah, juce::Propertie
     tabs.setOutline (0);
     tabs.addTab ("Raster", windowBackground, editor, true);
     tabs.addTab ("Arranger", windowBackground, arranger, true);
+
+    arranger->onBlockApplied = [this] (const hz::Pattern& applied) { editor->blockApplied (applied); };
+
+    // "Bearbeiten" on a card of the Ablage: as a block, "In Ablage übernehmen" brings it back
+    arranger->onEditCardInRaster = [this] (const hz::Pattern& p, const juce::String& title, std::function<bool (const hz::Pattern&)> apply,
+                                          std::function<void (const hz::Pattern&)> savedAsNew)
+    {
+        auto open = [this, p, title, apply, savedAsNew]
+        {
+            editor->setCardPattern (p, title, apply, savedAsNew);
+            showRaster();
+        };
+        if (! editor->hasUnsavedChanges())
+        {
+            open();
+            return;
+        }
+        juce::AlertWindow::showOkCancelBox (juce::MessageBoxIconType::QuestionIcon, "Ungespeicherte Änderungen"_u,
+            "Im Raster gibt es ungespeicherte Änderungen an \""_u + juce::String (editor->getPattern().name) + "\". Verwerfen und die Karte laden?",
+            "Verwerfen", "Behalten", this,
+            juce::ModalCallbackFunction::create ([safe = juce::Component::SafePointer<WorkshopWindow> (this), open] (int r)
+            {
+                if (safe != nullptr && r == 1)
+                    open();
+            }));
+    };
 
     // "Bearbeiten" on a block: its copy goes into the raster tab, "In Ablauf übernehmen" brings it back
     arranger->onEditInRaster = [this] (const hz::Pattern& p, const juce::String& title, std::function<bool (const hz::Pattern&)> apply)
@@ -77,12 +103,13 @@ WorkshopWindow::WorkshopWindow (EditorHost& h, ArrangerHost& ah, juce::Propertie
                 arranger->editSelectedBlock();   // loads and auditions it
             else
                 editor->resumeAudition();
+            editor->updateWindowTitle();   // the pattern (and "*"), not the song of the arranger tab
         }
         else
         {
             // the raster's pattern must not keep looping while the arranger is in use
             editor->releaseAudition();
-            setName ("Werkstatt " + juce::String (juce::CharPointer_UTF8 ("\xe2\x80\x93")) + " Arranger: " + arranger->songName());
+            updateTitle();
             arranger->grabKeyboardFocus();
         }
     };
@@ -96,10 +123,39 @@ WorkshopWindow::WorkshopWindow (EditorHost& h, ArrangerHost& ah, juce::Propertie
     if (state.isEmpty() || ! restoreWindowStateFromString (state))
         centreWithSize (1200, 750);
     setVisible (true);
+
+    updateRasterTab();
+    updateTitle();
+    stateCheck.startTimer (250);
+}
+
+void WorkshopWindow::updateTitle()
+{
+    // the arranger tab names the song; the raster tab names its pattern (PatternEditor::updateWindowTitle)
+    if (tabs.getCurrentTabIndex() != 1)
+        return;
+    const auto title = arranger->songName().isEmpty() ? juce::String ("Werkstatt") : "Werkstatt: " + arranger->songName();
+    if (getName() != title)
+        setName (title);
+}
+
+void WorkshopWindow::updateRasterTab()
+{
+    // only with a loaded pattern: after "Schließen" the empty raster may stay open, but once left it
+    // cannot be clicked again (it would only show an empty field)
+    auto* button = tabs.getTabbedButtonBar().getTabButton (0);
+    const bool canEdit = ! editor->getPattern().bars.empty();
+    if (button == nullptr || button->isEnabled() == canEdit)
+        return;
+    button->setEnabled (canEdit);
+    button->setTooltip (canEdit ? juce::String()
+                                : "Erst etwas zum Bearbeiten wählen: im Hauptfenster ein Pattern und \"Bearbeiten\" (E), "
+                                  "oder im Arranger einen Block und \"Raster\""_u);
 }
 
 WorkshopWindow::~WorkshopWindow()
 {
+    stateCheck.stopTimer();
     props.setValue ("editorWindow", getWindowStateAsString());
     tabs.getTabbedButtonBar().setLookAndFeel (nullptr);
     clearContentComponent();

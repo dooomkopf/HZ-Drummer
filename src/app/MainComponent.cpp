@@ -27,19 +27,26 @@ MainComponent::MainComponent()
     for (auto* b : { &playButton, &tapButton, &audioButton, &editButton, &mixerButton })
         addAndMakeVisible (*b);
     playButton.onClick  = [this] { togglePlay(); };
+    playButton.getProperties().set ("transport", true);   // drawn by HZLook
     tapButton.onClick   = [this] { tapTempo(); };
+    tapButton.getProperties().set ("tap", true);          // drawn by HZLook
     audioButton.onClick = [this] { showAudioSettings(); };
+    audioButton.getProperties().set ("system", true);     // drawn by HZLook
     editButton.onClick  = [this] { openEditor(); };
     mixerButton.onClick = [this] { showMixer(); };
+    mixerButton.getProperties().set ("mixer", true);      // drawn by HZLook
     addAndMakeVisible (countInButton);
     countInButton.onClick = [this] { cycleCountIn(); };
     countInButton.getProperties().set ("metronome", true);   // drawn by HZLook
     countInButton.setTooltip ("Ein Takt Klicks vor dem Start: aus, nur am Anfang des Songs, oder vor jedem Start"_u);
     updateCountInButton();
+    for (auto* b : { &playButton, &tapButton, &mixerButton, &audioButton, &countInButton })
+        b->getProperties().set ("bold", true);   // only the first row is bold (HZLook::getTextButtonFont)
 
     addAndMakeVisible (tempoSlider);
     tempoSlider.setRange (30.0, 320.0, 1.0);
     tempoSlider.setValue (control.tempoTenths / 10.0, juce::dontSendNotification);
+    tempoSlider.getProperties().set ("pill", true);   // value box drawn by HZLook as a pill
     tempoSlider.setTextBoxStyle (juce::Slider::TextBoxRight, false, 70, 26);
     tempoSlider.setTextValueSuffix (" BPM");
     tempoSlider.onValueChange = [this] { setTempo (tempoSlider.getValue()); };
@@ -59,11 +66,19 @@ MainComponent::MainComponent()
             && ! editing.has_value() && ! arranging.has_value())
             confirmDeleteLibraryEntry (library.get (currentPattern).id);
     };
+    addAndMakeVisible (renameEntryButton);
+    renameEntryButton.setTooltip ("Geladenen eigenen Eintrag umbenennen (wie Rechtsklick im Pattern-Menü)"_u);
+    renameEntryButton.onClick = [this]
+    {
+        if (patternMode())
+            askRenameEntry (library.get (currentPattern).id);
+    };
     addAndMakeVisible (meterButton);
     meterButton.onClick = [this] { showMeterMenu(); };
 
     addAndMakeVisible (soundBox);
-    soundBox.addItemList ({ "Klick", "Bassdrum", "Snare", "Kick + Snare" }, 1);
+    soundBox.getProperties().set ("pill", true);   // drawn by HZLook like the buttons beside it
+    soundBox.addItemList ({ "Klick", "Bassdrum", "Snare", "Bass + Snare" }, 1);
     soundBox.setSelectedItemIndex ((int) sound, juce::dontSendNotification);
     soundBox.onChange = [this] { selectSound (soundBox.getSelectedItemIndex()); };
 
@@ -102,7 +117,7 @@ MainComponent::MainComponent()
                                 (juce::Component*) &tempoSlider, (juce::Component*) &meterButton,
                                 (juce::Component*) &patternButton, (juce::Component*) &soundBox, (juce::Component*) &editButton,
                                 (juce::Component*) &mixerButton, (juce::Component*) &searchButton, (juce::Component*) &deleteEntryButton,
-                                (juce::Component*) &countInButton })
+                                (juce::Component*) &renameEntryButton, (juce::Component*) &countInButton })
     {
         c->setWantsKeyboardFocus (false);
         c->setMouseClickGrabsKeyboardFocus (false);
@@ -206,6 +221,9 @@ void MainComponent::getNextAudioBlock (const juce::AudioSourceChannelInfo& info)
 void MainComponent::publishControl()
 {
     engine.setControl (control);
+    // Keep text and artwork in sync for every playback path, including count-in and previews.
+    playButton.getProperties().set ("playing", control.play);
+    playButton.setButtonText (control.play ? "Pause" : "Start");
 }
 
 void MainComponent::togglePlay()
@@ -222,7 +240,6 @@ void MainComponent::togglePlay()
 
     // pausing keeps the last shown position (marker stays); resuming continues from there
     pendingDisplay.clear();
-    playButton.setButtonText (control.play ? "Pause" : "Start");
     updateView();
 }
 
@@ -450,6 +467,7 @@ void MainComponent::updateButtons()
     soundBox.setEnabled (! patternMode());
     deleteEntryButton.setVisible (patternMode() && (library.isUserPattern (currentPattern) || library.isSong (currentPattern)));
     deleteEntryButton.setEnabled (! editing.has_value() && ! arranging.has_value());
+    renameEntryButton.setVisible (deleteEntryButton.isVisible());   // own patterns and songs, like Löschen
 }
 
 //==============================================================================
@@ -495,7 +513,11 @@ void MainComponent::updateView()
 void MainComponent::timerCallback()
 {
     if (kits->poll (engine))
+    {
         kitLabel.setText (kits->status(), juce::dontSendNotification);
+        if (editorWindow != nullptr)
+            editorWindow->getEditor().kitChanged();
+    }
     engine.collectRetiredPlans();
 
     // take the keyboard focus back only if our window is active (not from dialogs or menus)
@@ -565,7 +587,6 @@ void MainComponent::resized()
         b->setBounds (row1.removeFromLeft (104));
         row1.removeFromLeft (8);
     }
-    row1.removeFromLeft (12);
     tempoSlider.setBounds (row1);
 
     // row 2: selection
@@ -578,7 +599,7 @@ void MainComponent::resized()
     searchButton.setBounds (row2.removeFromLeft (compactSelection ? 72 : 86));
     row2.removeFromLeft (8);
     editButton.setBounds (row2.removeFromLeft (compactSelection ? 90 : 110));
-    row2.removeFromLeft (16);
+    row2.removeFromLeft (8);
     soundBox.setBounds (row2.removeFromRight (compactSelection ? 100 : 140));
     row2.removeFromRight (8);
     meterButton.setBounds (row2);
@@ -590,6 +611,8 @@ void MainComponent::resized()
     area.removeFromTop (8);
     auto titleRow = area.removeFromTop (40);
     deleteEntryButton.setBounds (titleRow.removeFromRight (94).reduced (0, 3));
+    titleRow.removeFromRight (8);
+    renameEntryButton.setBounds (titleRow.removeFromRight (120).reduced (0, 3));
     titleRow.removeFromRight (8);
     titleLabel.setBounds (titleRow);
     songStrip.setBounds (songStrip.isVisible() ? area.removeFromTop (songStrip.preferredHeight (area.getWidth())) : juce::Rectangle<int>());

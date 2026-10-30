@@ -11,8 +11,9 @@
 class Library;
 
 // System → Ordnerstruktur: the folders of songs and own patterns as a tree. The buttons make,
-// rename, delete (empty ones only) and sort folders; entries and folders move by dragging them
-// onto a folder or between other entries. Every change is saved at once (Library::editFolders).
+// rename, delete (empty ones only) and sort folders; "Löschen" on an own pattern or a song moves it
+// to the trash (onDeleteEntry, after asking). Entries and folders move by dragging them onto a
+// folder or between other entries. Every change is saved at once (Library::editFolders).
 class FolderPanel : public juce::Component,
                     public juce::DragAndDropContainer
 {
@@ -21,6 +22,9 @@ public:
     ~FolderPanel() override;
 
     void refresh();   // the library or the folders changed elsewhere
+
+    // moves an own pattern or a song to the trash; returns "" or why it cannot
+    std::function<juce::String (const std::string& id)> onDeleteEntry;
 
     void paint (juce::Graphics&) override;
     void resized() override;
@@ -43,6 +47,8 @@ private:
     void addFolder();
     void renameFolder();
     void removeFolder();
+    void removeEntry();   // an own pattern or a song: to the trash, after asking
+    bool deletableEntry (const std::string& id) const;
     void shift (int delta);
     void updateButtons();
     Item* selected() const;

@@ -37,7 +37,7 @@ public:
         }
 
         g.setColour (findColour (juce::TextButton::textColourOffId));
-        g.setFont (juce::FontOptions (h * 0.36f));
+        g.setFont (juce::FontOptions (h * 0.36f));   // plain: only the first row of the main window is bold
         g.drawFittedText (label, area, juce::Justification::centredLeft, 1);
     }
 

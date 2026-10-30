@@ -1,8 +1,10 @@
 #pragma once
 
+#include "app/views/HelpLine.h"
 #include "app/MeterLibrary.h"
 #include "app/Text.h"
 #include "engine/Pattern.h"
+#include "engine/SamplePlayer.h"
 
 #include <juce_gui_extra/juce_gui_extra.h>
 
@@ -30,6 +32,10 @@ public:
     virtual Playhead getPlayhead() const = 0;
     virtual bool handleTransportKey (const juce::KeyPress&) = 0;     // space, tempo, tap
     virtual double getCurrentTempo() const = 0;
+    virtual void setPlaybackTempo (double bpm) = 0;                 // the raster's tempo field: the main tempo follows
+    virtual bool patternNameTaken (const juce::String&) const = 0;  // a pattern of the library has this name
+    virtual void previewVoice (hz::Voice) = 0;                      // one hit of this instrument right now (a click on a lane name)
+    virtual const hz::DrumKit* currentKit() const = 0;              // which sounds exist (nullptr while no kit is loaded)
     virtual MeterLibrary& getMeters() = 0;
     virtual void editorClosed() = 0;
 };
@@ -48,6 +54,13 @@ public:
     // A block of the arranger's sequence: "Speichern" becomes "In Ablauf übernehmen" and hands the
     // pattern to 'apply' instead of the library ("Speichern unter" still creates a library pattern)
     void setBlockPattern (const hz::Pattern&, const juce::String& blockTitle, std::function<bool (const hz::Pattern&)> apply);
+    void blockApplied (const hz::Pattern&);   // the arranger took this version over later (after its question)
+    // A card of the Ablage: like a block ("In Ablage übernehmen" writes it back); "Speichern unter" also hands
+    // the new own pattern to savedAsNew (it becomes a card next to this one) and the raster then edits that pattern.
+    void setCardPattern (const hz::Pattern&, const juce::String& cardTitle, std::function<bool (const hz::Pattern&)> apply,
+                         std::function<void (const hz::Pattern&)> savedAsNew);
+    void kitChanged()                         { updateLanes(); }   // other sounds: lanes and their names follow
+    void updateWindowTitle();                 // "Werkstatt – <pattern> *" (the arranger tab shows the song instead)
 
     // Empties the editor ("Schließen"): nothing can be edited by accident until a pattern is loaded again
     void clearPattern();
@@ -65,6 +78,9 @@ public:
     void mouseDown (const juce::MouseEvent&) override;   // the M / S switches of the lane column
 
 private:
+    void load (const hz::Pattern&, bool isUserPattern);   // setPattern without touching the main tempo (blocks)
+    juce::String defaultHelp() const;                      // the built-in help line (Strg+S depends on block mode)
+    juce::String variantName() const;                      // "Speichern unter" suggests "<name> modN"
     friend class EditorGrid;
 
     struct Lane
@@ -98,6 +114,9 @@ private:
     bool isMuted (hz::Voice) const;
     bool isSolo (hz::Voice) const;
     juce::Rectangle<int> laneSwitch (int lane, bool solo) const;   // the M or S box of a lane row
+    juce::Rectangle<int> laneSwitchReset() const;                  // above the M / S column: all off
+    juce::String laneLabel (const Lane&) const;                    // what the kit really plays ("Zil-Bel" instead of "Kuhglocke")
+    bool laneSilent (const Lane&) const;                           // the kit has no sound for it
 
     EditorHost& host;
     EditorHost::Playhead lastPlayhead;
@@ -106,10 +125,14 @@ private:
     hz::Pattern savedContent;      // content at the last save (for "unsaved")
     bool nameUndoPending = false;
     bool humanizeDragging = false;
+    hz::Pattern tempoBefore;
+    bool tempoDragging = false;
     int rowH = 26;
     bool userPattern = false;
     bool dirty = false;
     bool blockMode = false;        // see setBlockPattern
+    bool cardMode = false;         // blockMode for a card of the Ablage (see setCardPattern)
+    std::function<void (const hz::Pattern&)> cardSavedAsNew;
     juce::String blockTitle;
     std::function<bool (const hz::Pattern&)> applyToBlock;
     std::vector<hz::Pattern> undoStack, redoStack;
@@ -118,12 +141,14 @@ private:
 
     juce::Label nameLabel;   // the name is shown, renaming goes through a dialog (a text field was mistaken for a search box)
     juce::TextButton undoButton { "Rückgängig"_u }, redoButton { "Wiederholen" }, addBarButton { "+ Takt" },
-                     tempoButton { "Tempo übernehmen"_u }, saveButton { "Speichern" }, saveAsButton { "Speichern unter" },
+                     saveButton { "Speichern" }, saveAsButton { "Speichern unter" },
                      deleteButton { "Löschen"_u }, renameButton { "Umbenennen" }, closeButton { "Schließen"_u };
     juce::ToggleButton allLanesToggle { "Alle Spuren" };
     juce::ComboBox swingBox;
     juce::Slider humanizeSlider;
+    juce::Slider tempoSlider;   // the pattern's own tempo (what it starts with when selected)
     juce::Label humanizeLabel { {}, "Menschlich" }, infoLabel;
+    HelpLine help;   // the two lines at the foot; own text: hilfezeile-raster.txt in the data folder
     std::unique_ptr<EditorGrid> grid;
     juce::Viewport viewport;
 

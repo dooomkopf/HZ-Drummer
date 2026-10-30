@@ -22,7 +22,8 @@ cr | X . . x . . x . . x . . |
 sn | . . . X . . . . . X . . |
 bd | x x x x x x x x x x x x |
 ---
-name:  Death Mid-Tempo Doppelbass Halbzeit
+name:  Death Mid-Tempo Doppelbass Half-Time
+id:    lib.death-mid-tempo-doppelbass-halbzeit
 tags:  death, mid-tempo, double-bass, half-time
 tempo: 150 (120-180)
 grid:  1/16

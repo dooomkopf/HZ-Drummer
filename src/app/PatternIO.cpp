@@ -109,6 +109,7 @@ juce::var patternToJson (const hz::Pattern& p)
             eo->setProperty ("vel", std::round (e.velocity * 1000.0f) / 1000.0f);
             if (e.limb != hz::Limb::Auto) eo->setProperty ("limb", limbName (e.limb));
             if (e.flam) eo->setProperty ("flam", true);
+            if (std::abs (e.lagMs) > 0.05f) eo->setProperty ("lag", std::round (e.lagMs * 10.0f) / 10.0f);   // ms later (-: earlier), only when set
             events.add (eo);
         }
         lo->setProperty ("events", events);
@@ -209,6 +210,12 @@ bool patternFromJson (const juce::var& json, hz::Pattern& p, juce::String& error
                     const auto limb = e["limb"].toString();
                     ev.limb = limb == "left" ? hz::Limb::Left : limb == "right" ? hz::Limb::Right : hz::Limb::Auto;
                     ev.flam = (bool) e["flam"];
+                    if (const auto lag = e["lag"]; ! lag.isVoid() && ! (lag.isDouble() || lag.isInt() || lag.isInt64()))
+                    {
+                        error = "Versatz ungültig: "_u + lag.toString();   // a damaged value, not silently 0
+                        return false;
+                    }
+                    ev.lagMs = (float) (double) e["lag"];   // missing = 0 (on the grid)
                     layer.events.push_back (ev);
                 }
             p.layers.push_back (std::move (layer));
@@ -233,7 +240,7 @@ bool patternFromJson (const juce::var& json, hz::Pattern& p, juce::String& error
 bool savePattern (const hz::Pattern& p, const juce::File& file, juce::String& error)
 {
     // atomic: write a temporary file first, then replace
-    juce::TemporaryFile temp (file);
+    juce::TemporaryFile temp (file, juce::TemporaryFile::useHiddenFile);   // hidden: a leftover after a crash is never loaded
     if (! temp.getFile().replaceWithText (juce::JSON::toString (patternToJson (p))) || ! temp.overwriteTargetFileWithTemporary())
     {
         error = "Kann nicht speichern: " + file.getFullPathName();
@@ -255,7 +262,7 @@ bool loadPattern (const juce::File& file, hz::Pattern& p, juce::String& error)
 std::vector<hz::Pattern> loadPatternFolder (const juce::File& folder, juce::StringArray& errors)
 {
     std::vector<hz::Pattern> result;
-    auto files = folder.findChildFiles (juce::File::findFiles, true, "*.json");
+    auto files = folder.findChildFiles (juce::File::findFiles | juce::File::ignoreHiddenFiles, true, "*.json");
     files.sort();
 
     for (auto& f : files)

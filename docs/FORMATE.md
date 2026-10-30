@@ -125,6 +125,7 @@ So speichert das Programm Patterns. Positionen und Längen sind exakte Brüche i
 | `events[].vel` | Lautstärke `0` bis `1`: Ghost etwa `0.3`, normal `0.75`, Akzent `1.0` |
 | `events[].limb` | optional `left` oder `right`, zum Beispiel für Doppelbass |
 | `events[].flam` | optional `true` |
+| `events[].lag` | optional, Millisekunden `-100` bis `100`: der Schlag klingt so viel später (negativ: früher) als seine Position („laid back“); fehlt = auf dem Raster |
 | `events[].id` | eindeutig innerhalb des Patterns |
 | `origin` | Herkunft einer Variante: Eltern-Kennung, angewandte Bausteine, Zufallswert |
 | `revision` | wird bei jedem Speichern erhöht |

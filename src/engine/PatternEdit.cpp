@@ -103,6 +103,18 @@ bool setEventVelocity (Pattern& p, Voice v, Rational pos, float velocity)
     return false;
 }
 
+bool setEventLag (Pattern& p, Voice v, Rational pos, float lagMs)
+{
+    for (auto& l : p.layers)
+        for (auto& e : l.events)
+            if (e.voice == v && e.pos == pos)
+            {
+                e.lagMs = std::clamp (lagMs, -100.0f, 100.0f);
+                return true;
+            }
+    return false;
+}
+
 void insertBar (Pattern& p, int afterBar, bool copyContent)
 {
     if (p.bars.empty())

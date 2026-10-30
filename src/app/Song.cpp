@@ -88,7 +88,7 @@ namespace
             const int available = part.copy ? (int) part.copy->bars.size() : 1 << 20;
             if (from < 1 || to < from || to > available)
             {
-                error = "ungültiger Taktbereich " + juce::String (from) + "–"_u + juce::String (to);
+                error = "ungültiger Taktbereich "_u + juce::String (from) + "–"_u + juce::String (to);
                 return false;
             }
             part.firstBar = from - 1;
@@ -126,7 +126,7 @@ namespace
     // atomic: a crash while writing never leaves a half file behind
     bool writeJson (const juce::var& root, const juce::File& file, juce::String& error)
     {
-        juce::TemporaryFile temp (file);
+        juce::TemporaryFile temp (file, juce::TemporaryFile::useHiddenFile);   // hidden: a leftover after a crash is never loaded
         if (! temp.getFile().replaceWithText (juce::JSON::toString (root)) || ! temp.overwriteTargetFileWithTemporary())
         {
             error = "Kann nicht speichern: " + file.getFullPathName();

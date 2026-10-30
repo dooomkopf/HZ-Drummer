@@ -110,6 +110,8 @@ std::string Pattern::validate() const
                 return "Schlag außerhalb des Patterns";
             if (! (e.velocity >= 0.0f && e.velocity <= 1.0f))
                 return "Velocity außerhalb 0..1";
+            if (! (e.lagMs >= -100.0f && e.lagMs <= 100.0f))
+                return "Versatz außerhalb -100..100 ms";
             ids.push_back (e.id);
         }
 
@@ -160,12 +162,12 @@ PatternPlan buildPlan (const Pattern& p)
 
             if (e.flam)
             {
-                plan.events.push_back ({ pos, e.voice, e.velocity * flamGraceVelocity, e.limb, e.id, 0.0f, 0, p.humanize });
-                plan.events.push_back ({ pos, e.voice, e.velocity, e.limb, e.id, flamDelayMs, 1, p.humanize });
+                plan.events.push_back ({ pos, e.voice, e.velocity * flamGraceVelocity, e.limb, e.id, e.lagMs, 0, p.humanize });
+                plan.events.push_back ({ pos, e.voice, e.velocity, e.limb, e.id, flamDelayMs + e.lagMs, 1, p.humanize });
             }
             else
             {
-                plan.events.push_back ({ pos, e.voice, e.velocity, e.limb, e.id, 0.0f, 0, p.humanize });
+                plan.events.push_back ({ pos, e.voice, e.velocity, e.limb, e.id, e.lagMs, 0, p.humanize });
             }
         }
 

@@ -312,6 +312,50 @@ int ArrangerModel::addToScratch (std::vector<SongPart> parts)
     return added;
 }
 
+void ArrangerModel::moveToScratch (int index)
+{
+    if (! validPart (index))
+        return;
+    auto next = current;
+    auto part = next.song.parts[(size_t) index];
+    next.song.parts.erase (next.song.parts.begin() + index);
+    const bool known = std::any_of (next.scratch.begin(), next.scratch.end(), [&] (const SongPart& s) { return sameBlock (s, part); });
+    if (! known)
+        next.scratch.push_back (std::move (part));
+    commit (std::move (next), ! known);
+}
+
+int ArrangerModel::indexOfScratchUid (const std::string& uid) const
+{
+    for (int i = 0; i < (int) current.scratch.size(); ++i)
+        if (current.scratch[(size_t) i].uid == uid)
+            return i;
+    return -1;
+}
+
+bool ArrangerModel::setScratchCopy (int index, const hz::Pattern& copy, bool edited)
+{
+    if (index < 0 || index >= (int) current.scratch.size() || current.scratch[(size_t) index].kind != PartKind::Pattern)
+        return false;
+    auto next = current;
+    auto& part = next.scratch[(size_t) index];
+    part.copy = std::make_shared<const hz::Pattern> (copy);
+    part.edited = edited;
+    if (part.numBars > 0 && part.firstBar + part.numBars > (int) copy.bars.size())
+        part.firstBar = part.numBars = 0;
+    return commit (std::move (next), true);
+}
+
+bool ArrangerModel::insertIntoScratch (int index, SongPart part)
+{
+    if (std::any_of (current.scratch.begin(), current.scratch.end(), [&] (const SongPart& s) { return sameBlock (s, part); }))
+        return false;
+    auto next = current;
+    index = std::clamp (index, 0, (int) next.scratch.size());
+    next.scratch.insert (next.scratch.begin() + index, std::move (part));
+    return commit (std::move (next), true);
+}
+
 void ArrangerModel::removeFromScratch (int index)
 {
     if (index < 0 || index >= (int) current.scratch.size())

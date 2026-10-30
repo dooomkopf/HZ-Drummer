@@ -40,7 +40,8 @@ cr | X . x . x . x . x . x . x . x . | x . x . x . x . x . x . x . x . | x . x .
 sn | . x . x . x . x . x . x . x . x | . x . x . x . x . x . x . x . x | . x . x . x . x . x . x . x . x | . x . x . x . x g g x x x X X X |
 bd | x . x . x . x . x . x . x . x . | x . x . x . x . x . x . x . x . | x . x . x . x . x . x . x . x . | x . x . x . x . x . x . x . x . |
 ---
-name:  Halftime-Groove, 4 Takte mit Ghost-Fill
+name:  Half-Time-Groove, 4 Takte mit Ghost-Fill
+id:    lib.halftime-groove-4-takte-mit-ghost-fill
 tags:  groove, phrase, fill, half-time
 tempo: 100 (80-130)
 grid:  1/16

@@ -14,6 +14,9 @@ FindView::FindView() : list (*this)
 {
     addAndMakeVisible (field);
     field.setFont (juce::FontOptions (fontTitle));
+    field.getProperties().set ("pill", true);        // drawn by HZLook as a pill
+    field.setIndents (16, 0);     // text clear of the round ends; no top indent, so centred exactly
+    field.setJustification (juce::Justification::centredLeft);   // the text in the middle, as in the buttons
     field.setTextToShowWhenEmpty ("Suchen: Name, Stil, Band, 7/8, 180 bpm ..."_u, textDim);
     field.onTextChange = [this] { rebuild(); };
     field.onEscapeKey = [this] { if (onEscape) onEscape(); };
@@ -21,6 +24,7 @@ FindView::FindView() : list (*this)
 
     addAndMakeVisible (chipLabel);
     chipLabel.setFont (juce::FontOptions (fontSmall));
+    chipLabel.setBorderSize ({ 0, 5, 0, 5 });   // the full 14 px of its row for the text
     chipLabel.setColour (juce::Label::textColourId, accent);
 
     addAndMakeVisible (viewport);
@@ -215,9 +219,7 @@ void FindView::resized()
 {
     auto area = getLocalBounds();
     field.setBounds (area.removeFromTop (40));
-    area.removeFromTop (1);
-    chipLabel.setBounds (area.removeFromTop (16));   // the active filters ("7/8", "180 bpm")
-    area.removeFromTop (1);
+    chipLabel.setBounds (area.removeFromTop (14));   // the active filters ("7/8", "180 bpm"), no border: the list starts early
 
     auto actions = area.removeFromBottom (buttonH);
     clearMarks.setBounds (actions.removeFromRight (96));
@@ -226,7 +228,7 @@ void FindView::resized()
     actions.removeFromRight (6);
     toScratch.setBounds (actions.removeFromRight (96));
     markedLabel.setBounds (actions);
-    area.removeFromBottom (10);
+    area.removeFromBottom (16);   // the grey ends with the "Block: ..." line on the right
 
     viewport.setBounds (area);
     list.setSize (juce::jmax (10, viewport.getMaximumVisibleWidth()), juce::jmax (list.getHeight(), 1));
@@ -269,7 +271,7 @@ void FindView::List::paint (juce::Graphics& g)
         if (row.type == Row::Header)
         {
             g.setColour (textDim);
-            g.setFont (juce::FontOptions (fontSmall, juce::Font::bold));
+            g.setFont (juce::FontOptions (fontSmall));
             g.drawText (SearchIndex::groupTitle (row.group).toUpperCase() + "  (" + juce::String (row.total) + ")",
                         rect.reduced (boxX, 0).withTrimmedTop (8), juce::Justification::centredLeft);
             continue;
@@ -331,7 +333,7 @@ void FindView::List::paint (juce::Graphics& g)
             g.drawText (juce::String (juce::CharPointer_UTF8 ("\xe2\x98\x85")), text.removeFromRight (22), juce::Justification::centred);
         }
         g.setColour (sounding ? playing : textMain);
-        g.setFont (juce::FontOptions (fontText, juce::Font::bold));
+        g.setFont (juce::FontOptions (fontText));
         g.drawFittedText (it.title, text.removeFromTop (22), juce::Justification::centredLeft, 1);
         g.setColour (textDim);
         g.setFont (juce::FontOptions (fontSmall - 1.0f));

@@ -4,6 +4,7 @@
 
 #include <juce_audio_formats/juce_audio_formats.h>
 
+#include <algorithm>
 #include <future>
 
 namespace
@@ -112,6 +113,12 @@ std::unique_ptr<hz::DrumKit> loadKit (const juce::File& kitDir, double targetSam
             mapping.push_back ({ prop.name.toString().toStdString(), prop.value.toString().toStdString() });
     else
         mapping = { { "kick", "kick" }, { "snare", "snare" } };   // older kit.json without mapping
+
+    // voices wired after the kit was prepared (kitprep writes them for new kits): used if the kit has the instrument
+    const std::pair<const char*, const char*> laterVoices[] = { { "splash", "china_8_inch" } };
+    for (const auto& [voice, instrument] : laterVoices)
+        if (std::none_of (mapping.begin(), mapping.end(), [v = std::string (voice)] (const auto& m) { return m.first == v; }))
+            mapping.push_back ({ voice, instrument });
     kit->resolveVoices (mapping);
     return kit;
 }

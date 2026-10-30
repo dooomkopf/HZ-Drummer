@@ -35,7 +35,7 @@ namespace arrangerstyle
     {
         juce::Font getTextButtonFont (juce::TextButton&, int buttonHeight) override
         {
-            return juce::Font (juce::FontOptions (juce::jmin (fontText, (float) buttonHeight * 0.45f), juce::Font::bold));
+            return juce::Font (juce::FontOptions (juce::jmin (fontText, (float) buttonHeight * 0.45f)));
         }
         juce::Font getPopupMenuFont() override          { return juce::Font (juce::FontOptions (fontText)); }
         juce::Font getAlertWindowTitleFont() override   { return juce::Font (juce::FontOptions (fontTitle, juce::Font::bold)); }
@@ -86,14 +86,14 @@ namespace arrangerstyle
     // Small pill with the title, shown under the mouse while dragging
     inline juce::ScaledImage dragImage (const juce::String& title, juce::Colour colour)
     {
-        const juce::Font font (juce::FontOptions (14.0f, juce::Font::bold));
+        const juce::Font font (juce::FontOptions (14.0f));
         const int w = juce::jlimit (80, 260, 24 + (int) juce::GlyphArrangement::getStringWidth (font, title));
         juce::Image img (juce::Image::ARGB, w, 30, true);
         juce::Graphics g (img);
         g.setColour (colour.withAlpha (0.92f));
         g.fillRoundedRectangle (0.0f, 0.0f, (float) w, 30.0f, 8.0f);
         g.setColour (textMain);
-        g.setFont (juce::FontOptions (14.0f, juce::Font::bold));
+        g.setFont (juce::FontOptions (14.0f));
         g.drawFittedText (title, 10, 0, w - 20, 30, juce::Justification::centredLeft, 1);
         return juce::ScaledImage (img);
     }

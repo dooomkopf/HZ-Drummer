@@ -84,7 +84,7 @@ bd | x . x . x . x . |
 
 | Stil | Inhalte |
 |---|---|
-| D-Beat (4) | klassisch, schnell/Crust, mit Doppelbass, Halbzeit-Variante |
+| D-Beat (4) | klassisch, schnell/Crust, mit Doppelbass, Half-Time-Variante |
 | Thrash (7) | Skank, Polka, Gallop, Thrash-Beat mit 16tel-Doppelbass, Half-Time-Groove, Mid-Tempo-Stampf, Breakdown |
 | Death (6) | Double-Time, Kick-Bursts, Triolen-Kick, Mid-Tempo mit Doppelbass, gestoppte Becken |
 | Grind / Blast (5) | Hammer-, Traditional-, Bomb-Blast, Blast/D-Beat-Wechsel, Gravity-artiger Einzelhand-Blast |

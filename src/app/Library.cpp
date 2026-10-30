@@ -44,7 +44,7 @@ void Library::reload()
     spansById.clear();
     songsById.clear();
     songFilesById.clear();
-    auto songFiles = songFolder().findChildFiles (juce::File::findFiles, false, "*.json");
+    auto songFiles = songFolder().findChildFiles (juce::File::findFiles | juce::File::ignoreHiddenFiles, false, "*.json");
     songFiles.sort();
     std::vector<hz::Pattern> built;
     for (auto& f : songFiles)
@@ -193,7 +193,7 @@ juce::String Library::rename (const std::string& id, const juce::String& newName
         if (object == nullptr)
             return file.getFileName() + " ist nicht lesbar."_u;
         object->setProperty ("name", juce::String (name));
-        juce::TemporaryFile temp (file);
+        juce::TemporaryFile temp (file, juce::TemporaryFile::useHiddenFile);   // hidden: a leftover after a crash is never loaded
         if (! temp.getFile().replaceWithText (juce::JSON::toString (json)) || ! temp.overwriteTargetFileWithTemporary())
             return file.getFileName() + " ist nicht speicherbar."_u;
         reload();

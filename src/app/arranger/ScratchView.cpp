@@ -15,7 +15,7 @@ namespace
 ScratchView::ScratchView() : content (*this)
 {
     addAndMakeVisible (header);
-    header.setFont (juce::FontOptions (fontBlockSmall, juce::Font::bold));
+    header.setFont (juce::FontOptions (fontBlockSmall));
     header.setColour (juce::Label::textColourId, textDim);
 
     addAndMakeVisible (viewport);
@@ -152,7 +152,7 @@ void ScratchView::Content::paint (juce::Graphics& g)
 
         auto inner = r.reduced (8, 6);
         g.setColour (sounding ? playing : textMain);
-        g.setFont (juce::FontOptions (fontBlock - 1.0f, juce::Font::bold));
+        g.setFont (juce::FontOptions (fontBlock - 1.0f));
         g.drawFittedText (c.title, inner.removeFromTop (22).withTrimmedRight (removeSize), juce::Justification::centredLeft, 1);
         g.setColour (textDim);
         g.setFont (juce::FontOptions (fontBlockSmall - 1.0f));
@@ -172,7 +172,7 @@ void ScratchView::Content::paint (juce::Graphics& g)
         // "+ Ablauf" and "x"
         auto add = bottom.removeFromRight (addW);
         g.setColour (i == hover ? accent : accent.withAlpha (0.7f));
-        g.setFont (juce::FontOptions (fontBlockSmall, juce::Font::bold));
+        g.setFont (juce::FontOptions (fontBlockSmall));
         g.drawText ("+ Ablauf", add, juce::Justification::centredRight);
         auto rem = juce::Rectangle<int> (r.getRight() - removeSize - 2, r.getY() + 2, removeSize, removeSize);
         g.setColour (i == hover ? juce::Colour (0xff7a2e2e) : juce::Colours::black.withAlpha (0.25f));

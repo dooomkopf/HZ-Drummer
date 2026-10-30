@@ -53,7 +53,7 @@ Leitgedanke: **Finden → Sammeln → Anordnen.** Was man anklickt, ist nur **ge
 - **Blöcke** in einer Zeile, Breite proportional zur Länge. Farbe pro Baustein, Wiederholungen als feine Unterteilung. Das ist dieselbe Darstellung wie die Song-Leiste im Hauptfenster.
 - **Ziehen** zum Umsortieren; eine Einfügemarke zeigt, wo der Block landet.
 - **[–] [+]** am Block ändern die Wiederholungen.
-- **Doppelklick auf den Namen**: umbenennen (aus „Groove A“ wird „Strophe“). Der Baustein selbst behält seinen Namen.
+- **Rechtsklick, „Lokale Umbenennung“**: umbenennen (aus „Groove A“ wird „Strophe“). Der Baustein selbst behält seinen Namen.
 - **Rechtsklick**: Duplizieren, Löschen, Takte eingrenzen („nur Takte 3–4“), Teilen an einem Takt, Baustein im Raster öffnen.
 - **Auswahl** per Klick, mit Shift mehrere. **▶ ab Auswahl** spielt ab dort. **⟳ Auswahl loopen** ist zum Üben einer Stelle.
 - Unten stehen Gesamtlänge (Takte, Minuten bei aktuellem Tempo) und **Speichern** / **Speichern unter …**
@@ -99,13 +99,13 @@ Ein Song-Teil bekommt einen optionalen Taktbereich:
 
 ## Präzisierungen nach Review (2026-10-29)
 
-- **Vorhören, Sammeln und Verwenden klar trennen:** Klick = **vorhören**; sichtbarer Knopf **„+ Ablage“** (oder Enter) = sammeln; zusätzlich direkt **„+ in Ablauf“** beim Treffer. Die Ablage ist eine Hilfe, kein Pflichtumweg. Beim Durchhören landet nichts automatisch in der Ablage.
+- **Vorhören, Sammeln und Verwenden klar trennen:** Klick = **vorhören**; sichtbarer Knopf **„+ Ablage“** (oder Enter) = sammeln; zusätzlich direkt **„+ Ablauf“** beim Treffer. Die Ablage ist eine Hilfe, kein Pflichtumweg. Beim Durchhören landet nichts automatisch in der Ablage.
 - **Sichtbare Knöpfe statt versteckter Gesten:** Einfügen nach Auswahl, nach links/rechts, entfernen, umbenennen und Taktbereich in einer kleinen **Detailzeile** zum gewählten Block. Ziehen mit der Maus geht zusätzlich, ist aber nicht der einzige Weg.
 - Blöcke haben eine **Mindestbreite** mit lesbarem Namen; der Ablauf scrollt bei langen Songs automatisch.
 - **Tastatur nach Standard:** Shift+Pfeil erweitert die Auswahl, **Alt+Pfeil verschiebt**; Entf entfernt (ohne Rücklage in die Ablage); Kürzel lösen beim Tippen nicht aus; sichtbarer Fokus.
 - **Rückgängig** umfasst Einfügen, Entfernen, Verschieben, Wiederholungen, Bereiche und Ablage leeren; ein Zieh-Vorgang ist ein Schritt. Vorhören und Auswahl gehören nicht dazu.
 - **Taktbereich:** einsbasiert und einschließlich in der Anzeige, intern Start + Anzahl; ungültige Bereiche werden beim Laden gemeldet.
-- **Kopie statt Verweis als Standard** (Song klingt immer gleich): Der Song speichert eine eigene Kopie des Bausteins mit Quellen-ID. „Aus Quelle aktualisieren“ wird später ausdrücklich angeboten.
+- **Kopie statt Verweis als Standard** (Song klingt immer gleich): Der Song speichert eine eigene Kopie des Bausteins mit Quellen-ID. „Original“ wird später ausdrücklich angeboten.
 - **Fehlende Quellen** werden nie still übersprungen: Der Block bleibt erhalten und wird markiert.
 - **Bausteintyp** eindeutig: Pattern, Pause oder Klick, jeweils mit Taktart, Taktanzahl und Wiederholungen.
 - Ablage wird mitgespeichert; Änderungen daran machen den Song „ungespeichert“.
@@ -117,7 +117,7 @@ Suche, optionale Ablage, ganze Patterns einfügen, Reihenfolge ändern, Wiederho
 
 ## Entscheidungen des Users (2026-10-29)
 
-1. **Klick = anhören, erneuter Klick = Stopp, Doppelklick = in die Ablage übernehmen.** Zusätzlich die sichtbaren Knöpfe „+ Ablage“ / „+ in Ablauf“.
+1. **Klick = anhören, erneuter Klick = Stopp, Doppelklick = in die Ablage übernehmen.** Zusätzlich die sichtbaren Knöpfe „+ Ablage“ / „+ Ablauf“.
 2. Songs speichern **Kopien** ihrer Bausteine (mit Quellen-ID).
 3. Arranger als **Reiter im Werkstatt-Fenster** neben dem Raster.
 4. **Arrangieren per Maus** ist die Hauptbedienung (User, 2026-10-29): Bausteine aus Finden/Ablage in den Ablauf ziehen, Blöcke im Ablauf per Ziehen umsortieren; die Knöpfe der Detailzeile gibt es zusätzlich. Drag & Drop gehört deshalb schon in die erste Ausbaustufe.
@@ -132,6 +132,6 @@ Suche, optionale Ablage, ganze Patterns einfügen, Reihenfolge ändern, Wiederho
    - **Bedienung:** Klick auf die Zeile = anhören, nochmal = Stopp. Kästchen = markieren, ohne abzuspielen. Aktionszeile „3 markiert · In Ablage · Auswahl aufheben“. Tastatur: Pfeile, Leertaste = anhören, X = markieren, Shift+Pfeil = Bereich, Enter = markierte in die Ablage. Doppelklick zusätzlich, aber nicht nötig.
    - **Taste:** Strg+S bleibt Speichern. Die Suche ist Strg+K bzw. `/`, im Arranger springt Strg+K ins Suchfeld.
    - **Ort:** der Finden-Bereich im Arranger ist der Hauptort zum Sammeln. Die Schnellsuche im Hauptfenster nutzt denselben Suchkern.
-7. **Arrangements sind fix** (User, 2026-10-29): Ändert man ein Pattern in der Bibliothek, bleibt jeder Song, der es verwendet, unverändert. **„Aus Quelle aktualisieren“** (Knopf in der Detailzeile oder Rechtsklick) holt die neue Fassung ausdrücklich in einen Block oder in alle Blöcke dieser Quelle, **immer mit Warnung**; Strg+Z macht es rückgängig. Blöcke, deren Quelle sich geändert hat, tragen ein ↻.
-8. **Lokale Änderungen:** „Bearbeiten“ (Knopf, Rechtsklick, oder Wechsel auf den Raster-Reiter) öffnet die **Kopie des Blocks** im Raster. Dort heißt Speichern „In Ablauf übernehmen“ und ändert nur diesen Block in diesem Song; die Bibliothek bleibt unberührt. Solche Blöcke tragen ein ✎. „Speichern unter“ im Raster macht aus der Variante bei Bedarf ein eigenes Bibliotheks-Pattern.
+7. **Arrangements sind fix** (User, 2026-10-29): Ändert man ein Pattern in der Bibliothek, bleibt jeder Song, der es verwendet, unverändert. **„Original“** (Knopf in der Detailzeile oder Rechtsklick) holt die neue Fassung ausdrücklich in einen Block oder in alle Blöcke dieser Quelle, **immer mit Warnung**; Strg+Z macht es rückgängig. Blöcke, deren Quelle sich geändert hat, tragen ein ↻.
+8. **Lokale Änderungen:** „Raster“ (Knopf) oder „Bearbeiten“ (Rechtsklick) öffnet die **Kopie des Blocks** im Raster. Dort heißt Speichern „In Ablauf übernehmen“ und ändert nur diesen Block in diesem Song; die Bibliothek bleibt unberührt. Solche Blöcke tragen ein ✎. „Speichern unter“ im Raster macht aus der Variante bei Bedarf ein eigenes Bibliotheks-Pattern.
 

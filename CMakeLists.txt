@@ -45,6 +45,8 @@ target_sources(HZDrummer PRIVATE
     src/app/HelpOverlay.cpp
     src/app/PatternIO.cpp
     src/app/PatternEditor.cpp
+    src/app/PatternEditorLanes.cpp
+    src/app/PatternEditorFile.cpp
     src/app/WorkshopWindow.cpp
     src/app/MixerPanel.cpp
     src/app/AudioSettingsPanel.cpp
@@ -61,6 +63,8 @@ target_sources(HZDrummer PRIVATE
     src/app/arranger/ScratchView.cpp
     src/app/arranger/SequenceView.cpp
     src/app/arranger/ArrangerPanel.cpp
+    src/app/arranger/ArrangerPanelEdit.cpp
+    src/app/arranger/ArrangerPanelSong.cpp
     src/app/QuickSearch.cpp
     src/app/views/StatusPanels.cpp
     src/app/views/SongStrip.cpp
@@ -68,6 +72,8 @@ target_sources(HZDrummer PRIVATE
     src/app/views/SourceBadge.cpp
     src/app/views/HZLook.cpp
     src/app/views/InWindowDialog.cpp
+    src/app/views/HelpLine.cpp
+    src/app/views/ButtonSymbols.cpp
     src/app/views/Watermark.cpp
     src/app/views/BeatDisplay.cpp)
 
@@ -111,7 +117,7 @@ if(HZ_LTO)
 endif()
 
 enable_testing()
-add_executable(engine_tests tests/engine_tests.cpp)
+add_executable(engine_tests tests/engine_tests.cpp tests/engine_tests_player.cpp)
 target_link_libraries(engine_tests PRIVATE hzengine)
 add_test(NAME engine_tests COMMAND engine_tests)
 

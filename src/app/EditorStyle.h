@@ -21,11 +21,13 @@ namespace editorstyle
     const juce::Colour playhead   { 0x3348a0ff };
 
     constexpr int headerH = 44;      // bar header height
-    constexpr int laneNameW = 130;   // width of the lane name column
+    constexpr int laneNameW = 165;   // width of the lane name column ("Ride-Glocke", "HiHat-Pedal" next to M / S)
     constexpr int minCellW = 16;     // narrowest grid cell
     constexpr int maxUndo = 200;
 
     constexpr float ghostVel = 0.3f, normalVel = 0.75f, accentVel = 1.0f;
+    constexpr float lagStepMs = 20.0f;   // Ctrl+click on a hit: this much later per click, Ctrl+Shift+click earlier ...
+    constexpr float maxLagMs = 100.0f;   // ... up to this far in either direction
 
     // Content of a pattern without its identity (id, revision, origin): compared to decide "unsaved?"
     inline juce::String contentKey (hz::Pattern p)

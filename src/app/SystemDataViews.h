@@ -13,7 +13,25 @@ public:
     {
         addAndMakeVisible (list); list.setModel (this); list.setRowHeight (52);
         addAndMakeVisible (info); info.setColour (juce::Label::textColourId, theme::textDim);
-        addAndMakeVisible (restore); addAndMakeVisible (reload);
+        addAndMakeVisible (restore); addAndMakeVisible (reload); addAndMakeVisible (empty);
+        empty.setColour (juce::TextButton::buttonColourId, juce::Colour (0xff713a40));   // red like "Löschen" in the main window
+        empty.setColour (juce::TextButton::textColourOffId, juce::Colour (0xffffeeee));
+        empty.onClick = [this]
+        {
+            const auto n = (int) entries.size();
+            juce::AlertWindow::showOkCancelBox (juce::MessageBoxIconType::WarningIcon, "Papierkorb leeren",
+                juce::String (n) + (n == 1 ? juce::String (" Eintrag wird") : " Einträge werden"_u)
+                    + " endgültig gelöscht. Das lässt sich nicht rückgängig machen."_u,
+                "Endgültig löschen"_u, "Abbrechen", this,
+                juce::ModalCallbackFunction::create ([safe = juce::Component::SafePointer<TrashPanel> (this)] (int r)
+                {
+                    if (safe == nullptr || r != 1) return;
+                    if (! emptyOwnTrash (safe->data))
+                        juce::AlertWindow::showMessageBoxAsync (juce::MessageBoxIconType::WarningIcon, "Papierkorb leeren",
+                                                                "Der Papierkorb ließ sich nicht ganz leeren."_u, "OK", safe.getComponent());
+                    safe->refresh();
+                }));
+        };
         reload.onClick = [this] { refresh(); };
         restore.onClick = [this]
         {
@@ -34,7 +52,7 @@ public:
     void refresh()
     {
         entries = listOwnTrash (data);
-        list.deselectAllRows(); list.updateContent(); list.repaint(); restore.setEnabled (false);
+        list.deselectAllRows(); list.updateContent(); list.repaint(); restore.setEnabled (false); empty.setEnabled (! entries.empty());
         info.setText (entries.empty() ? "Der Papierkorb ist leer." : juce::String (entries.size()) + " Einträge – auswählen und wiederherstellen."_u,
                       juce::dontSendNotification);
     }
@@ -45,6 +63,7 @@ public:
         auto buttons = r.removeFromBottom (36);
         restore.setBounds (buttons.removeFromLeft (180)); buttons.removeFromLeft (10);
         reload.setBounds (buttons.removeFromLeft (140));
+        empty.setBounds (buttons.removeFromRight (180));
         r.removeFromBottom (10); list.setBounds (r);
     }
 private:
@@ -66,7 +85,7 @@ private:
     std::vector<LibraryTrashEntry> entries;
     juce::ListBox list;
     juce::Label info;
-    juce::TextButton restore { "Wiederherstellen" }, reload { "Aktualisieren" };
+    juce::TextButton restore { "Wiederherstellen" }, reload { "Aktualisieren" }, empty { "Papierkorb leeren" };
 };
 
 class LogPanel : public juce::Component

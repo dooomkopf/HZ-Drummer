@@ -23,7 +23,8 @@ cr | X . x . x . x . X . x . x . x . |
 sn | . . . . X . . . . . . . X . . . |
 bd | x x x x x x x x x x x x x x x x |
 ---
-name:  D-Beat Halbzeit
+name:  D-Beat Half-Time
+id:    lib.d-beat-halbzeit
 tags:  d-beat, half-time
 tempo: 180 (150-220)
 grid:  1/8

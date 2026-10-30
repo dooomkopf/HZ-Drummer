@@ -24,6 +24,7 @@ public:
     bool poll (AudioEngine&);
 
     const juce::String& status() const { return statusText; }
+    const hz::DrumKit* kit() const     { return current.get(); }   // the kit in use (nullptr while none is loaded)
 
     // first folder in kits/ that contains a kit.json (alphabetically); invalid if none
     static juce::File findDefaultKit();

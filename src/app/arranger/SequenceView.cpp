@@ -161,7 +161,7 @@ void SequenceView::paint (juce::Graphics& g)
         if (first.repeats > 1)
             text << juce::String (juce::CharPointer_UTF8 (" \xc3\x97")) << first.repeats;
         g.setColour (textMain);
-        g.setFont (juce::FontOptions (b.width < 80.0f ? fontBlockSmall : fontBlock, juce::Font::bold));
+        g.setFont (juce::FontOptions (b.width < 80.0f ? fontBlockSmall : fontBlock));
         g.drawFittedText (text, r.toNearestInt().reduced (6, 2).withTrimmedBottom ((int) footerH), juce::Justification::centredLeft, 1);
 
         // bottom line: the badge (same as in Finden and the Ablage) and the length; the source
@@ -265,12 +265,6 @@ void SequenceView::mouseUp (const juce::MouseEvent& e)
         return;
     if (const auto* b = blockAt (e.getPosition()); b != nullptr && b->part == part && onClick)
         onClick (part);
-}
-
-void SequenceView::mouseDoubleClick (const juce::MouseEvent& e)
-{
-    if (const auto* b = blockAt (e.getPosition()); b != nullptr && onDoubleClick)
-        onDoubleClick (b->part);
 }
 
 bool SequenceView::isInterestedInDragSource (const SourceDetails& d)

@@ -2,51 +2,9 @@
 
 #include "app/views/InWindowDialog.h"
 
-namespace
-{
-    // The count-in button's background (the user's draft, variant C): a large stylised metronome
-    // on the right, cut off by the pill, behind the centred text. Coordinates in units of the pill
-    // height, x from the pill's right edge, y from its top, so it scales cleanly with size and DPI.
-    void drawMetronome (juce::Graphics& g, juce::Rectangle<float> pill, float opacity)
-    {
-        const float h = pill.getHeight();
-        auto at = [&] (float x, float y) { return juce::Point<float> (pill.getRight() + x * h, pill.getY() + y * h); };
+#include "app/views/ButtonSymbols.h"
 
-        // housing sides, running past the top and bottom edge
-        constexpr float leftTop = -0.571f, leftBottom = -0.830f, rightTop = -0.323f, rightBottom = -0.153f;
-        auto left  = [] (float y) { return leftTop + (leftBottom - leftTop) * y; };
-        auto right = [] (float y) { return rightTop + (rightBottom - rightTop) * y; };
-
-        // pendulum: pivot exactly midway between the sides, leaning to the upper right
-        constexpr float pivotY = 0.941f, lean = 0.514f, tipY = 0.18f, weightY = 0.3215f;
-        const float pivotX = 0.5f * (left (pivotY) + right (pivotY));
-        auto rodX = [&] (float y) { return pivotX + lean * (pivotY - y); };
-
-        // the right side pauses where the pendulum and its weight pass it
-        constexpr float gapFrom = 0.313f, gapTo = 0.485f, beyond = 0.05f;
-        juce::Path housing;
-        housing.startNewSubPath (at (left (-beyond), -beyond));
-        housing.lineTo (at (left (1.0f + beyond), 1.0f + beyond));
-        housing.startNewSubPath (at (right (-beyond), -beyond));
-        housing.lineTo (at (right (gapFrom), gapFrom));
-        housing.startNewSubPath (at (right (gapTo), gapTo));
-        housing.lineTo (at (right (1.0f + beyond), 1.0f + beyond));
-
-        g.setColour (juce::Colours::white.withAlpha (0.30f * opacity));
-        g.strokePath (housing, juce::PathStrokeType (juce::jmax (1.0f, 0.028f * h)));
-
-        juce::Path rod;
-        rod.startNewSubPath (at (rodX (1.0f + beyond), 1.0f + beyond));
-        rod.lineTo (at (rodX (tipY), tipY));
-        g.strokePath (rod, juce::PathStrokeType (juce::jmax (1.0f, 0.033f * h)));
-
-        // the small weight, upright on the rod
-        juce::Path weight;
-        weight.addRectangle (-0.045f * h, -0.0615f * h, 0.09f * h, 0.123f * h);
-        weight.applyTransform (juce::AffineTransform::rotation (std::atan (lean)).translated (at (rodX (weightY), weightY)));
-        g.fillPath (weight);
-    }
-}
+using namespace buttonsymbols;
 
 const juce::Colour HZLook::buttonFill  { 0xff34343d };
 const juce::Colour HZLook::buttonOn    { 0xff2e7a4a };
@@ -88,11 +46,30 @@ void HZLook::drawButtonBackground (juce::Graphics& g, juce::Button& button, cons
                                              fill.darker (0.08f), bounds.getX(), bounds.getBottom(), false));
     g.fillPath (pill);
 
-    if (button.getProperties()["metronome"])
+    const auto& props = button.getProperties();
+    if (props["metronome"] || props["transport"] || props["tap"] || props["mixer"] || props["system"])
     {
         juce::Graphics::ScopedSaveState state (g);
         g.reduceClipRegion (pill);
-        drawMetronome (g, bounds, button.isEnabled() ? 1.0f : 0.5f);
+        const float opacity = button.isEnabled() ? 1.0f : 0.5f;
+        if (props["transport"])
+            drawTransport (g, bounds, props["playing"], opacity);
+        else if (props["tap"])
+            drawTap (g, bounds, opacity);
+        else if (props["mixer"])
+        {
+            // the text laid out as drawButtonText draws it, so the faders can make way for the letters
+            juce::GlyphArrangement text;
+            if (auto* textButton = dynamic_cast<juce::TextButton*> (&button))
+                text.addFittedText (getTextButtonFont (*textButton, button.getHeight()), button.getButtonText(),
+                                    10.0f, 2.0f, (float) button.getWidth() - 20.0f, (float) button.getHeight() - 4.0f,
+                                    juce::Justification::centred, 1);
+            drawMixer (g, bounds, opacity, text);
+        }
+        else if (props["system"])
+            drawSystem (g, bounds, opacity);
+        else
+            drawMetronome (g, bounds, opacity);
     }
 
     g.setColour (juce::Colours::white.withAlpha (button.isEnabled() ? 0.10f : 0.04f));
@@ -104,12 +81,144 @@ void HZLook::drawButtonText (juce::Graphics& g, juce::TextButton& button, bool, 
     g.setFont (getTextButtonFont (button, button.getHeight()));
     auto colour = button.findColour (button.getToggleState() ? juce::TextButton::textColourOnId : juce::TextButton::textColourOffId);
     g.setColour (button.isEnabled() ? colour : colour.withAlpha (0.4f));
-    g.drawFittedText (button.getButtonText(), button.getLocalBounds().reduced (10, 2), juce::Justification::centred, 1);
+    if (button.getProperties()["transportIcon"])
+        drawTransportIcon (g, button.getLocalBounds().toFloat().reduced (1.0f, 2.0f), button.getProperties()["playing"]);
+    else
+        g.drawFittedText (button.getButtonText(), button.getLocalBounds().reduced (10, 2), juce::Justification::centred, 1);
 }
 
-juce::Font HZLook::getTextButtonFont (juce::TextButton&, int buttonHeight)
+juce::Font HZLook::getTextButtonFont (juce::TextButton& button, int buttonHeight)
 {
-    return juce::Font (juce::FontOptions (juce::jmin (16.0f, (float) buttonHeight * 0.45f), juce::Font::bold));
+    return juce::Font (juce::FontOptions (juce::jmin (16.0f, (float) buttonHeight * 0.45f),
+                                          button.getProperties()["bold"] ? juce::Font::bold : juce::Font::plain));
+}
+
+void HZLook::drawComboBox (juce::Graphics& g, int width, int height, bool down,
+                           int buttonX, int buttonY, int buttonW, int buttonH, juce::ComboBox& box)
+{
+    if (! box.getProperties()["pill"])
+    {
+        LookAndFeel_V4::drawComboBox (g, width, height, down, buttonX, buttonY, buttonW, buttonH, box);
+        return;
+    }
+
+    // the pill of drawButtonBackground and the arrow of StarButton
+    const auto bounds = juce::Rectangle<float> ((float) width, (float) height).reduced (1.0f, 2.0f);
+    juce::Path pill;
+    pill.addRoundedRectangle (bounds, bounds.getHeight() * 0.5f);
+
+    if (box.isEnabled())
+        juce::DropShadow (juce::Colours::black.withAlpha (0.45f), 6, { 0, 2 }).drawForPath (g, pill);
+
+    auto fill = buttonFill;
+    if (! box.isEnabled())
+        fill = fill.withMultipliedAlpha (0.45f);
+    else if (down)
+        fill = fill.darker (0.25f);
+
+    g.setGradientFill (juce::ColourGradient (fill.brighter (0.08f), bounds.getX(), bounds.getY(),
+                                             fill.darker (0.08f), bounds.getX(), bounds.getBottom(), false));
+    g.fillPath (pill);
+    g.setColour (juce::Colours::white.withAlpha (box.isEnabled() ? 0.10f : 0.04f));
+    g.strokePath (pill, juce::PathStrokeType (1.0f));
+
+    g.setColour (box.isEnabled() ? textColour : textColour.withAlpha (0.4f));
+    g.setFont (juce::FontOptions ((float) height * 0.36f));
+    g.drawText (juce::String (juce::CharPointer_UTF8 ("\xe2\x96\xbe")),
+                juce::Rectangle<int> (width, height).reduced (10, 0).removeFromRight (14), juce::Justification::centred);
+}
+
+void HZLook::positionComboBoxText (juce::ComboBox& box, juce::Label& label)
+{
+    if (! box.getProperties()["pill"])
+    {
+        LookAndFeel_V4::positionComboBoxText (box, label);
+        return;
+    }
+    label.setBounds (box.getLocalBounds().reduced (10, 0).withTrimmedRight (14));
+    label.setBorderSize ({});
+    label.setFont (getComboBoxFont (box));
+}
+
+juce::Font HZLook::getComboBoxFont (juce::ComboBox& box)
+{
+    if (! box.getProperties()["pill"])
+        return LookAndFeel_V4::getComboBoxFont (box);
+    return juce::Font (juce::FontOptions ((float) box.getHeight() * 0.36f,    // as StarButton's label
+                                          box.getProperties()["bold"] ? juce::Font::bold : juce::Font::plain));
+}
+
+void HZLook::fillTextEditorBackground (juce::Graphics& g, int width, int height, juce::TextEditor& editor)
+{
+    if (! editor.getProperties()["pill"])
+    {
+        LookAndFeel_V4::fillTextEditorBackground (g, width, height, editor);
+        return;
+    }
+    const auto bounds = juce::Rectangle<float> ((float) width, (float) height).reduced (1.0f);
+    g.setColour (editor.findColour (juce::TextEditor::backgroundColourId));
+    g.fillRoundedRectangle (bounds, bounds.getHeight() * 0.5f);
+}
+
+void HZLook::drawTextEditorOutline (juce::Graphics& g, int width, int height, juce::TextEditor& editor)
+{
+    if (! editor.getProperties()["pill"])
+    {
+        LookAndFeel_V4::drawTextEditorOutline (g, width, height, editor);
+        return;
+    }
+    if (! editor.isEnabled())
+        return;
+    // the outlines of LookAndFeel_V4, only rounded: 2 px in the focus colour while typing
+    const bool focused = editor.hasKeyboardFocus (true) && ! editor.isReadOnly();
+    const auto bounds = juce::Rectangle<float> ((float) width, (float) height).reduced (focused ? 1.0f : 0.5f);
+    g.setColour (editor.findColour (focused ? juce::TextEditor::focusedOutlineColourId : juce::TextEditor::outlineColourId));
+    g.drawRoundedRectangle (bounds, bounds.getHeight() * 0.5f, focused ? 2.0f : 1.0f);
+}
+
+juce::Label* HZLook::createSliderTextBox (juce::Slider& slider)
+{
+    auto* label = LookAndFeel_V4::createSliderTextBox (slider);
+    if (slider.getProperties()["pill"])
+    {
+        label->getProperties().set ("pill", true);
+        // typing a value: the text field the label opens is a pill too
+        label->onEditorShow = [label]
+        {
+            if (auto* editor = label->getCurrentTextEditor())
+                editor->getProperties().set ("pill", true);
+        };
+    }
+    return label;
+}
+
+void HZLook::drawLabel (juce::Graphics& g, juce::Label& label)
+{
+    if (! label.getProperties()["pill"])
+    {
+        LookAndFeel_V4::drawLabel (g, label);
+        return;
+    }
+
+    // LookAndFeel_V2::drawLabel with round ends
+    const auto bounds = label.getLocalBounds().toFloat().reduced (0.5f);
+    const float radius = bounds.getHeight() * 0.5f;
+    const float alpha = label.isEnabled() ? 1.0f : 0.5f;
+    g.setColour (label.findColour (juce::Label::backgroundColourId));
+    g.fillRoundedRectangle (bounds, radius);
+
+    if (! label.isBeingEdited())
+    {
+        const auto font = getLabelFont (label);
+        const auto area = getLabelBorderSize (label).subtractedFrom (label.getLocalBounds());
+        g.setColour (label.findColour (juce::Label::textColourId).withMultipliedAlpha (alpha));
+        g.setFont (font);
+        g.drawFittedText (label.getText(), area, label.getJustificationType(),
+                          juce::jmax (1, (int) ((float) area.getHeight() / font.getHeight())), label.getMinimumHorizontalScale());
+    }
+
+    g.setColour (label.findColour (juce::Label::outlineColourId).withMultipliedAlpha (alpha));
+    g.drawRoundedRectangle (bounds, radius, 1.0f);
 }
 
 juce::AlertWindow* HZLook::createAlertWindow (const juce::String& title, const juce::String& message,

@@ -6,9 +6,7 @@
 #include "engine/MeterCatalog.h"
 #include "engine/PatternEdit.h"
 
-
-//==============================================================================
-PatternEditor::PatternEditor (EditorHost& h) : host (h)
+PatternEditor::PatternEditor (EditorHost& h) : host (h), help ("hilfezeile-raster.txt", [this] { return defaultHelp(); }, 15.0f, 2)
 {
     using I = hz::Instrument;
     using A = hz::Articulation;
@@ -16,15 +14,16 @@ PatternEditor::PatternEditor (EditorHost& h) : host (h)
         { { I::Crash1, A::Normal },  "Crash 1", true },   { { I::Crash2, A::Normal }, "Crash 2", false },
         { { I::China, A::Normal },   "China", false },    { { I::Splash, A::Normal }, "Splash", false },
         { { I::Ride, A::Normal },    "Ride", true },      { { I::Ride, A::Bell },     "Ride-Glocke", false },
-        { { I::HiHat, A::Normal },   "HiHat zu", true },  { { I::HiHat, A::Half },    "HiHat halb", false },
-        { { I::HiHat, A::Open },     "HiHat offen", true },
+        { { I::HiHat, A::Normal },   "HiHat closed", true },  { { I::HiHat, A::Half },    "HiHat halb", false },
+        { { I::HiHat, A::Open },     "HiHat open", true },
         { { I::Cowbell, A::Normal }, "Kuhglocke", false },
-        { { I::Tom1, A::Normal },    "Tom 1", true },     { { I::Tom2, A::Normal },   "Tom 2", false },
-        { { I::Tom3, A::Normal },    "Tom 3", true },     { { I::Tom4, A::Normal },   "Tom 4", false },
+        // the snare right under the hihat, above the toms: as in drum tabs, and the backbeat sits next to the hihat
         { { I::Snare, A::Normal },   "Snare", true },     { { I::Snare, A::Rim },     "Snare Rim", false },
         { { I::Snare, A::Side },     "Sidestick", false },
+        { { I::Tom1, A::Normal },    "Tom 1", true },     { { I::Tom2, A::Normal },   "Tom 2", false },
+        { { I::Tom3, A::Normal },    "Tom 3", true },     { { I::Tom4, A::Normal },   "Tom 4", false },
         { { I::HiHat, A::Pedal },    "HiHat-Pedal", false },
-        { { I::Kick, A::Normal },    "Kick", true },
+        { { I::Kick, A::Normal },    "Bass", true },
     };
 
     addAndMakeVisible (nameLabel);
@@ -32,7 +31,7 @@ PatternEditor::PatternEditor (EditorHost& h) : host (h)
     nameLabel.setColour (juce::Label::textColourId, textMain);
     nameLabel.setMinimumHorizontalScale (0.7f);
 
-    for (auto* b : { &undoButton, &redoButton, &addBarButton, &tempoButton, &saveButton, &saveAsButton, &deleteButton,
+    for (auto* b : { &undoButton, &redoButton, &addBarButton, &saveButton, &saveAsButton, &deleteButton,
                      &renameButton, &closeButton })
     {
         addAndMakeVisible (*b);
@@ -44,12 +43,6 @@ PatternEditor::PatternEditor (EditorHost& h) : host (h)
     {
         const auto before = pattern;
         hz::insertBar (pattern, (int) pattern.bars.size() - 1, true);
-        changed (before);
-    };
-    tempoButton.onClick = [this]
-    {
-        const auto before = pattern;
-        pattern.tempo = host.getCurrentTempo();
         changed (before);
     };
     saveButton.onClick = [this] { save (false); };
@@ -78,6 +71,7 @@ PatternEditor::PatternEditor (EditorHost& h) : host (h)
     allLanesToggle.onClick = [this] { updateLanes(); };
 
     addAndMakeVisible (swingBox);
+    swingBox.getProperties().set ("pill", true);   // drawn by HZLook like the buttons beside it
     swingBox.setWantsKeyboardFocus (false);
     for (int i = 0; i < (int) std::size (swingOptions); ++i)
         swingBox.addItem (juce::String (juce::CharPointer_UTF8 (swingOptions[i].label)), i + 1);
@@ -98,6 +92,7 @@ PatternEditor::PatternEditor (EditorHost& h) : host (h)
     humanizeSlider.setWantsKeyboardFocus (false);
     humanizeSlider.setRange (0.0, 100.0, 1.0);
     humanizeSlider.setTextValueSuffix (" %");
+    humanizeSlider.getProperties().set ("pill", true);   // value box drawn by HZLook as a pill
     humanizeSlider.setTextBoxStyle (juce::Slider::TextBoxRight, false, 56, 24);
     // dragging = one undo step; typed values / keys in the slider are a step of their own
     humanizeSlider.onDragStart = [this] { humanizeBefore = pattern; humanizeDragging = true; };
@@ -110,7 +105,26 @@ PatternEditor::PatternEditor (EditorHost& h) : host (h)
     };
     humanizeSlider.onDragEnd = [this] { humanizeDragging = false; changed (humanizeBefore); };
 
+    // the pattern's tempo, a slider like the main window's: one undo step per drag and per typed value; the main tempo follows
+    addAndMakeVisible (tempoSlider);
+    tempoSlider.setWantsKeyboardFocus (false);
+    tempoSlider.setRange (30.0, 320.0, 1.0);
+    tempoSlider.setTextValueSuffix (" BPM");
+    tempoSlider.getProperties().set ("pill", true);   // value box drawn by HZLook as a pill
+    tempoSlider.setTextBoxStyle (juce::Slider::TextBoxRight, false, 70, 24);
+    tempoSlider.onDragStart = [this] { tempoBefore = pattern; tempoDragging = true; };
+    tempoSlider.onValueChange = [this]
+    {
+        const auto before = pattern;
+        pattern.tempo = tempoSlider.getValue();
+        host.setPlaybackTempo (pattern.tempo);
+        if (! tempoDragging)
+            changed (before);
+    };
+    tempoSlider.onDragEnd = [this] { tempoDragging = false; changed (tempoBefore); };
+
     addAndMakeVisible (infoLabel);
+    addAndMakeVisible (help);
     infoLabel.setColour (juce::Label::textColourId, textDim);
     infoLabel.setFont (juce::FontOptions (16.0f));
 
@@ -127,7 +141,7 @@ PatternEditor::~PatternEditor() = default;
 
 void PatternEditor::setBlockPattern (const hz::Pattern& p, const juce::String& title, std::function<bool (const hz::Pattern&)> apply)
 {
-    setPattern (p, false);
+    load (p, false);   // not setPattern: in a song the song's tempo counts, the main tempo stays
     blockMode = true;
     blockTitle = title;
     applyToBlock = std::move (apply);
@@ -136,14 +150,45 @@ void PatternEditor::setBlockPattern (const hz::Pattern& p, const juce::String& t
     resized();
 }
 
+void PatternEditor::setCardPattern (const hz::Pattern& p, const juce::String& title, std::function<bool (const hz::Pattern&)> apply,
+                                    std::function<void (const hz::Pattern&)> savedAsNew)
+{
+    setBlockPattern (p, title, std::move (apply));
+    cardMode = true;
+    cardSavedAsNew = std::move (savedAsNew);
+    saveButton.setButtonText ("In Ablage übernehmen"_u);
+    updateControls();
+    repaint();
+}
+
+void PatternEditor::blockApplied (const hz::Pattern& applied)
+{
+    if (! blockMode)
+        return;
+    savedContent = applied;   // edits made while the question was open stay unapplied
+    refreshDirty();
+    updateControls();
+}
+
 void PatternEditor::setPattern (const hz::Pattern& p, bool isUserPattern)
+{
+    // another pattern comes in: it plays in its own tempo (a reload of the same one, e.g. after a rename, keeps it)
+    const bool another = pattern.bars.empty() || p.id != pattern.id;
+    load (p, isUserPattern);
+    if (another && ! p.bars.empty())
+        host.setPlaybackTempo (pattern.tempo);
+}
+
+void PatternEditor::load (const hz::Pattern& p, bool isUserPattern)
 {
     grid->cancelDrag();   // a drag in progress belongs to the old document
     pattern = p;
     savedContent = p;
     userPattern = isUserPattern;
     blockMode = false;
+    cardMode = false;
     applyToBlock = nullptr;
+    cardSavedAsNew = nullptr;
     saveButton.setButtonText ("Speichern");
     dirty = false;
     nameUndoPending = false;
@@ -157,90 +202,19 @@ void PatternEditor::setPattern (const hz::Pattern& p, bool isUserPattern)
     host.auditionPattern (audible());
 }
 
-int PatternEditor::laneIndex (hz::Voice v) const
-{
-    for (int i = 0; i < (int) lanes.size(); ++i)
-        if (lanes[(size_t) i].voice == v)
-            return i;
-    return -1;
-}
-
-bool PatternEditor::isMuted (hz::Voice v) const
-{
-    return std::find (mutedVoices.begin(), mutedVoices.end(), v) != mutedVoices.end();
-}
-
-bool PatternEditor::isSolo (hz::Voice v) const
-{
-    return std::find (soloVoices.begin(), soloVoices.end(), v) != soloVoices.end();
-}
-
-hz::Pattern PatternEditor::audible() const
-{
-    if (mutedVoices.empty() && soloVoices.empty())
-        return pattern;
-    // solo wins: only soloed lanes sound; otherwise everything but the muted ones
-    hz::Pattern p = pattern;
-    for (auto& layer : p.layers)
-        layer.events.erase (std::remove_if (layer.events.begin(), layer.events.end(), [this] (const hz::PatternEvent& ev)
-                            { return soloVoices.empty() ? isMuted (ev.voice) : ! isSolo (ev.voice); }),
-                            layer.events.end());
-    return p;
-}
-
-juce::Rectangle<int> PatternEditor::laneSwitch (int lane, bool solo) const
-{
-    const auto row = juce::Rectangle<int> (8, viewport.getY() + headerH + lane * rowH, laneNameW - 12, rowH);
-    const int size = juce::jmin (18, rowH - 4);
-    return { row.getRight() - (solo ? size : 2 * size + 4), row.getCentreY() - size / 2, size, size };
-}
-
-void PatternEditor::mouseDown (const juce::MouseEvent& e)
-{
-    if (pattern.bars.empty())
-        return;
-    for (int i = 0; i < (int) lanes.size(); ++i)
-        for (bool solo : { false, true })
-            if (laneSwitch (i, solo).contains (e.getPosition()))
-            {
-                auto& list = solo ? soloVoices : mutedVoices;
-                const auto v = lanes[(size_t) i].voice;
-                if (auto it = std::find (list.begin(), list.end(), v); it != list.end())
-                    list.erase (it);
-                else
-                    list.push_back (v);
-                host.auditionPattern (audible());
-                repaint();
-                return;
-            }
-}
-
-void PatternEditor::updateLanes()
-{
-    lanes.clear();
-    for (const auto& l : allLanes)
-    {
-        bool used = false;
-        for (const auto& layer : pattern.layers)
-            for (const auto& e : layer.events)
-                used = used || e.voice == l.voice;
-        if (l.core || used || allLanesToggle.getToggleState())
-            lanes.push_back (l);
-    }
-    resized();
-    repaint();
-}
-
 void PatternEditor::updateControls()
 {
     int events = 0;
     for (auto& l : pattern.layers)
         events += (int) l.events.size();
 
+    // what is being edited; a library pattern needs no word here
+    const juce::String kind = cardMode ? "Karte in der Ablage: " + blockTitle
+                            : blockMode ? "Block im Ablauf: " + blockTitle + " (gilt nur in diesem Song)"
+                            : userPattern ? juce::String ("eigenes Pattern") : juce::String();
     infoLabel.setText (juce::String ((int) pattern.tempo) + " BPM  ·  "_u + juce::String ((int) pattern.bars.size())
-                           + (pattern.bars.size() == 1 ? " Takt" : " Takte") + "  ·  "_u + juce::String (events) + " Schläge  ·  "_u
-                           + (blockMode ? "Block im Ablauf: " + blockTitle + " (gilt nur in diesem Song)"
-                              : userPattern ? juce::String ("eigenes Pattern") : juce::String ("Bibliothek (Speichern unter legt eine Kopie an)"))
+                           + (pattern.bars.size() == 1 ? " Takt" : " Takte") + "  ·  "_u + juce::String (events) + " Schläge"_u
+                           + (kind.isNotEmpty() ? "  ·  "_u + kind : juce::String())
                            + (dirty ? (blockMode ? "  ·  noch nicht übernommen"_u : "  ·  ungespeichert"_u) : ""),
                        juce::dontSendNotification);
 
@@ -250,6 +224,12 @@ void PatternEditor::updateControls()
     deleteButton.setVisible (userPattern && ! blockMode);
     renameButton.setVisible (! blockMode && ! pattern.bars.empty());   // a block is renamed in the arranger
     closeButton.setEnabled (! pattern.bars.empty());
+    help.repaint();   // its default text follows the block mode
+    // an empty raster (nothing loaded, or closed): nothing to add to, take over, save or shape
+    for (auto* c : { (juce::Component*) &addBarButton, (juce::Component*) &saveAsButton,
+                     (juce::Component*) &swingBox, (juce::Component*) &humanizeSlider, (juce::Component*) &humanizeLabel,
+                     (juce::Component*) &allLanesToggle })
+        c->setEnabled (! pattern.bars.empty());
 
     int best = 0;
     float bestDist = 10.0f;
@@ -261,7 +241,21 @@ void PatternEditor::updateControls()
     }
     swingBox.setSelectedItemIndex (best, juce::dontSendNotification);
     humanizeSlider.setValue (pattern.humanize * 100.0, juce::dontSendNotification);
+    tempoSlider.setValue (pattern.tempo, juce::dontSendNotification);
+    // a block: in a song the song's tempo counts; a card: its tempo matters once it is saved as an own pattern
+    tempoSlider.setEnabled (! pattern.bars.empty() && (! blockMode || cardMode));
+    tempoSlider.setTooltip (blockMode && ! cardMode ? "Im Song gilt das Song-Tempo, nicht das des einzelnen Blocks."
+                                      : "Tempo dieses Patterns: Damit startet es, wenn man es im Hauptfenster wählt. "
+                                        "Schieben oder die Zahl anklicken und eintippen. Der Regler im Hauptfenster zieht mit, "
+                                        "\"Speichern\" speichert es mit dem Pattern."_u);
 
+    updateWindowTitle();
+}
+
+void PatternEditor::updateWindowTitle()
+{
+    if (! isShowing())
+        return;   // the arranger tab is in front: its title shows the song
     if (auto* w = findParentComponentOfClass<juce::DocumentWindow>())
         w->setName (pattern.bars.empty() ? juce::String ("Werkstatt")
                                          : "Werkstatt " + juce::String (juce::CharPointer_UTF8 ("\xe2\x80\x93")) + " " + juce::String (pattern.name) + (dirty ? " *" : ""));
@@ -275,65 +269,6 @@ bool PatternEditor::hasUnsavedChanges() const
 void PatternEditor::refreshDirty()
 {
     dirty = contentKey (pattern) != contentKey (savedContent);
-}
-
-void PatternEditor::clearPattern()
-{
-    grid->cancelDrag();
-    pattern = {};
-    savedContent = {};
-    userPattern = false;
-    blockMode = false;
-    applyToBlock = nullptr;
-    dirty = false;
-    nameUndoPending = false;
-    undoStack.clear();
-    redoStack.clear();
-    saveButton.setButtonText ("Speichern");
-    refreshAll();
-    resized();
-    host.auditionStopped();
-}
-
-void PatternEditor::closeRequested()
-{
-    if (pattern.bars.empty())
-        return;
-    if (! hasUnsavedChanges())
-    {
-        clearPattern();
-        return;
-    }
-    juce::AlertWindow::showOkCancelBox (juce::MessageBoxIconType::QuestionIcon, "Ungespeicherte Änderungen"_u,
-        (blockMode ? "Die Änderungen an der Kopie \""_u : "Die Änderungen an \""_u) + juce::String (pattern.name)
-            + (blockMode ? "\" sind noch nicht in den Ablauf übernommen. Trotzdem schließen?"_u : "\" sind nicht gespeichert. Trotzdem schließen?"_u),
-        "Verwerfen", "Weiter bearbeiten", this,
-        juce::ModalCallbackFunction::create ([safe = juce::Component::SafePointer<PatternEditor> (this)] (int r)
-        {
-            if (safe != nullptr && r == 1)
-                safe->clearPattern();
-        }));
-}
-
-void PatternEditor::askRename()
-{
-    if (pattern.bars.empty() || blockMode)
-        return;
-    auto* w = new InWindowDialog ("Pattern umbenennen", "Neuer Name:", juce::MessageBoxIconType::NoIcon, this);
-    w->addTextEditor ("name", juce::String (pattern.name), "Name");
-    w->addButton ("OK", 1, juce::KeyPress (juce::KeyPress::returnKey));
-    w->addButton ("Abbrechen", 0, juce::KeyPress (juce::KeyPress::escapeKey));
-    w->enterModalState (true, juce::ModalCallbackFunction::create ([safe = juce::Component::SafePointer<PatternEditor> (this), w] (int r)
-    {
-        const auto name = w->getTextEditorContents ("name").trim();
-        if (safe == nullptr || r != 1 || name.isEmpty() || name == juce::String (safe->pattern.name))
-            return;
-        safe->undoStack.push_back (safe->pattern);   // a rename is one undo step
-        safe->redoStack.clear();
-        safe->pattern.name = name.toStdString();
-        safe->refreshAll();
-        safe->host.auditionPattern (safe->audible());
-    }), true);
 }
 
 void PatternEditor::refreshAll()
@@ -386,161 +321,28 @@ void PatternEditor::undo()
 {
     if (undoStack.empty() || grid->isDragging())
         return;
+    const double tempoWas = pattern.tempo;
     redoStack.push_back (pattern);
     restoreContent (undoStack.back());
     undoStack.pop_back();
     nameUndoPending = false;
     refreshAll();
+    if (std::abs (pattern.tempo - tempoWas) > 0.01 && (! blockMode || cardMode))
+        host.setPlaybackTempo (pattern.tempo);   // a tempo change undone/redone: the main tempo follows
 }
 
 void PatternEditor::redo()
 {
     if (redoStack.empty() || grid->isDragging())
         return;
+    const double tempoWas = pattern.tempo;
     undoStack.push_back (pattern);
     restoreContent (redoStack.back());
     redoStack.pop_back();
     nameUndoPending = false;
     refreshAll();
-}
-
-void PatternEditor::askName (std::function<void (juce::String)> onOk)
-{
-    auto* w = new InWindowDialog ("Speichern unter", "Name für das neue Pattern:"_u, juce::MessageBoxIconType::NoIcon, this);
-    const auto suggestion = userPattern ? juce::String (pattern.name) : juce::String (pattern.name) + " (eigen)";
-    w->addTextEditor ("name", suggestion, "Name");
-    w->addButton ("Speichern", 1, juce::KeyPress (juce::KeyPress::returnKey));
-    w->addButton ("Abbrechen", 0, juce::KeyPress (juce::KeyPress::escapeKey));
-    w->enterModalState (true, juce::ModalCallbackFunction::create ([w, onOk] (int r)
-    {
-        const auto name = w->getTextEditorContents ("name").trim();
-        if (r == 1 && name.isNotEmpty())
-            onOk (name);
-    }), true);
-}
-
-void PatternEditor::save (bool asNew)
-{
-    if (grid->isDragging())
-        return;
-    if (! asNew && blockMode)
-    {
-        // back into the arranger's block, not into the library
-        if (! applyToBlock || ! applyToBlock (pattern))
-            return;   // rejected changes stay unsaved and can still be corrected in the raster
-        savedContent = pattern;
-        refreshDirty();
-        updateControls();
-        return;
-    }
-    if (! asNew && ! userPattern)
-        asNew = true;   // bundled patterns stay unchanged
-
-    // a copy is saved; it is only taken over (name, id, revision, origin) on success
-    auto doSave = [safe = juce::Component::SafePointer<PatternEditor> (this)] (bool createNew, juce::String newName)
-    {
-        if (safe == nullptr)
-            return;
-        auto candidate = safe->pattern;
-        if (newName.isNotEmpty())
-            candidate.name = newName.toStdString();
-
-        if (auto err = safe->host.savePattern (candidate, createNew); err.isNotEmpty())
-        {
-            juce::AlertWindow::showMessageBoxAsync (juce::MessageBoxIconType::WarningIcon, "Speichern fehlgeschlagen", err);
-            return;
-        }
-        safe->pattern = candidate;
-        safe->savedContent = candidate;
-        safe->userPattern = true;
-        safe->nameUndoPending = false;
-        safe->nameLabel.setText (juce::String (candidate.name), juce::dontSendNotification);
-        safe->refreshDirty();
-        safe->updateControls();
-    };
-
-    if (asNew)
-        askName ([doSave] (juce::String name) { doSave (true, name); });
-    else
-        doSave (false, {});
-}
-
-void PatternEditor::editBar (int bar, std::function<void (hz::Pattern&)> edit)
-{
-    if (bar < 0 || bar >= (int) pattern.bars.size() || grid->isDragging())
-        return;
-    const auto before = pattern;
-    edit (pattern);
-    changed (before);
-}
-
-void PatternEditor::showBarMenu (int bar)
-{
-    using Safe = juce::Component::SafePointer<PatternEditor>;
-    auto onBar = [safe = Safe (this), bar] (std::function<void (hz::Pattern&)> f)
-    {
-        return [safe, bar, f] { if (safe != nullptr) safe->editBar (bar, f); };
-    };
-
-    juce::PopupMenu m;
-    m.addSectionHeader ("Takt " + juce::String (bar + 1));
-    m.addItem ("Taktart ...", [safe = Safe (this), bar] { if (safe != nullptr) safe->showMeterMenuForBar (bar); });
-    m.addItem ("Raster ...", [safe = Safe (this), bar] { if (safe != nullptr) safe->showGridMenuForBar (bar); });
-    m.addSeparator();
-    m.addItem ("Takt dahinter einfügen (Kopie)"_u, onBar ([bar] (hz::Pattern& p) { hz::insertBar (p, bar, true); }));
-    m.addItem ("Takt dahinter einfügen (leer)"_u, onBar ([bar] (hz::Pattern& p) { hz::insertBar (p, bar, false); }));
-    m.addItem ("Takt löschen"_u, pattern.bars.size() > 1, false, onBar ([bar] (hz::Pattern& p) { hz::removeBar (p, bar); }));
-    m.addSeparator();
-    juce::PopupMenu clear;
-    for (const auto& l : lanes)
-        clear.addItem (l.name, onBar ([bar, v = l.voice] (hz::Pattern& p) { hz::clearLane (p, bar, v); }));
-    m.addSubMenu ("Spur in diesem Takt leeren", clear);
-    m.showMenuAsync (juce::PopupMenu::Options().withMousePosition());
-}
-
-void PatternEditor::showMeterMenuForBar (int bar)
-{
-    if (bar < 0 || bar >= (int) pattern.bars.size())
-        return;
-
-    using Safe = juce::Component::SafePointer<PatternEditor>;
-    auto& meters = host.getMeters();
-    const int current = meters.findOrAdd (pattern.bars[(size_t) bar].meter);
-    auto setMeter = [safe = Safe (this), bar, &meters] (int i)
-    {
-        if (safe != nullptr)
-            safe->editBar (bar, [&meters, i, bar] (hz::Pattern& p) { hz::setBarMeter (p, bar, meters.get (i)); });
-    };
-
-    MeterLibrary::MenuCallbacks cb;
-    cb.select = setMeter;
-    cb.custom = [safe = Safe (this), bar, &meters, setMeter]
-    {
-        if (safe != nullptr && bar < (int) safe->pattern.bars.size())
-            meters.askCustomMeter (safe.getComponent(), meters.indexOf (safe->pattern.bars[(size_t) bar].meter), setMeter);
-    };
-    cb.toggleFavorite = [&meters] (int i) { meters.toggleFavorite (i); };
-    meters.buildMenu (current, cb).showMenuAsync (juce::PopupMenu::Options().withMousePosition());
-}
-
-void PatternEditor::showGridMenuForBar (int bar)
-{
-    if (bar < 0 || bar >= (int) pattern.bars.size())
-        return;
-
-    juce::PopupMenu m;
-    const auto& b = pattern.bars[(size_t) bar];
-    for (const auto& o : gridOptions)
-    {
-        const bool fits = (b.lengthInQuarters() / (o.grid * hz::Rational (4))).den == 1;
-        m.addItem (juce::String (juce::CharPointer_UTF8 (o.label)), fits, o.grid == b.grid,
-                   [safe = juce::Component::SafePointer<PatternEditor> (this), bar, g = o.grid]
-                   {
-                       if (safe != nullptr)
-                           safe->editBar (bar, [bar, g] (hz::Pattern& p) { hz::setBarGrid (p, bar, g); });
-                   });
-    }
-    m.showMenuAsync (juce::PopupMenu::Options().withMousePosition());
+    if (std::abs (pattern.tempo - tempoWas) > 0.01 && (! blockMode || cardMode))
+        host.setPlaybackTempo (pattern.tempo);   // a tempo change undone/redone: the main tempo follows
 }
 
 bool PatternEditor::keyPressed (const juce::KeyPress& key)
@@ -574,67 +376,6 @@ void PatternEditor::timerCallback()
         grabKeyboardFocus();
 }
 
-void PatternEditor::paint (juce::Graphics& g)
-{
-    g.fillAll (background);
-
-    if (pattern.bars.empty())   // nothing loaded yet: say how to get a pattern in here
-    {
-        g.setColour (textDim);
-        g.setFont (juce::FontOptions (17.0f));
-        g.drawFittedText ("Kein Pattern geladen.\n\nIm Hauptfenster ein Pattern wählen und E drücken (oder \"Bearbeiten\"),\n"
-                          "oder im Arranger einen Block wählen und \"Bearbeiten\" klicken (auch per Rechtsklick).\n"
-                          "Dann erscheint es hier im Raster."_u,
-                          viewport.getBounds().reduced (20), juce::Justification::centred, 5);
-        return;
-    }
-
-    // lane names on the left, aligned with the grid rows, with the M / S switches at their end
-    const int top = viewport.getY() + headerH;
-    for (int i = 0; i < (int) lanes.size(); ++i)
-    {
-        const auto voice = lanes[(size_t) i].voice;
-        const bool muted = isMuted (voice), solo = isSolo (voice);
-        const bool silent = soloVoices.empty() ? muted : ! solo;
-        auto r = juce::Rectangle<int> (8, top + i * rowH, laneNameW - 12, rowH);
-        g.setColour (theme::voiceColour (voice).withAlpha (silent ? 0.35f : 1.0f));
-        g.fillRoundedRectangle (r.removeFromLeft (5).reduced (0, 5).toFloat(), 2.0f);
-        g.setColour (silent ? textDim : textMain);
-        g.setFont (juce::FontOptions (15.0f));
-        g.drawText (lanes[(size_t) i].name, r.withTrimmedLeft (6).withTrimmedRight (2 * laneSwitch (i, false).getWidth() + 10),
-                    juce::Justification::centredLeft);
-        for (bool s : { false, true })
-        {
-            const auto box = laneSwitch (i, s);
-            const bool on = s ? solo : muted;
-            g.setColour (on ? (s ? juce::Colour (0xff2e7a4a) : juce::Colour (0xffb0552a)) : juce::Colour (0xff3a3a44));
-            g.fillRoundedRectangle (box.toFloat(), 3.0f);
-            g.setColour (on ? textMain : textDim);
-            g.setFont (juce::FontOptions (12.0f, juce::Font::bold));
-            g.drawText (s ? "S" : "M", box, juce::Justification::centred);
-        }
-    }
-
-    if (blockMode)   // unmistakable: this is the song's own copy, not the library pattern
-    {
-        auto banner = getLocalBounds().reduced (12, 6).withTrimmedBottom (46).removeFromBottom (36);
-        g.setColour (juce::Colour (0xff2a3f5a));
-        g.fillRoundedRectangle (banner.toFloat(), 6.0f);
-        g.setColour (textMain);
-        g.setFont (juce::FontOptions (15.0f, juce::Font::bold));
-        g.drawFittedText ("Lokale Kopie: Block \"" + blockTitle + "\" aus dem Ablauf. Änderungen gelten nur in diesem Song. "
-                          "\"In Ablauf übernehmen\" schreibt sie in den Block, \"Speichern unter\" macht daraus ein eigenes Pattern."_u,
-                          banner.reduced (12, 0), juce::Justification::centredLeft, 2);
-    }
-
-    g.setColour (textDim);
-    g.setFont (juce::FontOptions (15.0f));
-    g.drawFittedText ("Klick: Schlag setzen/löschen  ·  Shift+Klick: Akzent  ·  Alt+Klick: Ghost  ·  hoch/runter ziehen: Lautstärke\n"
-                      "Rechtsklick: Ghost/Normal/Akzent  ·  M/S an der Spur: stumm/solo  ·  Kopfzeile: Taktart, Raster, Takt-Menü  ·  Strg+Z/Y  ·  Strg+S "_u
-                      + (blockMode ? juce::String ("in Ablauf übernehmen"_u) : juce::String ("speichern")),
-                      getLocalBounds().reduced (12, 6).removeFromBottom (40), juce::Justification::centredLeft, 2);
-}
-
 void PatternEditor::resized()
 {
     auto area = getLocalBounds().reduced (12);
@@ -649,12 +390,12 @@ void PatternEditor::resized()
         renameButton.setBounds (row1.removeFromLeft (110));
         row1.removeFromLeft (10);
     }
-    tempoButton.setBounds (row1.removeFromLeft (150));
+    tempoSlider.setBounds (row1.removeFromLeft (200));
     row1.removeFromLeft (10);
     swingBox.setBounds (row1.removeFromLeft (160));
     row1.removeFromLeft (10);
     humanizeLabel.setBounds (row1.removeFromLeft (90));
-    humanizeSlider.setBounds (row1.removeFromLeft (220));
+    humanizeSlider.setBounds (row1.removeFromLeft (190));   // a little shorter, room for the tempo slider
 
     area.removeFromTop (8);
     auto row2 = area.removeFromTop (32);
@@ -674,6 +415,7 @@ void PatternEditor::resized()
     infoLabel.setBounds (row2);
 
     area.removeFromTop (10);
+    help.setBounds (getLocalBounds().reduced (12, 6).removeFromBottom (40));
     area.removeFromBottom (46);   // hint line
     if (blockMode)
         area.removeFromBottom (42);   // the "local copy" banner

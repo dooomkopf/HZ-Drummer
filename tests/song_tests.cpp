@@ -259,6 +259,71 @@ static void testArrangerModel()
     f.deleteFile();
 }
 
+// Ctrl+X: out of the sequence into the Ablage (only if the same block is not there yet), one undo step
+static void testMoveToScratch()
+{
+    const auto lib = smallLibrary();
+    ArrangerModel m;
+    int scratchSaves = 0;
+    m.onScratchChange = [&] { ++scratchSaves; };
+    m.load (Song {});
+
+    const auto a = makePatternPart (lib[0]);
+    SongPart variant = makePatternPart (lib[0]);
+    auto edited = lib[0];
+    edited.bars.push_back (edited.bars.front());
+    variant.copy = std::make_shared<const hz::Pattern> (edited);
+    variant.edited = true;
+    m.insertParts (0, { a, makePatternPart (lib[1]), makePatternPart (lib[0]), variant });
+
+    m.moveToScratch (1);   // new in the Ablage
+    CHECK (m.song().parts.size() == 3 && m.scratch().size() == 1 && scratchSaves == 1);
+    m.undo();              // one step brings back both: block in place, Ablage empty
+    CHECK (m.song().parts.size() == 4 && m.song().parts[1].sourceId == lib[1].id && m.scratch().empty() && scratchSaves == 2);
+    m.redo();
+    CHECK (m.song().parts.size() == 3 && m.scratch().size() == 1);
+
+    m.moveToScratch (0);   // A: new
+    m.moveToScratch (0);   // the same A again: only leaves the sequence
+    CHECK (m.song().parts.size() == 1 && m.scratch().size() == 2);
+    m.moveToScratch (0);   // the local variant of A is a block of its own
+    CHECK (m.song().parts.empty() && m.scratch().size() == 3 && m.scratch()[2].edited);
+
+    m.moveToScratch (0);   // nothing left: no change, no undo step
+    m.undo();
+    CHECK (m.song().parts.size() == 1 && m.scratch().size() == 2);
+}
+
+// a card of the Ablage edited in the raster, and a pattern saved from it placed next to it
+static void testScratchCards()
+{
+    const auto lib = smallLibrary();
+    ArrangerModel m;
+    int scratchSaves = 0;
+    m.onScratchChange = [&] { ++scratchSaves; };
+    m.load (Song {});
+    m.addToScratch ({ makePatternPart (lib[0]), makePatternPart (lib[1]) });
+    const auto uid = m.scratch()[0].uid;
+    CHECK (m.indexOfScratchUid (uid) == 0 && m.indexOfScratchUid ("gibt-es-nicht") == -1);
+
+    auto edited = lib[0];
+    edited.bars.push_back (edited.bars.front());
+    CHECK (m.setScratchCopy (0, edited, true));
+    CHECK (m.scratch()[0].edited && m.scratch()[0].copy->bars.size() == edited.bars.size() && m.scratch()[0].uid == uid);
+    m.undo();
+    CHECK (! m.scratch()[0].edited && m.scratch()[0].copy->bars.size() == lib[0].bars.size());
+    m.redo();
+
+    auto saved = edited;
+    saved.id = "user.test-mod1";
+    saved.name = "Test mod1";
+    CHECK (m.insertIntoScratch (1, makePatternPart (saved)));   // right after the card
+    CHECK (m.scratch().size() == 3 && m.scratch()[1].sourceId == "user.test-mod1" && m.scratch()[2].sourceId == lib[1].id);
+    CHECK (! m.insertIntoScratch (0, makePatternPart (saved)));   // the same block only once
+    CHECK (! m.setScratchCopy (7, edited, true));
+    CHECK (scratchSaves >= 4);
+}
+
 static void testArrangerLimits()
 {
     ArrangerModel m;
@@ -435,6 +500,8 @@ void runSongTests()
     testWriteV2RoundTrip();
     testBarRange();
     testArrangerModel();
+    testMoveToScratch();
+    testScratchCards();
     testArrangerLimits();
 }
 

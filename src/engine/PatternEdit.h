@@ -19,6 +19,7 @@ bool toggleEvent (Pattern&, Voice, Rational pos, float velocity);
 
 // Set the velocity of an existing hit (0.05..1); false if there is none
 bool setEventVelocity (Pattern&, Voice, Rational pos, float velocity);
+bool setEventLag (Pattern&, Voice, Rational pos, float lagMs);   // -100..100 ms: later (+) or earlier (-) than the position
 
 // Remove a hit; false if there was none
 bool removeEvent (Pattern&, Voice, Rational pos);

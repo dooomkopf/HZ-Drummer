@@ -37,7 +37,15 @@ void KitManager::startLoad (double rate)
     {
         LoadResult r;
         const auto t0 = juce::Time::getMillisecondCounterHiRes();
-        r.kit = loadKit (dir, rate, r.error);
+        try
+        {
+            r.kit = loadKit (dir, rate, r.error);
+        }
+        catch (const std::exception& e)   // e.g. out of memory: a "Kit-Fehler" in the status, not the end of the program
+        {
+            r.kit = nullptr;
+            r.error = juce::String (e.what());
+        }
         r.seconds = (juce::Time::getMillisecondCounterHiRes() - t0) / 1000.0;
         return r;
     });

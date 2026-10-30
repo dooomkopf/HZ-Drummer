@@ -21,7 +21,10 @@ public:
     ArrangerToolbar()
     {
         addAndMakeVisible (name);
-        name.setFont (juce::FontOptions (arrangerstyle::fontTitle, juce::Font::bold));
+        name.setFont (juce::FontOptions (arrangerstyle::fontTitle));
+        name.getProperties().set ("pill", true);        // drawn by HZLook as a pill
+        name.setIndents (16, 0);      // text clear of the round ends; no top indent, so centred exactly
+        name.setJustification (juce::Justification::centredLeft);   // the text in the middle, as in the buttons
         name.setTextToShowWhenEmpty ("Song-Name", arrangerstyle::textDim);
         name.onReturnKey = [this] { if (onRename) onRename (name.getText()); };
         name.onFocusLost = [this] { if (onRename) onRename (name.getText()); };
@@ -61,11 +64,11 @@ public:
     void resized() override
     {
         auto r = getLocalBounds();
-        newButton.setBounds (r.removeFromLeft (70));       r.removeFromLeft (6);
-        loadButton.setBounds (r.removeFromLeft (100));     r.removeFromLeft (12);
-        saveAsButton.setBounds (r.removeFromRight (150));  r.removeFromRight (6);
-        saveButton.setBounds (r.removeFromRight (110));    r.removeFromRight (24);
-        clearScratchButton.setBounds (r.removeFromRight (130));   r.removeFromRight (12);
+        newButton.setBounds (r.removeFromLeft (70));       r.removeFromLeft (8);
+        loadButton.setBounds (r.removeFromLeft (100));     r.removeFromLeft (8);
+        saveAsButton.setBounds (r.removeFromRight (150));  r.removeFromRight (8);
+        saveButton.setBounds (r.removeFromRight (110));    r.removeFromRight (8);
+        clearScratchButton.setBounds (r.removeFromRight (130));   r.removeFromRight (8);
         status.setBounds (r.removeFromRight (juce::jmax (120, r.getWidth() / 3)));
         r.removeFromRight (8);
         name.setBounds (r);
@@ -104,12 +107,14 @@ public:
         addAndMakeVisible (title);
         title.setFont (juce::FontOptions (arrangerstyle::fontBlockSmall));
         title.setColour (juce::Label::textColourId, arrangerstyle::textDim);
-        for (auto* b : { &minus, &plus, &range, &duplicate, &left, &right, &remove, &play, &stop, &edit, &fromSource })
+        for (auto* b : { &minus, &plus, &range, &duplicate, &left, &right, &remove, &play, &edit, &fromSource })
             addAndMakeVisible (*b);
         edit.onClick       = [this] { if (onEdit) onEdit(); };
         fromSource.onClick = [this] { if (onUpdateFromSource) onUpdateFromSource(); };
         edit.setTooltip ("Die Kopie dieses Blocks im Raster bearbeiten; die Änderung gilt nur in diesem Song");
-        fromSource.setTooltip ("Die aktuelle Fassung des Patterns aus der Bibliothek in diesen Block holen (mit Rückfrage)");
+        fromSource.setTooltip ("Holt die aktuelle Fassung des Patterns aus der Bibliothek in diesen Block. Nur aktiv, wenn das "
+                               "Original seit dem Einfügen geändert wurde (\xe2\x86\xbb am Block). Änderungen, die du am Block in "
+                               "diesem Song gemacht hast, gehen dabei verloren; vorher kommt eine Rückfrage, Strg+Z macht es rückgängig."_u);
         minus.onClick     = [this] { if (onRepeats) onRepeats (-1); };
         plus.onClick      = [this] { if (onRepeats) onRepeats (1); };
         range.onClick     = [this] { if (onRange) onRange(); };
@@ -117,16 +122,14 @@ public:
         left.onClick      = [this] { if (onMoveLeft) onMoveLeft(); };
         right.onClick     = [this] { if (onMoveRight) onMoveRight(); };
         remove.onClick    = [this] { if (onRemove) onRemove(); };
-        play.onClick      = [this] { if (onPlayFrom) onPlayFrom(); };
-        stop.onClick      = [this] { if (onStop) onStop(); };
+        play.onClick      = [this] { if (anyPlaying) { if (onStop) onStop(); } else if (onPlayFrom) onPlayFrom(); };
         minus.setTooltip ("eine Wiederholung weniger");
         plus.setTooltip ("eine Wiederholung mehr");
         range.setTooltip ("nur bestimmte Takte dieses Bausteins spielen");
-        play.setTooltip ("Ablauf ab dem gewählten Block abspielen (Enter)");
         play.setColour (juce::TextButton::buttonOnColourId, juce::Colour (0xff2e7a4a));   // lit while the sequence plays
-        stop.setTooltip ("Wiedergabe und Vorhören anhalten (Esc)");
+        play.getProperties().set ("transportIcon", true);   // drawn by HZLook as > or ||
         addAndMakeVisible (repeats);
-        repeats.setFont (juce::FontOptions (arrangerstyle::fontText, juce::Font::bold));
+        repeats.setFont (juce::FontOptions (arrangerstyle::fontText));
         repeats.setJustificationType (juce::Justification::centred);
         addAndMakeVisible (length);
         length.setFont (juce::FontOptions (arrangerstyle::fontBlockSmall));
@@ -151,8 +154,9 @@ public:
             title.setText (lastTitle, juce::dontSendNotification);
         repeats.setText (has ? juce::String (juce::CharPointer_UTF8 ("\xc3\x97")) + juce::String (part->repeats) : juce::String(), juce::dontSendNotification);
         for (auto* c : { (juce::Component*) &minus, (juce::Component*) &plus, (juce::Component*) &duplicate,
-                         (juce::Component*) &left, (juce::Component*) &right, (juce::Component*) &remove, (juce::Component*) &play })
+                         (juce::Component*) &left, (juce::Component*) &right, (juce::Component*) &remove })
             c->setEnabled (has);
+        updatePlayButton();
         range.setEnabled (has && part->kind == PartKind::Pattern && part->copy && part->copy->bars.size() > 1);
         length.setText (lengthText, juce::dontSendNotification);
     }
@@ -161,7 +165,8 @@ public:
     // where: "Spielt: Strophe · Takt 3/16" or ""
     void setPlaying (bool sequencePlaying, bool anything, const juce::String& where)
     {
-        stop.setEnabled (anything);
+        anyPlaying = anything;
+        updatePlayButton();
         play.setToggleState (sequencePlaying, juce::dontSendNotification);
         if (where != playingText)
         {
@@ -178,25 +183,39 @@ public:
         length.setBounds (top.removeFromRight (300));
         title.setBounds (top);
         r.removeFromTop (4);
+        // 8 px between the buttons, 4 px inside the pair < >; Play (only the symbol) right, at least 8 px away;
+        // the text buttons get narrower when the row is shorter than at full width (702 px)
+        play.setBounds (r.removeFromRight (48));
+        r.removeFromRight (8);
+        const bool compact = r.getWidth() < 702;
         minus.setBounds (r.removeFromLeft (34));
         repeats.setBounds (r.removeFromLeft (44));
-        plus.setBounds (r.removeFromLeft (34));       r.removeFromLeft (10);
-        range.setBounds (r.removeFromLeft (70));      r.removeFromLeft (6);
-        duplicate.setBounds (r.removeFromLeft (100)); r.removeFromLeft (10);
-        left.setBounds (r.removeFromLeft (36));       r.removeFromLeft (4);
-        right.setBounds (r.removeFromLeft (36));      r.removeFromLeft (10);
-        remove.setBounds (r.removeFromLeft (96));     r.removeFromLeft (16);
-        edit.setBounds (r.removeFromLeft (100));      r.removeFromLeft (6);
-        fromSource.setBounds (r.removeFromLeft (100));
-        stop.setBounds (r.removeFromRight (80));      r.removeFromRight (6);
-        play.setBounds (r.removeFromRight (80));
+        plus.setBounds (r.removeFromLeft (34));                       r.removeFromLeft (8);
+        range.setBounds (r.removeFromLeft (compact ? 60 : 70));       r.removeFromLeft (8);
+        duplicate.setBounds (r.removeFromLeft (compact ? 88 : 100));  r.removeFromLeft (8);
+        left.setBounds (r.removeFromLeft (36));                       r.removeFromLeft (4);
+        right.setBounds (r.removeFromLeft (36));                      r.removeFromLeft (8);
+        remove.setBounds (r.removeFromLeft (compact ? 84 : 96));      r.removeFromLeft (8);
+        edit.setBounds (r.removeFromLeft (compact ? 88 : 100));       r.removeFromLeft (8);
+        fromSource.setBounds (r.removeFromLeft (compact ? 80 : 100));
     }
 
 private:
     juce::Label title, repeats, length;
     juce::String lastTitle, playingText;
+    bool anyPlaying = false;
+
+    // one button for both: Play while nothing sounds, Stopp while the sequence or an audition plays
+    void updatePlayButton()
+    {
+        play.getProperties().set ("playing", anyPlaying);
+        play.setButtonText (anyPlaying ? "Stopp" : "Play");   // not drawn, the name for accessibility
+        play.setTooltip (anyPlaying ? "Wiedergabe und Vorhören anhalten (Esc)"_u
+                                    : "Ablauf ab dem gewählten Block abspielen, ohne Auswahl ab dem ersten (Enter)"_u);
+        // always active: without a selected block ArrangerPanel::playFrom starts at the first one
+    }
     juce::TextButton minus { juce::String (juce::CharPointer_UTF8 ("\xe2\x88\x92")) }, plus { "+" }, range { "Takte" },
                      duplicate { "Duplizieren" },
                      left { juce::String (juce::CharPointer_UTF8 ("\xe2\x97\x80")) }, right { juce::String (juce::CharPointer_UTF8 ("\xe2\x96\xb6")) },
-                     remove { "Entfernen" }, play { "Play" }, stop { "Stopp" }, edit { "Bearbeiten" }, fromSource { "Aus Quelle" };
+                     remove { "Entfernen" }, play { "Play" }, edit { "Raster" }, fromSource { "Original" };
 };

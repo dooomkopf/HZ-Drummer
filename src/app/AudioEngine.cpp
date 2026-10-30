@@ -131,6 +131,17 @@ void AudioEngine::process (float* left, float* right, int numSamples)
         player.seek (seekTarget.load());
         appliedSeek = serial;
     }
+    if (const auto request = previewRequest.load(); (std::uint32_t) (request >> 32) != appliedPreview)
+    {
+        // a preview hit (lane name clicked): at the start of this block, whatever the transport does
+        appliedPreview = (std::uint32_t) (request >> 32);
+        const auto packed = (std::uint32_t) request;
+        hz::PlayEvent hit;
+        hit.voice = { (hz::Instrument) (packed & 0xffu), (hz::Articulation) ((packed >> 8) & 0xffu) };
+        hit.velocity = (float) ((packed >> 16) & 0xffu) / 255.0f;
+        if (sampler.getKit() != nullptr && std::abs (sampler.getKit()->sampleRate - sampleRate) < 0.5)
+            triggerVoice (hit, audioClock);
+    }
 
     // one consistent mixer snapshot per block
     const auto mixNow = mixState.load();

@@ -7,7 +7,7 @@ namespace mix
 
 namespace
 {
-    const char* const names[] = { "Kick", "Snare", "HiHat", "Toms", "Becken", "Ride", "Klick", "Gesamt" };
+    const char* const names[] = { "Bass", "Snare", "HiHat", "Toms", "Becken", "Ride", "Klick", "Gesamt" };
     const char* const keys[]  = { "kick", "snare", "hihat", "toms", "cymbals", "ride", "click", "master" };
     constexpr float minDb = -48.0f;
 }

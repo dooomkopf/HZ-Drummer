@@ -42,7 +42,14 @@ public:
         juce::Logger::setCurrentLogger (nullptr); logger.reset();
     }
 
-    void systemRequestedQuit() override { quit(); }
+    void systemRequestedQuit() override
+    {
+        // asks first if the raster holds unsaved changes
+        if (auto* mc = mainWindow != nullptr ? dynamic_cast<MainComponent*> (mainWindow->getContentComponent()) : nullptr)
+            mc->requestQuit();
+        else
+            quit();
+    }
 
     // Second launch (e.g. click on the icon although already open): bring the existing window to the front
     void anotherInstanceStarted (const juce::String&) override

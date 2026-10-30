@@ -59,7 +59,7 @@ std::vector<KeyBinding> makeKeyBindings (const KeyActions& a)
         { "E",                    "Werkstatt: Raster-Editor (Pattern) bzw. Arranger (Song)"_u, character ('e'),  a.editor },
         { "Strg+F oder *",        "Favorit an/aus (Pattern bzw. Taktart)",           commandLetterOr ('F', '*'), a.toggleFavorite },
         { "T",                    "Tap-Tempo (mehrmals im Takt tippen)",             character ('t'),            a.tapTempo },
-        { "K",                    "Metronom-Klang (Klick, Bassdrum, Snare, Kick+Snare)", character ('k'),        a.nextSound },
+        { "K",                    "Metronom-Klang (Klick, Bassdrum, Snare, Bass+Snare)", character ('k'),        a.nextSound },
         { "L",                    "Mixer: Lautstärke der Spuren"_u,                  character ('l'),            a.mixer },
         { "V",                    "Schläge unter den Zählzeiten anzeigen an/aus"_u,  character ('v'),            a.toggleBeatDisplay },
         { "Strg+K oder /",        "Schnellsuche: Patterns, Songs, Taktarten (z.B. \"thr\" findet Thrash)",
