@@ -273,9 +273,25 @@ namespace folders
         if (node == nullptr)
             return notFound;
         const auto name = rawName.trim();
-        if (const auto error = checkName (*find (root, parentOf (path)), name, node); error.isNotEmpty())
-            return error;
-        node->name = name;
+        if (name.isEmpty())
+            return "Der Ordner braucht einen Namen.";
+        if (name.length() > maxNameLength)
+            return "Der Name ist zu lang, höchstens "_u + juce::String (maxNameLength) + " Zeichen.";
+
+        auto& parent = *findMutable (root, parentOf (path));
+        auto same = std::find_if (parent.folders.begin(), parent.folders.end(),
+                                  [&] (const FolderNode& f) { return &f != node && f.name.equalsIgnoreCase (name); });
+        if (same == parent.folders.end())
+        {
+            node->name = name;   // also just another spelling of the same name
+            return {};
+        }
+
+        // a folder of that name exists already: the two become one, under the new spelling
+        same->name = name;
+        auto moved = std::move (*node);
+        parent.folders.erase (parent.folders.begin() + (node - parent.folders.data()));
+        merge (*child (parent, name), std::move (moved));
         return {};
     }
 

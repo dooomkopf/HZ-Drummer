@@ -149,6 +149,33 @@ void ArrangerPanel::songDeleted (const std::string& libraryId)
     }
 }
 
+void ArrangerPanel::patternRenamed (const std::string& sourceId, const std::string& oldName, const std::string& newName)
+{
+    // the song files were renamed the same way: "unsaved" compares with the file again
+    if (model.renameCopies (sourceId, oldName, newName) == 0)
+        return;
+    Song onDisk;
+    juce::String err;
+    const auto saved = Library::songFolder().getChildFile (songFileName (model.song().id));
+    if (! model.song().id.empty() && saved.existsAsFile() && ::loadSong (saved, onDisk, err))
+    {
+        embedCopies (onDisk, host.getLibrary().all(), err);
+        model.markSavedAs (onDisk);
+    }
+    toolbar.update (juce::String (model.song().name), model.hasUnsavedChanges(), ! model.song().parts.empty(), ! model.scratch().empty());
+}
+
+void ArrangerPanel::songRenamed (const std::string& libraryId, const std::string& newName)
+{
+    if (libraryId != "song." + model.song().id)
+        return;
+    const bool wasSaved = ! model.hasUnsavedChanges();
+    model.setName (newName);
+    if (wasSaved)
+        model.markSavedAs (model.song());   // the file has the new name too
+    toolbar.update (juce::String (model.song().name), model.hasUnsavedChanges(), ! model.song().parts.empty(), ! model.scratch().empty());
+}
+
 bool ArrangerPanel::usesPattern (const std::string& id) const
 {
     const auto uses = [&] (const SongPart& part) { return part.kind == PartKind::Pattern && part.sourceId == id; };

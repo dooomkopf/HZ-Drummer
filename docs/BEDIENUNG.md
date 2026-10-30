@@ -25,6 +25,8 @@ Zwei Betriebsarten:
 
 Im Menü ein Pattern wählen schaltet auf Pattern, eine Taktart wählen schaltet auf Metronom.
 
+**Umbenennen:** Rechtsklick im Pattern-Menü auf ein eigenes Pattern, einen Song oder einen Ordner. Ein umbenanntes Pattern heißt auch in den gespeicherten Songs, im Arbeitsstand des Arrangers und in der Ablage neu; Blöcke, die im Arranger einen eigenen Namen bekommen haben, behalten ihn. Bekommt ein Ordner den Namen eines Ordners daneben, werden beide zu einem zusammengelegt, etwa „techdeath“ in „Tech-Death“. Auch eine reine Änderung der Groß- und Kleinschreibung geht.
+
 **Eigene Patterns und Songs löschen:** Rechtsklick auf den Eintrag im Pattern-Menü, oder der Knopf **Löschen** neben dem Titel, wenn ein eigener Eintrag geladen ist. Nichts wird endgültig gelöscht: Die Datei wandert in den Papierkorb (**System › Papierkorb**, dort „Wiederherstellen“). Ein Pattern, das ein gespeicherter Song, der Ablauf oder die Ablage noch verwendet, lässt sich nicht löschen; die Meldung sagt, wo es steckt.
 
 **Ordner für Songs und eigene Patterns:** Unter **System › Ordnerstruktur** stehen Songs und eigene Patterns als Baum. Dort legst du Ordner an, auch beliebig verschachtelt, benennst sie um und löschst leere. Einträge und Ordner ziehst du mit der Maus an ihren neuen Platz; **Hoch** und **Runter** ändern die Reihenfolge. Solange ein Eintrag keinem Ordner zugeordnet ist, steht er wie bisher: Songs oben, eigene Patterns nach Band und Song. Die Ordner stehen in `ordner.json`, die Pattern- und Song-Dateien bleiben dabei unverändert.

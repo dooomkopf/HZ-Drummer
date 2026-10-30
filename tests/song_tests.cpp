@@ -4,6 +4,7 @@
 #include "app/BadgeRegistry.h"
 #include "app/PatternIO.h"
 #include "app/Song.h"
+#include "app/SongRename.h"
 #include "engine/TabParser.h"
 
 #include <algorithm>
@@ -381,8 +382,54 @@ static void testBadgeRegistry()
     f.deleteFile();
 }
 
+// Umbenennen eines Patterns: Kopien in Songs folgen, solange sie noch den alten Namen tragen;
+// eigene Blocknamen und umbenannte Varianten bleiben
+static void testRenameCopies()
+{
+    const auto lib = smallLibrary();
+    std::vector<SongPart> parts { makePatternPart (lib[0]), makePatternPart (lib[0]), makePatternPart (lib[1]) };
+    parts[1].label = "Strophe";
+    auto variant = *parts[0].copy;
+    variant.name = "Eigene Variante";
+    parts.push_back (makePatternPart (lib[0]));
+    parts.back().copy = std::make_shared<hz::Pattern> (variant);
+
+    CHECK (renameCopies (parts, "user.a", "Groove A", "Groove A neu") == 2);
+    CHECK (parts[0].copy->name == "Groove A neu" && parts[1].copy->name == "Groove A neu" && parts[1].label == "Strophe");
+    CHECK (parts[2].copy->name == "Fill B" && parts[3].copy->name == "Eigene Variante");
+
+    // in Dateien: Song, Arbeitsstand und Ablage
+    const auto folder = tempFile ("rename");
+    folder.deleteRecursively();
+    CHECK (folder.getChildFile ("songs").createDirectory());
+    Song song;
+    song.id = "s1";
+    song.name = "S1";
+    song.parts = { makePatternPart (lib[0]), makePatternPart (lib[1]) };
+    juce::String err;
+    const auto songFile = folder.getChildFile ("songs/s1.json"), state = folder.getChildFile ("arranger.json"), scratch = folder.getChildFile ("ablage.json");
+    CHECK (saveSong (song, songFile, err) && saveSong (song, state, err) && savePartList ({ makePatternPart (lib[0]) }, scratch, err));
+    CHECK (renameCopiesInFiles (folder.getChildFile ("songs"), state, scratch, "user.a", "Groove A", "Neu").isEmpty());
+    Song back, backState;
+    std::vector<SongPart> backScratch;
+    CHECK (loadSong (songFile, back, err) && loadSong (state, backState, err) && loadPartList (scratch, backScratch, err));
+    CHECK (back.parts[0].copy->name == "Neu" && back.parts[1].copy->name == "Fill B");
+    CHECK (backState.parts[0].copy->name == "Neu" && backScratch.size() == 1 && backScratch[0].copy->name == "Neu");
+
+    // das Arranger-Modell: aktueller Stand und Rückgängig-Stände, ohne eigenen Rückgängig-Schritt
+    ArrangerModel model;
+    model.load (song);
+    model.insertPart (2, makePatternPart (lib[0]));
+    CHECK (model.renameCopies ("user.a", "Groove A", "Neu") == 2);
+    CHECK (model.song().parts[0].copy->name == "Neu" && model.song().parts[2].copy->name == "Neu");
+    model.undo();
+    CHECK (model.song().parts.size() == 2 && model.song().parts[0].copy->name == "Neu");
+    folder.deleteRecursively();
+}
+
 void runSongTests()
 {
+    testRenameCopies();
     testBadgeRegistry();
     testReadV1();
     testWriteV2RoundTrip();

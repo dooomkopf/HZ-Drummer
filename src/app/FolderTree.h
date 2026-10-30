@@ -50,7 +50,7 @@ namespace folders
     bool startsWith (const FolderPath& path, const FolderPath& prefix);
 
     juce::String addFolder (FolderNode& root, const FolderPath& parent, const juce::String& name);
-    juce::String renameFolder (FolderNode& root, const FolderPath&, const juce::String& name);
+    juce::String renameFolder (FolderNode& root, const FolderPath&, const juce::String& name);   // onto an existing name: merged
     juce::String removeFolder (FolderNode& root, const FolderPath&);   // only one without entries
     juce::String moveFolder (FolderNode& root, const FolderPath&, const FolderPath& newParent, int index = -1);
     juce::String moveItem (FolderNode& root, const std::string& id, const FolderPath& target, int index = -1);

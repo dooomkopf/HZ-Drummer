@@ -37,6 +37,9 @@ public:
     // Own patterns: save (new id or next revision) and delete. Return "" on success.
     juce::String save (hz::Pattern&, bool asNew);
     juce::String remove (const hz::Pattern&);
+    // Own pattern or song: a new name. A pattern's copies in songs, the arranger's working state
+    // and the Ablage follow while they still carry the old name (see SongRename). "" on success.
+    juce::String rename (const std::string& id, const juce::String& newName);
 
     // Favorites (by id), persisted by the caller
     bool isFavorite (const std::string& id) const  { return favorites.count (id) > 0; }

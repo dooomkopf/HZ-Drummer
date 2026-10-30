@@ -27,7 +27,8 @@ struct MenuClickGesture
 };
 
 // A pattern entry of the main window's pattern menu that can be auditioned while the menu
-// stays open: hover it and press P (again: stop). Clicking or Enter selects it as usual.
+// stays open: hover it and press P (again: stop). Clicking or Enter selects it as usual; a right
+// click calls onContext (e.g. rename), if there is one.
 // The item takes the keyboard focus when the mouse enters it or the arrow keys highlight it,
 // so P reaches it; every other key goes on to the menu (arrows, Enter, Esc).
 class PreviewMenuItem : public juce::PopupMenu::CustomComponent
@@ -35,10 +36,11 @@ class PreviewMenuItem : public juce::PopupMenu::CustomComponent
 public:
     PreviewMenuItem (juce::String textToShow, juce::Colour textColour, bool isTicked,
                      std::function<void()> preview, std::function<bool()> isPreviewing,
-                     std::shared_ptr<bool> selectionAllowed = {})
+                     std::shared_ptr<bool> selectionAllowed = {}, std::function<void()> context = {})
         : juce::PopupMenu::CustomComponent (false),
           text (std::move (textToShow)), colour (textColour), ticked (isTicked),
-          onPreview (std::move (preview)), previewing (std::move (isPreviewing)), allowSelection (std::move (selectionAllowed))
+          onPreview (std::move (preview)), previewing (std::move (isPreviewing)), allowSelection (std::move (selectionAllowed)),
+          onContext (std::move (context))
     {
         setWantsKeyboardFocus (true);
     }
@@ -97,7 +99,11 @@ public:
     {
         const auto result = gesture.release (e.mods, getLocalBounds().contains (e.getPosition()));
         if (result == MenuClickGesture::Result::Context)
-            return;   // right click: no selection, no dismissal and no context menu
+        {
+            if (onContext)
+                onContext();   // right click: no selection; the action decides about the menu
+            return;
+        }
         if (result == MenuClickGesture::Result::Select)
         {
             if (allowSelection) *allowSelection = true;
@@ -137,5 +143,6 @@ private:
     std::function<void()> onPreview;
     std::function<bool()> previewing;
     std::shared_ptr<bool> allowSelection;
+    std::function<void()> onContext;
     MenuClickGesture gesture;
 };

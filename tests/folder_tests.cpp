@@ -84,7 +84,6 @@ static void testFolderEdits()
     CHECK (folders::addFolder (root, {}, "Leer").isEmpty());
     CHECK (folders::addFolder (root, path ({ "Leer" }), "Unten").isEmpty());
 
-    CHECK (folders::renameFolder (root, path ({ "Leer" }), "exhorder").isNotEmpty());
     CHECK (folders::renameFolder (root, path ({ "Leer" }), "Leer").isEmpty());   // eigener Name bleibt erlaubt
     CHECK (folders::renameFolder (root, path ({ "Leer" }), "Ablage").isEmpty());
     CHECK (folders::find (root, path ({ "Ablage", "Unten" })) != nullptr);
@@ -93,6 +92,27 @@ static void testFolderEdits()
     CHECK (folders::removeFolder (root, path ({ "Ablage" })).isEmpty());       // samt leerem Unterordner
     CHECK (folders::find (root, path ({ "Ablage" })) == nullptr);
     CHECK (folders::countItems (root) == 3);
+}
+
+// Umbenennen in einen vorhandenen Namen legt beide Ordner zusammen, in der neuen Schreibweise
+static void testRenameMerges()
+{
+    FolderTree tree;
+    auto root = tree.resolve (FolderTree::Patterns, patterns());   // Carcass (CJQ, ISA), Exhorder (Desecrator)
+    CHECK (folders::addFolder (root, {}, "techdeath").isEmpty());
+    CHECK (folders::addFolder (root, path ({ "techdeath" }), "CJQ").isEmpty());
+    CHECK (folders::moveItem (root, "user.b1", path ({ "techdeath" })).isEmpty());
+    CHECK (folders::renameFolder (root, path ({ "techdeath" }), "CARCASS").isEmpty());
+    CHECK (root.folders.size() == 2 && root.folders[0].name == "CARCASS");
+    CHECK (root.folders[0].folders.size() == 2);   // die beiden CJQ sind einer
+    FolderPath at;
+    CHECK (folders::locate (root, "user.b1", at) && at == path ({ "CARCASS" }));
+    CHECK (folders::countItems (root) == 3);
+
+    // nur die Schreibweise ändern
+    CHECK (folders::renameFolder (root, path ({ "carcass" }), "Carcass").isEmpty());
+    CHECK (root.folders[0].name == "Carcass" && root.folders.size() == 2);
+    CHECK (folders::renameFolder (root, path ({ "Carcass" }), " ").isNotEmpty());
 }
 
 // Ordner verschieben: nicht in sich selbst, keine Namensgleichheit am Ziel, Reihenfolge per Index
@@ -186,6 +206,7 @@ void runFolderTests()
     testDefaultPlaces();
     testStoredPlaces();
     testFolderEdits();
+    testRenameMerges();
     testMoveFolders();
     testMoveItems();
     testFolderFile();

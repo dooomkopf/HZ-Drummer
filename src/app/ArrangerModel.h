@@ -46,6 +46,8 @@ public:
     int updateFromSource (const std::vector<int>& indices, const std::vector<hz::Pattern>& library);   // returns how many changed
     std::vector<int> partsWithSource (const std::string& sourceId) const;
     void setName (const std::string&);
+    // the pattern was renamed: its copies follow in every snapshot (no undo step); returns how many now
+    int renameCopies (const std::string& sourceId, const std::string& oldName, const std::string& newName);
     void setTempo (double bpm);                         // 0 = tempo of the first part
 
     // Ablage; the same building block is kept only once

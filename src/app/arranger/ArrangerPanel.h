@@ -37,6 +37,8 @@ public:
     bool hasUnsavedChanges() const    { return model.hasUnsavedChanges(); }
     bool usesPattern (const std::string& id) const;
     void songDeleted (const std::string& libraryId);
+    void patternRenamed (const std::string& sourceId, const std::string& oldName, const std::string& newName);
+    void songRenamed (const std::string& libraryId, const std::string& newName);
     void focusSearch()                { find.focusField(); }
 
     void resized() override;

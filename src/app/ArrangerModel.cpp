@@ -1,4 +1,5 @@
 #include "app/ArrangerModel.h"
+#include "app/SongRename.h"
 
 #include <algorithm>
 
@@ -264,6 +265,23 @@ void ArrangerModel::setName (const std::string& name)
     auto next = current;
     next.song.name = name;
     commit (std::move (next), false);
+}
+
+int ArrangerModel::renameCopies (const std::string& sourceId, const std::string& oldName, const std::string& newName)
+{
+    for (auto* stack : { &undoStack, &redoStack })
+        for (auto& state : *stack)
+        {
+            ::renameCopies (state.song.parts, sourceId, oldName, newName);
+            ::renameCopies (state.scratch, sourceId, oldName, newName);
+        }
+    const int inSong = ::renameCopies (current.song.parts, sourceId, oldName, newName);
+    const int inScratch = ::renameCopies (current.scratch, sourceId, oldName, newName);
+    if (inScratch > 0 && onScratchChange)
+        onScratchChange();
+    if (inSong + inScratch > 0 && onChange)
+        onChange();
+    return inSong + inScratch;
 }
 
 void ArrangerModel::setTempo (double bpm)

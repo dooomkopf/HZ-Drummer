@@ -83,6 +83,8 @@ void MainComponent::showPatternMenu()
     actions.preview = [this] (int i) { previewPattern (i); };
     actions.isPreviewing = [this] (int i) { return audition == Audition::Menu && menuPreviewIndex == i && control.play; };   // the mark means "sounds"
     actions.toggleFavorite = [this] { toggleFavorite(); };
+    actions.rename = [this] (const std::string& id) { askRenameEntry (id); };
+    actions.renameFolder = [this] (FolderTree::Area area, const FolderPath& path) { askRenameFolder (area, path); };
     actions.showErrors = [this]
     {
         juce::AlertWindow::showMessageBoxAsync (juce::MessageBoxIconType::WarningIcon, "Fehlerhafte Pattern-Dateien",

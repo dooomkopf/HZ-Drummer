@@ -1,4 +1,5 @@
 #include "app/Library.h"
+#include "app/SongRename.h"
 
 #include "app/KitLoader.h"
 #include "app/PatternIO.h"
@@ -160,6 +161,41 @@ juce::String Library::save (hz::Pattern& p, bool asNew)
     p = candidate;
     reload();
     return {};
+}
+
+juce::String Library::rename (const std::string& id, const juce::String& newName)
+{
+    const int i = indexOf (id);
+    const auto name = newName.trim().toStdString();
+    if (i < 0)
+        return "Den Eintrag gibt es nicht mehr.";
+    if (name.empty())
+        return "Der Name darf nicht leer sein.";
+    if (name == entries[(size_t) i].name)
+        return {};
+
+    juce::String error;
+    if (const auto* s = song (i))
+    {
+        auto renamed = *s;
+        renamed.name = name;
+        if (! saveSong (renamed, songFolder().getChildFile (juce::String (renamed.id) + ".json"), error))
+            return error;
+        reload();
+        return {};
+    }
+    if (! isUserPattern (i))
+        return "Mitgelieferte Patterns lassen sich nicht umbenennen.";
+
+    auto p = entries[(size_t) i];
+    const auto oldName = p.name;
+    p.name = name;
+    if (error = save (p, false); error.isNotEmpty())
+        return error;
+    error = renameCopiesInFiles (songFolder(), songFolder().getSiblingFile ("arranger.json"), songFolder().getSiblingFile ("ablage.json"),
+                                 id, oldName, name);
+    reload();
+    return error;
 }
 
 FolderNode Library::folders (FolderTree::Area area) const

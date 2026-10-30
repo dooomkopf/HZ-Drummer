@@ -122,6 +122,10 @@ private:
     void showAudioSettings();
     void showDataTools (int tab);    // 0 trash, 1 log files, 2 folders
     void refreshFolders();           // the folder window, if open, after the library changed
+
+    // --- renaming (MainComponentRename.cpp): right click in the pattern menu
+    void askRenameEntry (const std::string& id);
+    void askRenameFolder (FolderTree::Area, const FolderPath&);
     void seekToBar (int bar);        // within the playing song/pattern
     void seekPart (int dir);         // songs: next / previous part (N / B)
     void previewPattern (int index); // pattern menu: audition an entry (toggle), menu stays open
