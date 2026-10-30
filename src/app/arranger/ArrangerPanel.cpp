@@ -196,7 +196,7 @@ void ArrangerPanel::modelChanged()
     updateDetail();
     stateDirty = true;
     stateDueMs = juce::Time::getMillisecondCounterHiRes() + 500.0;
-    layoutSequence();
+    resized();   // the sequence grows with its rows (up to three) before it scrolls
     // only changes that alter what is played reach the transport (not a rename or an Ablage edit)
     Song playedOnly = model.song();
     playedOnly.name.clear();

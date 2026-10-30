@@ -215,9 +215,9 @@ void FindView::resized()
 {
     auto area = getLocalBounds();
     field.setBounds (area.removeFromTop (40));
-    area.removeFromTop (4);
-    chipLabel.setBounds (area.removeFromTop (20));
-    area.removeFromTop (4);
+    area.removeFromTop (2);
+    chipLabel.setBounds (area.removeFromTop (18));   // the active filters ("7/8", "180 bpm")
+    area.removeFromTop (2);
 
     auto actions = area.removeFromBottom (buttonH);
     clearMarks.setBounds (actions.removeFromRight (96));
@@ -226,7 +226,7 @@ void FindView::resized()
     actions.removeFromRight (6);
     toScratch.setBounds (actions.removeFromRight (96));
     markedLabel.setBounds (actions);
-    area.removeFromBottom (6);
+    area.removeFromBottom (10);
 
     viewport.setBounds (area);
     list.setSize (juce::jmax (10, viewport.getMaximumVisibleWidth()), juce::jmax (list.getHeight(), 1));
