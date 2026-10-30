@@ -121,7 +121,6 @@ private:
     bool channelInUse (int channel) const;   // mixer: does this channel sound in what is selected?
     void showAudioSettings();
     void showDataTools (int tab);    // 0 trash, 1 log files, 2 folders
-    void moveToFolder (const std::string& id, const FolderPath&);
     void refreshFolders();           // the folder window, if open, after the library changed
     void seekToBar (int bar);        // within the playing song/pattern
     void seekPart (int dir);         // songs: next / previous part (N / B)

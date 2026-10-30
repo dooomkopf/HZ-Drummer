@@ -83,8 +83,6 @@ void MainComponent::showPatternMenu()
     actions.preview = [this] (int i) { previewPattern (i); };
     actions.isPreviewing = [this] (int i) { return audition == Audition::Menu && menuPreviewIndex == i && control.play; };   // the mark means "sounds"
     actions.toggleFavorite = [this] { toggleFavorite(); };
-    actions.moveTo = [this] (const std::string& id, const FolderPath& target) { moveToFolder (id, target); };
-    actions.editFolders = [this] { showDataTools (2); };
     actions.showErrors = [this]
     {
         juce::AlertWindow::showMessageBoxAsync (juce::MessageBoxIconType::WarningIcon, "Fehlerhafte Pattern-Dateien",
@@ -96,14 +94,6 @@ void MainComponent::showPatternMenu()
             if (safe != nullptr && result == 0)
                 safe->cancelPreview();   // dismissed without a choice: back to the previous state
         });
-}
-
-void MainComponent::moveToFolder (const std::string& id, const FolderPath& target)
-{
-    const auto error = library.editFolders (Library::areaOf (id), [&] (FolderNode& root) { return folders::moveItem (root, id, target); });
-    if (error.isNotEmpty())
-        juce::AlertWindow::showMessageBoxAsync (juce::MessageBoxIconType::WarningIcon, "Verschieben nicht möglich"_u, error);
-    refreshFolders();
 }
 
 void MainComponent::refreshFolders()

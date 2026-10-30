@@ -68,21 +68,6 @@ juce::PopupMenu buildPatternMenu (const Library& lib, int current, const Pattern
     menu.addItem (juce::PopupMenu::Item ("Metronom (nur Taktart)").setID (1).setTicked (current < 0)
                       .setAction ([select = actions.select] { select (-1); }));
 
-    // move the current song or own pattern into another folder
-    if ((lib.isSong (current) || lib.isUserPattern (current)) && actions.moveTo != nullptr)
-    {
-        const auto id = lib.get (current).id;
-        const auto root = lib.folders (Library::areaOf (id));
-        FolderPath at;
-        folders::locate (root, id, at);
-        menu.addSubMenu ("Verschieben nach", buildMoveMenu (root, at, [moveTo = actions.moveTo, id] (const FolderPath& target)
-                                                            { moveTo (id, target); }, actions.editFolders));
-    }
-    else
-    {
-        menu.addItem (juce::PopupMenu::Item ("Verschieben nach (nur Songs und eigene Patterns)").setID (100003).setEnabled (false));
-    }
-
     auto section = [&] (const juce::String& header, auto predicate)
     {
         bool any = false;
@@ -171,49 +156,6 @@ bool addFolderMenu (juce::PopupMenu& menu, const FolderNode& node,
     for (auto& id : node.items)
         hasCurrent = addEntry (menu, id, path) || hasCurrent;
     return hasCurrent;
-}
-
-namespace
-{
-    void addMoveTargets (juce::PopupMenu& menu, const FolderNode& node, const FolderPath& path, const FolderPath& current,
-                         const std::function<void (const FolderPath&)>& moveTo, int& nextId)
-    {
-        for (auto& f : node.folders)
-        {
-            auto target = path;
-            target.add (f.name);
-            const bool here = target == current;
-            auto moveHere = [moveTo, target] { moveTo (target); };
-            if (f.folders.empty())
-            {
-                menu.addItem (juce::PopupMenu::Item (f.name).setID (nextId++).setTicked (here).setAction (moveHere));
-                continue;
-            }
-            juce::PopupMenu sub;
-            sub.addItem (juce::PopupMenu::Item ("Hierher").setID (nextId++).setTicked (here).setAction (moveHere));
-            sub.addSeparator();
-            addMoveTargets (sub, f, target, current, moveTo, nextId);
-            menu.addSubMenu (f.name, sub, true, nullptr, folders::startsWith (current, target));
-        }
-    }
-}
-
-juce::PopupMenu buildMoveMenu (const FolderNode& root, const FolderPath& current,
-                               std::function<void (const FolderPath&)> moveTo, std::function<void()> editFolders)
-{
-    juce::PopupMenu menu;
-    int nextId = 200000;   // apart from the pattern menu's own ids
-    menu.addItem (juce::PopupMenu::Item ("Oberste Ebene").setID (nextId++).setTicked (current.isEmpty())
-                      .setAction ([moveTo] { moveTo ({}); }));
-    if (! root.folders.empty())
-        menu.addSeparator();
-    addMoveTargets (menu, root, {}, current, moveTo, nextId);
-    if (editFolders != nullptr)
-    {
-        menu.addSeparator();
-        menu.addItem (juce::PopupMenu::Item ("Ordner anlegen und sortieren ...").setID (nextId++).setAction (editFolders));
-    }
-    return menu;
 }
 
 std::vector<QuickSearch::Item> buildSearchItems (const Library& lib, const MeterLibrary& meters,
