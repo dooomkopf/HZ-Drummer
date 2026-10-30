@@ -56,8 +56,9 @@ public:
     // Display helpers
     static juce::String styleTitle (const std::string& tag);   // "thrash" -> "Thrash"
     static juce::String meterText (const hz::Pattern&);         // "4/4 + 12/8 (3+3+3+3)"
-    static juce::String bandOf (const hz::Pattern&);            // band: metadata, else "Ohne Band"
-    static juce::String groupOf (const hz::Pattern&);           // "Carcass CJQ – 01 Intro" -> "Carcass CJQ"
+    static constexpr const char* otherBand = "Sonstige";
+    static juce::String bandOf (const hz::Pattern&);            // band: metadata, else otherBand
+    static juce::String groupOf (const hz::Pattern&);           // "Carcass CJQ – 01 Intro" -> "Carcass CJQ", "" if none
 
 private:
     std::vector<hz::Pattern> entries;

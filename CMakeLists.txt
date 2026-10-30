@@ -47,6 +47,7 @@ target_sources(HZDrummer PRIVATE
     src/app/PatternEditor.cpp
     src/app/WorkshopWindow.cpp
     src/app/MixerPanel.cpp
+    src/app/AudioSettingsPanel.cpp
     src/app/Song.cpp
     src/app/ArrangerModel.cpp
     src/app/BadgeRegistry.cpp

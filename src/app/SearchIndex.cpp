@@ -41,9 +41,9 @@ void SearchIndex::build (const Library& lib)
         else if (lib.isUserPattern (i))
         {
             const auto group = Library::groupOf (p);
-            it.group = group == "Einzelne" ? SearchItem::Group::Own : SearchItem::Group::Sections;
+            it.group = group.isEmpty() ? SearchItem::Group::Own : SearchItem::Group::Sections;
             it.origin = it.group == SearchItem::Group::Sections
-                ? (Library::bandOf (p) == "Ohne Band" ? group : Library::bandOf (p) + " – " + group)
+                ? (Library::bandOf (p) == Library::otherBand ? group : Library::bandOf (p) + " – " + group)
                 : juce::String();
         }
         else

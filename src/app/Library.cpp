@@ -169,11 +169,12 @@ FolderNode Library::folders (FolderTree::Area area) const
     {
         if (area == FolderTree::Songs ? ! isSong (i) : ! isUserPattern (i))
             continue;
-        FolderPath place;   // songs: top level; own patterns: band, then song (as the menu had them before)
+        FolderPath place;   // songs: top level; own patterns: band, then song if they belong to one
         if (area == FolderTree::Patterns)
         {
             place.add (bandOf (entries[(size_t) i]));
-            place.add (groupOf (entries[(size_t) i]));
+            if (const auto group = groupOf (entries[(size_t) i]); group.isNotEmpty())
+                place.add (group);
         }
         list.push_back ({ entries[(size_t) i].id, place });
     }
@@ -258,7 +259,7 @@ juce::String Library::bandOf (const hz::Pattern& p)
         if (value.startsWithIgnoreCase ("band:") && value.substring (5).trim().isNotEmpty())
             return value.substring (5).trim();
     }
-    return "Ohne Band";
+    return otherBand;
 }
 
 juce::String Library::groupOf (const hz::Pattern& p)
@@ -271,5 +272,5 @@ juce::String Library::groupOf (const hz::Pattern& p)
     }
     const juce::String name (p.name);
     const auto dash = name.indexOf (enDash);
-    return dash > 0 ? name.substring (0, dash) : juce::String ("Einzelne");
+    return dash > 0 ? name.substring (0, dash) : juce::String();
 }

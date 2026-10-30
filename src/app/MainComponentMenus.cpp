@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "app/AudioSettingsPanel.h"
 #include "app/FolderPanel.h"
 #include "app/MixerPanel.h"
 #include "app/NavigationMenus.h"
@@ -284,13 +285,13 @@ void MainComponent::showAudioSettings()
 {
     if (audioWindow == nullptr)
     {
-        // the audio selector plus a few lines about the system and the badges in use
+        // the audio settings plus a few lines about the system and the badges in use
         struct SystemPanel : juce::Component
         {
-            juce::AudioDeviceSelectorComponent selector;
+            AudioSettingsPanel selector;
             juce::Label badgeLine, info;
             juce::TextButton trash { "Papierkorb" }, logs { "Logdateien" }, structure { "Ordnerstruktur" };
-            explicit SystemPanel (juce::AudioDeviceManager& dm) : selector (dm, 0, 0, 2, 2, false, false, true, false)
+            explicit SystemPanel (juce::AudioDeviceManager& dm) : selector (dm)
             {
                 addAndMakeVisible (selector);
                 addAndMakeVisible (trash); addAndMakeVisible (logs); addAndMakeVisible (structure);
@@ -301,16 +302,15 @@ void MainComponent::showAudioSettings()
                 info.setFont (juce::FontOptions (14.0f));
                 info.setColour (juce::Label::textColourId, theme::textDim);
                 info.setJustificationType (juce::Justification::topLeft);
-                setSize (560, 470);
+                setSize (560, ActiveGlow::height + AudioSettingsPanel::preferredHeight + 4 + 42 + 44 + 50);
             }
             void resized() override
             {
                 auto r = getLocalBounds();
                 info.setBounds (r.removeFromBottom (50).reduced (12, 4));
                 badgeLine.setBounds (r.removeFromBottom (44).reduced (12, 4));
-                // the selector sizes itself to its controls; the data buttons follow right below them
-                selector.setBounds (r.withTrimmedTop (ActiveGlow::height));
-                auto actions = juce::Rectangle<int> (0, juce::jmin (selector.getBottom() + 4, r.getBottom() - 42), getWidth(), 42).reduced (12, 4);
+                selector.setBounds (r.withTrimmedTop (ActiveGlow::height).withHeight (AudioSettingsPanel::preferredHeight));
+                auto actions = juce::Rectangle<int> (0, selector.getBottom() + 4, getWidth(), 42).reduced (12, 4);
                 trash.setBounds (actions.removeFromLeft (160)); actions.removeFromLeft (10);
                 logs.setBounds (actions.removeFromLeft (160)); actions.removeFromLeft (10);
                 structure.setBounds (actions.removeFromLeft (160));
