@@ -55,7 +55,8 @@ Im Menü einen Baustein wählen schaltet auf Baustein, eine Taktart wählen scha
 
 ## Editor (Werkstatt › Reiter „Editor“, Taste E)
 
-- **Zeilen** sind Instrumente (Becken, HiHat, Snare, Toms, Bass), **Spalten** die Rasterschritte. Ein **Klick auf den Spurnamen** spielt einen Probeklang des Instruments, ohne etwas zu setzen. Die Namen zeigen, was das Kit wirklich spielt (beim Aasimonster: „Zil-Bel“ statt Kuhglocke, „China 8"“ für den Splash). Spuren ohne Klang im Kit (Sidestick, HiHat-Pedal) oder mit demselben Klang wie eine andere (HiHat halb) erscheinen nur, wenn der Baustein sie benutzt, dann kursiv. Dicke Linien sind Taktstriche, mittlere die Zählzeiten.
+- **Zeilen** sind Instrumente (Becken, HiHat, Snare, Toms, Bass), **Spalten** die Rasterschritte. Ein **Klick auf den Spurnamen** spielt einen Probeklang des Instruments, ohne etwas zu setzen. Die Namen zeigen, was das Kit wirklich spielt (beim Aasimonster: „Zil-Bel“ statt Kuhglocke, „China 8"“ für den Splash). Spuren ohne Klang im Kit (etwa die Besen bei einem Kit ohne Besen) oder mit demselben Klang wie eine andere (HiHat halb) erscheinen nur, wenn der Baustein sie benutzt, dann kursiv. Zusatzspuren wie Sidestick, HiHat-Pedal und die Besen (Snare-Schlag, Wischer kurz und lang, Ride, Tom 2) zeigt „Alle Spuren“. Dicke Linien sind Taktstriche, mittlere die Zählzeiten.
+- **Rechtsklick auf den Spurnamen**, dann „Übertragen auf“: Alle Schläge dieser Spur wandern in die gewählte, über alle Takte, zum Beispiel von der Hi-Hat aufs Ride oder auf die China. Lautstärke, Versatz und Flam bleiben; wo beide Spuren einen Schlag haben, bleibt der lautere. Strg+Z macht es rückgängig.
 - **Klick** in ein leeres Feld setzt einen Schlag, ein Klick auf einen Schlag löscht ihn.
   - **Shift + Klick** setzt einen Akzent, **Alt + Klick** eine Ghost-Note.
   - **Ziehen nach oben/unten** ändert die Lautstärke. Größe und Helligkeit des Kästchens zeigen sie an.

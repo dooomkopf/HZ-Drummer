@@ -27,6 +27,9 @@ enum class Articulation : std::uint8_t
     Bell,     // Ride bell
     Rim,      // Snare rimshot
     Side,     // Snare sidestick
+    Brush,    // Brush tap (snare, ride, tom)
+    Sweep,    // Brush sweep across the snare, short
+    SweepLong,// Brush sweep, long
     Count
 };
 

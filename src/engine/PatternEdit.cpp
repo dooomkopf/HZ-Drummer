@@ -127,6 +127,40 @@ bool setEventFlam (Pattern& p, Voice v, Rational pos, bool flam)
     return false;
 }
 
+int moveLane (Pattern& p, Voice from, Voice to)
+{
+    if (from == to)
+        return 0;
+    std::vector<PatternEvent> moved;
+    for (auto& l : p.layers)
+    {
+        for (const auto& e : l.events)
+            if (e.voice == from)
+                moved.push_back (e);
+        l.events.erase (std::remove_if (l.events.begin(), l.events.end(), [from] (const PatternEvent& e) { return e.voice == from; }),
+                        l.events.end());
+    }
+    for (auto e : moved)
+    {
+        e.voice = to;
+        PatternEvent* there = nullptr;
+        for (auto& l : p.layers)
+            for (auto& t : l.events)
+                if (t.voice == to && t.pos == e.pos)
+                    there = &t;
+        if (there == nullptr)
+            layerFor (p, roleFor (to)).events.push_back (e);   // the layer of the new lane: hands or feet
+        else if (e.velocity > there->velocity)
+        {
+            const auto id = there->id;   // the louder one stays
+            *there = e;
+            there->id = id;
+        }
+    }
+    sortEvents (p);
+    return (int) moved.size();
+}
+
 void insertBar (Pattern& p, int afterBar, bool copyContent)
 {
     if (p.bars.empty())

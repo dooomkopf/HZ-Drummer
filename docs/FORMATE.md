@@ -66,6 +66,8 @@ Eine Spur ist eine Zeile `kürzel | Zellen | Zellen |`, ein Abschnitt zwischen `
 | `hh` | HiHat | `t1` … `t4` | Toms, hoch bis tief |
 | `hp` | HiHat-Pedal | `cb` | Kuhglocke |
 | `rd` | Ride | `rb` | Ride-Glocke |
+| `bs` | Snare mit Besen (Schlag) | `rbr` | Ride mit Besen |
+| `ws` / `wl` | Besen-Wischer kurz / lang | `tbr` | Tom 2 mit Besen |
 
 ### Zellen
 
@@ -120,7 +122,7 @@ So speichert das Programm Patterns. Positionen und Längen sind exakte Brüche i
 |---|---|
 | `bars` | Ein Eintrag je Takt mit Taktart und Rasterweite. Die Länge des Patterns ergibt sich daraus. |
 | `layers` | Ebenen für Hände (`hands`) und Füße (`feet`). |
-| `events[].voice` | Instrument, optional mit Spielweise nach einem Punkt: `kick`, `snare`, `snare.rim`, `snare.side`, `hihat`, `hihat.open`, `hihat.half`, `hihat.pedal`, `ride`, `ride.bell`, `crash1`, `crash2`, `china`, `splash`, `tom1` … `tom4`, `cowbell` |
+| `events[].voice` | Instrument, optional mit Spielweise nach einem Punkt: `kick`, `snare`, `snare.rim`, `snare.side`, `hihat`, `hihat.open`, `hihat.half`, `hihat.pedal`, `ride`, `ride.bell`, `crash1`, `crash2`, `china`, `splash`, `tom1` … `tom4`, `cowbell`; Besen: `snare.brush`, `snare.sweep`, `snare.sweeplong`, `ride.brush`, `tom2.brush` |
 | `events[].pos` | Position in Vierteln ab Pattern-Anfang als Bruch, zum Beispiel `"0"`, `"1/2"`, `"7/4"` |
 | `events[].vel` | Lautstärke `0` bis `1`: Ghost etwa `0.3`, normal `0.75`, Akzent `1.0` |
 | `events[].limb` | optional `left` oder `right`, zum Beispiel für Doppelbass |

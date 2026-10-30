@@ -34,14 +34,6 @@ t3 | . . x . x . x . |
 sn | . . . . X . . . |
 bd | x . x . . x . . |
 ---
-name:  Crossover Thrash-Polka
-tags:  hardcore, crossover, fast
-tempo: 230 (190-260)
-grid:  1/8
-cr | X . x . x . x . |
-sn | . x . x . x . x |
-bd | x . x . x . x . |
----
 name:  Hardcore Gallop-Stampf
 tags:  hardcore, gallop, half-time
 tempo: 140 (110-170)

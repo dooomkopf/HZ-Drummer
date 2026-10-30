@@ -9,6 +9,8 @@
 #include "engine/MeterCatalog.h"
 #include "engine/PatternEdit.h"
 
+#include <algorithm>
+
 // only included by the editor's implementation files
 using namespace editorstyle;
 
@@ -80,23 +82,41 @@ public:
         repaint();
     }
 
-    // how far right a hit at pos sounds because of the swing (0 if it does not swing)
-    // how far a hit is drawn from its grid place: its swing plus its own offset (lag), at the tempo of the pattern
-    float offsetPx (hz::Rational pos, float lagMs) const
+    // the x of any time in quarters, by the geometry of the bar it falls in (bars may differ in grid and width)
+    float xForQuarters (double q) const
     {
         const auto& p = owner.pattern;
-        const double shift = hz::swingShift (p, pos) + (p.tempo > 0.0 ? (double) lagMs * p.tempo / 60000.0 : 0.0);
-        if (shift == 0.0)
-            return 0.0f;
-        const int bi = p.barAt (pos);
-        return (float) (shift / p.bars[(size_t) bi].lengthInQuarters().toDouble()) * (float) headers[(size_t) bi].area.getWidth();
+        double start = 0.0;
+        for (size_t bi = 0; bi < p.bars.size(); ++bi)
+        {
+            const double len = p.bars[bi].lengthInQuarters().toDouble();
+            if (q < start + len || bi + 1 == p.bars.size())
+                return (float) headers[bi].area.getX() + (float) ((q - start) / len) * (float) headers[bi].area.getWidth();
+            start += len;
+        }
+        return 0.0f;
     }
 
-    // the same in ms, at the tempo of the pattern
-    float swingMs (hz::Rational pos) const
+    // how much later (ms) a hit sounds than its grid place: its swing plus its own offset (lag), at the tempo of
+    // the pattern, kept inside the loop as the player keeps it (a -100 ms on the first hit sounds at the start)
+    double shiftMs (hz::Rational pos, float lagMs) const
     {
         const auto& p = owner.pattern;
-        return p.tempo > 0.0 ? (float) (hz::swingShift (p, pos) * 60000.0 / p.tempo) : 0.0f;
+        if (p.tempo <= 0.0)
+            return 0.0;
+        const double msPerQuarter = 60000.0 / p.tempo;
+        const double target = pos.toDouble() + hz::swingShift (p, pos) + (double) lagMs / msPerQuarter;
+        const double inLoop = juce::jlimit (0.0, juce::jmax (0.0, p.lengthInQuarters().toDouble() - 1.0e-6), target);
+        return (inLoop - pos.toDouble()) * msPerQuarter;
+    }
+
+    // how far a hit is drawn from its grid place: where it sounds minus where it is clicked
+    float offsetPx (hz::Rational pos, float lagMs) const
+    {
+        const double ms = shiftMs (pos, lagMs);
+        if (ms == 0.0)
+            return 0.0f;
+        return xForQuarters (pos.toDouble() + ms * owner.pattern.tempo / 60000.0) - xForPos (pos);
     }
 
     float xForPos (hz::Rational pos) const
@@ -141,6 +161,27 @@ public:
             g.fillRect (juce::Rectangle<float> (x0, (float) headerH, x1 - x0, (float) (getHeight() - headerH)));
         }
 
+        // which bars hold all their hits on the grid (the others get a light red grid label): one pass over the
+        // hits with the bar found by binary search, not every bar scanning every hit
+        std::vector<bool> holds (p.bars.size(), true);
+        {
+            std::vector<hz::Rational> starts;
+            hz::Rational start;
+            for (const auto& b : p.bars)
+            {
+                starts.push_back (start);
+                start = start + b.lengthInQuarters();
+            }
+            for (const auto& l : p.layers)
+                for (const auto& e : l.events)
+                {
+                    const auto next = std::upper_bound (starts.begin(), starts.end(), e.pos);
+                    const auto bi = (size_t) juce::jmax (0, (int) (next - starts.begin()) - 1);
+                    if (((e.pos - starts[bi]) / (p.bars[bi].grid * hz::Rational (4))).den != 1)
+                        holds[bi] = false;
+                }
+        }
+
         // header per bar
         for (int bi = 0; bi < (int) headers.size(); ++bi)
         {
@@ -158,7 +199,7 @@ public:
                               h.meterArea, juce::Justification::centredLeft, 1);
             // the grid; light red if some hits have no place in it (diamonds): its menu then suggests one that has
             const auto gridText = juce::String (b.grid.num) + "/" + juce::String (b.grid.den) + juce::String (juce::CharPointer_UTF8 (" \xe2\x96\xbe"));
-            g.setColour (gridHoldsHits (p, bi, b.grid) ? textDim : hintRed);
+            g.setColour (holds[(size_t) bi] ? textDim : hintRed);
             g.drawFittedText (gridText, h.gridArea, juce::Justification::centredLeft, 1);
             if (bi == 0 && owner.swingHint)   // behind the grid of bar 1: swing is set, but finds no place
             {
@@ -252,7 +293,7 @@ public:
                         g.drawRoundedRectangle (r, 3.0f, 1.5f);
                     }
                     // the ms on the hit: how much later (earlier) it sounds than its grid place, swing included
-                    if (const int ms = juce::roundToInt (e.lagMs + swingMs (e.pos)); ms != 0)
+                    if (const int ms = juce::roundToInt (shiftMs (e.pos, e.lagMs)); ms != 0)
                     {
                         // dark on light hits (snare), white on the others
                         g.setColour (col.getPerceivedBrightness() > 0.6f ? juce::Colour (0xff1c1c20) : juce::Colours::white);
@@ -294,7 +335,7 @@ public:
                         g.setColour (col.withAlpha (0.75f));
                         g.fillPath (grace);
                     }
-                    if (const int ms = juce::roundToInt (e.lagMs + swingMs (e.pos)); ms != 0)
+                    if (const int ms = juce::roundToInt (shiftMs (e.pos, e.lagMs)); ms != 0)
                     {
                         g.setColour (juce::Colours::white);   // beside the small diamond, on the dark cells
                         drawLag (ms, juce::Rectangle<float> (x + dx + s + 2.0f, y, 44.0f, (float) owner.rowH), juce::Justification::centredLeft);

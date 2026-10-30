@@ -10,13 +10,13 @@ namespace
     const char* const instrumentNames[] = {
         "kick", "snare", "hihat", "ride", "crash1", "crash2", "china", "splash", "tom1", "tom2", "tom3", "tom4", "cowbell"
     };
-    const char* const articulationNames[] = { "", "open", "half", "pedal", "bell", "rim", "side" };
+    const char* const articulationNames[] = { "", "open", "half", "pedal", "bell", "rim", "side", "brush", "sweep", "sweeplong" };
 
     static_assert (std::size (instrumentNames) == (size_t) Instrument::Count);
     static_assert (std::size (articulationNames) == (size_t) Articulation::Count);
 
     constexpr float flamGraceVelocity = 0.45f;   // relative to the main hit
-    constexpr float flamDelayMs = 25.0f;          // main hit comes this long after the grace note
+    constexpr float flamDelayMs = 25.0f;          // the grace note comes this long before the main hit
 }
 
 std::string voiceKey (Voice v)
@@ -162,8 +162,9 @@ PatternPlan buildPlan (const Pattern& p)
 
             if (e.flam)
             {
-                plan.events.push_back ({ pos, e.voice, e.velocity * flamGraceVelocity, e.limb, e.id, e.lagMs, 0, p.humanize });
-                plan.events.push_back ({ pos, e.voice, e.velocity, e.limb, e.id, flamDelayMs + e.lagMs, 1, p.humanize });
+                // the main hit sits where the hit is (its offset included), the quiet grace note just before it
+                plan.events.push_back ({ pos, e.voice, e.velocity * flamGraceVelocity, e.limb, e.id, e.lagMs - flamDelayMs, 0, p.humanize });
+                plan.events.push_back ({ pos, e.voice, e.velocity, e.limb, e.id, e.lagMs, 1, p.humanize });
             }
             else
             {

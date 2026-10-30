@@ -386,15 +386,22 @@ namespace folders
     juce::String shortName (const juce::String& name, const FolderPath& folder)
     {
         const juce::String dash (juce::CharPointer_UTF8 (" \xe2\x80\x93 "));
-        for (int first = 0; first < folder.size(); ++first)   // the longest tail of the path first
+        // every leading "<folder> – " whose folder lies on the path goes, in any order, so that a deeper tree
+        // (R.P. Bardet › Rock, Pop › Rock › 4 Takte) still shows "Pattern 1" for "R.P. Bardet – Rock – 4 Takte – Pattern 1"
+        auto result = name;
+        for (bool stripped = true; stripped;)
         {
-            FolderPath tail;
-            for (int i = first; i < folder.size(); ++i)
-                tail.add (folder[i]);
-            const auto prefix = tail.joinIntoString (dash) + dash;
-            if (name.startsWithIgnoreCase (prefix) && name.length() > prefix.length())
-                return name.substring (prefix.length());
+            stripped = false;
+            for (const auto& part : folder)
+            {
+                const auto prefix = part + dash;
+                if (result.startsWithIgnoreCase (prefix) && result.length() > prefix.length())
+                {
+                    result = result.substring (prefix.length());
+                    stripped = true;
+                }
+            }
         }
-        return name;
+        return result;
     }
 }

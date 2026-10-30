@@ -87,13 +87,46 @@ void PatternEditor::mouseDown (const juce::MouseEvent& e)
                 return;
             }
 
-    // a click on a lane name: one hit of that instrument, to hear it before writing anything
+    // a click on a lane name: one hit of that instrument, to hear it before writing anything;
+    // a right click: its hits onto another lane (the cymbal of a groove, e.g. hi-hat -> ride)
     for (int i = 0; i < (int) lanes.size(); ++i)
         if (juce::Rectangle<int> (8, viewport.getY() + headerH + i * rowH, laneNameW - 12, rowH).contains (e.getPosition()))
         {
-            host.previewVoice (lanes[(size_t) i].voice);
+            if (e.mods.isPopupMenu())
+                showLaneMenu (i);
+            else
+                host.previewVoice (lanes[(size_t) i].voice);
             return;
         }
+}
+
+void PatternEditor::showLaneMenu (int lane)
+{
+    const auto from = lanes[(size_t) lane].voice;
+    bool used = false;
+    for (const auto& layer : pattern.layers)
+        for (const auto& e : layer.events)
+            used = used || e.voice == from;
+
+    // every lane the kit plays; one undo step
+    juce::PopupMenu targets;
+    const auto* kit = host.currentKit();
+    for (const auto& l : allLanes)
+    {
+        if (l.voice == from || (kit != nullptr && kit->instrumentFor (l.voice, false) < 0))
+            continue;
+        targets.addItem (laneLabel (l), [safe = juce::Component::SafePointer<PatternEditor> (this), from, to = l.voice]
+        {
+            if (safe == nullptr || safe->pattern.bars.empty() || safe->grid->isDragging())
+                return;
+            const auto before = safe->pattern;
+            if (hz::moveLane (safe->pattern, from, to) > 0)
+                safe->changed (before);
+        });
+    }
+    juce::PopupMenu m;
+    m.addSubMenu ("Übertragen auf"_u, targets, used);
+    m.showMenuAsync (juce::PopupMenu::Options().withMousePosition());
 }
 
 juce::String PatternEditor::laneLabel (const Lane& l) const
@@ -215,6 +248,6 @@ void PatternEditor::paint (juce::Graphics& g)
 juce::String PatternEditor::defaultHelp() const
 {
     return "Klick: Schlag setzen/löschen  ·  Shift+Klick: Akzent  ·  Alt+Klick: Ghost  ·  Strg(+Shift)+Klick: später (früher), je 10 ms bis 100  ·  hoch/runter ziehen: Lautstärke\n"
-           "Rechtsklick: Ghost/Normal/Akzent, mit Strg: Flam  ·  M/S an der Spur: stumm/solo (Reset darüber)  ·  Klick auf Spurname: Probeklang  ·  Kopfzeile: Taktart, Raster, Takt-Menü  ·  Strg+Z/Y  ·  Strg+S "_u
+           "Rechtsklick: Ghost/Normal/Akzent, nachträglich Strg+Rechtsklick: Flam  ·  M/S an der Spur: stumm/solo (Reset darüber)  ·  Klick auf Spurname: Probeklang, Rechtsklick: übertragen  ·  Kopfzeile: Taktart, Raster, Takt-Menü  ·  Strg+Z/Y  ·  Strg+S "_u
            + (cardMode ? juce::String ("in Ablage übernehmen"_u) : blockMode ? juce::String ("in Ablauf übernehmen"_u) : juce::String ("speichern"));
 }

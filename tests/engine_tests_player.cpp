@@ -13,11 +13,14 @@ static void testPlanSwingAndFlam()
     CHECK (std::abs (plan.events[1].pos - 0.667) < 1.0e-3);
     CHECK (plan.events[2].pos == 1.0);
 
-    // Flam: Vorschlag + verzögerter Hauptschlag
+    // Flam: der Hauptschlag auf seinem Platz, der leise Vorschlag 25 ms davor
     int flamParts = 0;
     for (auto& e : plan.events)
         if (e.voice.instrument == Instrument::Snare)
+        {
             ++flamParts;
+            CHECK (e.part == 1 ? e.extraDelayMs == 0.0f : e.extraDelayMs == -25.0f);
+        }
     CHECK (flamParts == 2);
 }
 
@@ -472,6 +475,58 @@ static void testLaggedHit()
     CHECK (! setEventFlam (p, kick, Rational (1, 3), true));   // dort liegt kein Schlag
 }
 
+// Besen: eigene Spielweisen mit Namen in JSON und Kürzeln in Tabs
+static void testBrushVoices()
+{
+    for (const char* key : { "snare.brush", "snare.sweep", "snare.sweeplong", "ride.brush", "tom2.brush" })
+    {
+        Voice v;
+        CHECK (parseVoiceKey (key, v) && voiceKey (v) == key);
+    }
+    auto r = parseTabs ("name: Besen\ngrid: 1/4\nbs | x . . . |\nws | . x . . |\nwl | . . x . |\nrbr | . . . x |\ntbr | x . . . |\n");
+    CHECK (r.error.empty());
+    if (r.patterns.empty()) return;
+    const auto& p = r.patterns[0];
+    CHECK (p.validate().empty());
+    int brushes = 0;
+    for (auto& l : p.layers)
+        for (auto& e : l.events)
+            brushes += e.voice.articulation == Articulation::Brush || e.voice.articulation == Articulation::Sweep
+                       || e.voice.articulation == Articulation::SweepLong ? 1 : 0;
+    CHECK (brushes == 5);
+}
+
+// Rechtsklick auf den Spurnamen, "Übertragen auf": alle Schläge einer Spur auf eine andere
+static void testMoveLane()
+{
+    auto p = parseTabs ("name: Becken\ngrid: 1/8\nhh | x X x x x x x x |\nrd | g . . . . . . . |\nsn | . . x . . . x . |\n").patterns.at (0);
+    const Voice hihat { Instrument::HiHat, Articulation::Normal }, ride { Instrument::Ride, Articulation::Normal };
+    const Voice pedal { Instrument::HiHat, Articulation::Pedal };
+    CHECK (setEventLag (p, hihat, Rational (1), 30.0f));
+    CHECK (moveLane (p, hihat, ride) == 8);
+    CHECK (findEvent (p, hihat, Rational (0)) == nullptr);
+    const auto* first = findEvent (p, ride, Rational (0));
+    CHECK (first != nullptr && first->velocity > 0.5f);                 // der lautere Schlag bleibt, nicht der Ghost
+    CHECK (findEvent (p, ride, Rational (1, 2)) != nullptr && findEvent (p, ride, Rational (1, 2))->velocity == 1.0f);   // Akzent wandert mit
+    CHECK (findEvent (p, ride, Rational (1)) != nullptr && findEvent (p, ride, Rational (1))->lagMs == 30.0f);           // Versatz auch
+    int rides = 0;
+    for (auto& l : p.layers)
+        for (auto& e : l.events)
+            rides += e.voice == ride ? 1 : 0;
+    CHECK (rides == 8 && p.validate().empty());
+    CHECK (moveLane (p, ride, ride) == 0 && moveLane (p, hihat, ride) == 0);
+
+    // auf eine Fuß-Spur: die Schläge landen in der Fuß-Ebene
+    const Voice snare { Instrument::Snare, Articulation::Normal };
+    CHECK (moveLane (p, snare, pedal) == 2);
+    bool inFeet = false;
+    for (auto& l : p.layers)
+        for (auto& e : l.events)
+            if (e.voice == pedal)
+                inFeet = l.role == LayerRole::Feet;
+    CHECK (inFeet && p.validate().empty());
+}
+
 static void testSeek()
 {
     auto p = parseTabs ("name: S\ngrid: 1/4\nsn | x . . . | . . x . |\n").patterns[0];
@@ -537,6 +592,8 @@ void runPlayerTests()
     testLastNoteKept();
     testPatternEdit();
     testLaggedHit();
+    testBrushVoices();
+    testMoveLane();
     testSeek();
     testPauseResume();
 }

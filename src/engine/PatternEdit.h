@@ -22,6 +22,10 @@ bool setEventVelocity (Pattern&, Voice, Rational pos, float velocity);
 bool setEventLag (Pattern&, Voice, Rational pos, float lagMs);   // -100..100 ms: later (+) or earlier (-) than the position
 bool setEventFlam (Pattern&, Voice, Rational pos, bool flam);    // a grace stroke before the hit, or none
 
+// All hits of one lane onto another, in every bar (e.g. the cymbal of a groove: hi-hat -> ride); velocity, offset
+// and flam go along. Where both lanes have a hit, the louder one stays. Returns how many hits moved.
+int moveLane (Pattern&, Voice from, Voice to);
+
 // Remove a hit; false if there was none
 bool removeEvent (Pattern&, Voice, Rational pos);
 

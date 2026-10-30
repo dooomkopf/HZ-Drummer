@@ -117,6 +117,7 @@ private:
     juce::Rectangle<int> laneSwitchReset() const;                  // above the M / S column: all off
     juce::String laneLabel (const Lane&) const;                    // what the kit really plays ("Zil-Bel" instead of "Kuhglocke")
     bool laneSilent (const Lane&) const;                           // the kit has no sound for it
+    void showLaneMenu (int lane);                                  // right click on a lane name: "Übertragen auf"
 
     EditorHost& host;
     EditorHost::Playhead lastPlayhead;

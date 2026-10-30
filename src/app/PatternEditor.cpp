@@ -14,13 +14,18 @@ PatternEditor::PatternEditor (EditorHost& h) : host (h), help ("hilfezeile-raste
         { { I::Crash1, A::Normal },  "Crash 1", true },   { { I::Crash2, A::Normal }, "Crash 2", false },
         { { I::China, A::Normal },   "China", false },    { { I::Splash, A::Normal }, "Splash", false },
         { { I::Ride, A::Normal },    "Ride", true },      { { I::Ride, A::Bell },     "Ride-Glocke", false },
+        { { I::Ride, A::Brush },     "Ride Besen", false },
         { { I::HiHat, A::Normal },   "HiHat closed", true },  { { I::HiHat, A::Half },    "HiHat halb", false },
         { { I::HiHat, A::Open },     "HiHat open", true },
         { { I::Cowbell, A::Normal }, "Kuhglocke", false },
         // the snare right under the hihat, above the toms: as in drum tabs, and the backbeat sits next to the hihat
         { { I::Snare, A::Normal },   "Snare", true },     { { I::Snare, A::Rim },     "Snare Rim", false },
         { { I::Snare, A::Side },     "Sidestick", false },
+        // brushes: only with a kit that has them (Swirly Drums added to the Aasimonster), else only when used
+        { { I::Snare, A::Brush },    "Snare Besen", false },  { { I::Snare, A::Sweep }, "Besen-Wischer", false },
+        { { I::Snare, A::SweepLong }, "Besen-Wischer lang", false },
         { { I::Tom1, A::Normal },    "Tom 1", true },     { { I::Tom2, A::Normal },   "Tom 2", false },
+        { { I::Tom2, A::Brush },     "Tom 2 Besen", false },
         { { I::Tom3, A::Normal },    "Tom 3", true },     { { I::Tom4, A::Normal },   "Tom 4", false },
         { { I::HiHat, A::Pedal },    "HiHat-Pedal", false },
         { { I::Kick, A::Normal },    "Bass", true },
@@ -73,10 +78,6 @@ PatternEditor::PatternEditor (EditorHost& h) : host (h), help ("hilfezeile-raste
     addAndMakeVisible (swingBox);
     swingBox.getProperties().set ("pill", true);   // drawn by HZLook like the buttons beside it
     swingBox.setWantsKeyboardFocus (false);
-    swingBox.setTooltip ("Swing: Jeder zweite Schlag der Unterteilung kommt später, bei Achteln das \"und\", bei 16teln \"e\" und \"a\". "
-                         "Die Prozent sagen, wie viel vom Paar der erste Schlag bekommt: 50 % = gerade, 58 % = leicht, "
-                         "67 % = triolisch (Shuffle), 72 % = stark. Im Editor stehen diese Schläge versetzt da, mit den ms "
-                         "beim Tempo des Bausteins; ihr Platz im Raster bleibt als blasser Rahmen."_u);
     for (int i = 0; i < (int) std::size (swingOptions); ++i)
         swingBox.addItem (juce::String (juce::CharPointer_UTF8 (swingOptions[i].label)), i + 1);
     swingBox.onChange = [this]

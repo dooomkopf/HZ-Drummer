@@ -208,6 +208,10 @@ static void testShortName()
     CHECK (folders::shortName (name, path ({ "Metal", "Carcass" })) == juce::String::fromUTF8 ("CJQ – 01 Intro"));
     CHECK (folders::shortName (name, path ({ "Thrash" })) == name);
     CHECK (folders::shortName (name, {}) == name);
+    // deeper trees: every folder of the path may go, in any order
+    const auto deep = juce::String::fromUTF8 ("R.P. Bardet – Rock – 4 Takte – Pattern 1 + Break 1");
+    CHECK (folders::shortName (deep, path ({ "R.P. Bardet", "Rock, Pop", "Rock", "4 Takte" })) == "Pattern 1 + Break 1");
+    CHECK (folders::shortName (deep, path ({ "R.P. Bardet", "Rock, Pop" })) == juce::String::fromUTF8 ("Rock – 4 Takte – Pattern 1 + Break 1"));
 }
 
 void runFolderTests()
