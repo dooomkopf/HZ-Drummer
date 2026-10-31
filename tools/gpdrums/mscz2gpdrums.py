@@ -101,7 +101,6 @@ class StaffReader:
     def __init__(self, drums, division, velocity_offset=False):
         self.drums, self.division = drums, division
         self.velocity_offset = velocity_offset   # MuseScore before 4: <velocity> without <veloType> is an offset in %
-        self.tempo_seen = False                  # a tempo mark in this staff (else the top staff's count)
         self.num, self.den, self.tempo, self.dyn = 4, 4, 120.0, 80
         self.tuplet_defs, self.tie_ids, self.volta_start, self.alt = {}, set(), {}, Counter()
         self.mstart = 0     # start of the measure in Division ticks (positions of MuseScore 1.x/2.x)
@@ -151,10 +150,11 @@ class StaffReader:
             self.bar["hits"].append((round(pos * 4 * TPQ), gm, max(1, min(127, vel)), ghost, acc))
         if dyns:
             self.dyn = dyns[-1][1]
+        self.bar["tempos"] = sorted(self.tempos, key=lambda x: x[0])   # kept: merged with the top staff's marks
         if self.tempos:
             at_start = [t for pos, t in self.tempos if pos == 0]
             self.bar["tempo"] = at_start[-1] if at_start else self.tempo
-            self.tempo = sorted(self.tempos, key=lambda x: x[0])[-1][1]
+            self.tempo = self.bar["tempos"][-1][1]
         self.bars.append(self.bar)
         self.mstart += int(length * 4 * self.division)
 
@@ -175,7 +175,6 @@ class StaffReader:
                 scales = scales[:-1]
             elif tag == "Tempo" and el.findtext("tempo"):
                 self.tempos.append((cursor, float(el.findtext("tempo")) * 60))
-                self.tempo_seen = True
             elif tag == "Dynamic":
                 v = int(el.findtext("velocity") or 0)   # 0 or less: the mark's own loudness, as MuseScore plays it
                 level = v if v > 0 else DYNAMIC.get(el.findtext("subtype") or "")
@@ -253,12 +252,17 @@ class StaffReader:
     def notes(self):
         out = []
         for tag, count in self.seen.items():
+            if not count:
+                continue
             if tag in NOT_COVERED:
                 out.append(NOT_COVERED[tag])
             elif tag == "grace":
                 out.append(f"{count} Vorschlagsnoten weggelassen")
             elif tag == "tremolo":
                 out.append(f"{count} Tremolos ohne Notenwert (Buzz, zwischen zwei Akkorden) als Einzelschlag gelesen")
+            elif tag == "topmismatch":
+                out.append(f"{count} Takte der obersten Notenzeile beginnen nicht, wo ein Schlagzeugtakt beginnt: ihre Tempi, "
+                           "Marker und Wiederholungen übergangen")
             elif tag == "MeasureRepeat":
                 out.append(f"{count} Wiederholungszeichen über mehrere Takte nicht ausgewertet, die Takte bleiben leer")
         for pitch, gm in sorted(self.by_name.items()):
@@ -275,15 +279,33 @@ def merge_top_staff(bars, reader, top, score, division, velocity_offset):
         system = upper.read(top.findall("Measure"), score)
     except (ValueError, ZeroDivisionError, TypeError, AttributeError):
         return   # something in the top staff the reader does not know: the drum staff as it is
-    for b, s in zip(bars, system):
+    # bars match by where they start (a staff with a bar more or less does not shift the rest); the marks of
+    # both staves are merged, the tempo then follows all of them in order
+    at, starts = F(0), {}
+    for k, b in enumerate(bars):
+        starts[at] = k
+        at += b["length"]
+    at = F(0)
+    for s in system:
+        k = starts.get(at)
+        at += s["length"]
+        if k is None:
+            reader.seen["topmismatch"] += 1
+            continue
+        b = bars[k]
         b["open"] = b["open"] or s["open"]
         b["close"] = b["close"] or s["close"]
         b["alt"] |= s["alt"]
         b["marker"] = b["marker"] or s["marker"]
-        if not reader.tempo_seen:
-            b["tempo"] = s["tempo"]
+        b["tempos"] = sorted(b["tempos"] + s["tempos"], key=lambda x: x[0])
+    running = 120.0
+    for b in bars:
+        at_start = [t for pos, t in b["tempos"] if pos == 0]
+        b["tempo"] = at_start[-1] if at_start else running
+        running = b["tempos"][-1][1] if b["tempos"] else running
     for tag in ("Jump", "Marker", "swing"):
-        reader.seen[tag] += upper.seen[tag]
+        if upper.seen.get(tag):   # .get: a Counter lookup would create the key and report what is not there
+            reader.seen[tag] += upper.seen[tag]
 
 
 def main():

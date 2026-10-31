@@ -297,9 +297,10 @@ void FolderPanel::updateButtons()
 }
 
 //==============================================================================
-void FolderPanel::apply (FolderTree::Area area, std::function<juce::String (FolderNode&)> edit, std::optional<Place> select)
+void FolderPanel::apply (FolderTree::Area area, std::function<juce::String (FolderNode&)> edit, std::optional<Place> select,
+                         std::optional<std::pair<juce::String, juce::String>> renamedTop)
 {
-    if (const auto error = library.editFolders (area, edit); error.isNotEmpty())
+    if (const auto error = library.editFolders (area, edit, renamedTop); error.isNotEmpty())
     {
         juce::AlertWindow::showMessageBoxAsync (juce::MessageBoxIconType::WarningIcon, "Ordnerstruktur", error, "OK", this);
         return;
@@ -370,8 +371,9 @@ void FolderPanel::renameFolder()
     {
         auto renamed = place.path;
         renamed.set (renamed.size() - 1, name);
+        const auto top = place.path.size() == 1 ? std::optional (std::make_pair (place.path[0], name)) : std::nullopt;
         apply (place.area, [place, name] (FolderNode& r) { return folders::renameFolder (r, place.path, name); },
-               Place { place.area, renamed, {} });
+               Place { place.area, renamed, {} }, top);
     });
 }
 

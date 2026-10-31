@@ -41,7 +41,8 @@ private:
     void rebuild (const std::optional<Place>& select);
     void fill (Item& parent, const FolderNode&, const FolderPath&);
     void selectPlace (const Place&);
-    void apply (FolderTree::Area, std::function<juce::String (FolderNode&)> edit, std::optional<Place> select);
+    void apply (FolderTree::Area, std::function<juce::String (FolderNode&)> edit, std::optional<Place> select,
+                std::optional<std::pair<juce::String, juce::String>> renamedTop = {});   // see Library::editFolders
     void drop (const Place& source, const Place& folder, int folderIndex, int itemIndex);
     void askName (const juce::String& title, const juce::String& initial, std::function<void (const juce::String&)> done);
     void addFolder();

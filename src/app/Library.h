@@ -9,7 +9,9 @@
 #include <array>
 #include <functional>
 #include <map>
+#include <optional>
 #include <set>
+#include <utility>
 #include <vector>
 
 // All playable content: bundled patterns, the user's own patterns and song structures.
@@ -56,7 +58,10 @@ public:
         return s.startsWith ("song.") ? FolderTree::Songs : s.startsWith ("user.") ? FolderTree::Patterns : FolderTree::Bundled;
     }
     FolderNode folders (FolderTree::Area) const;             // every entry of the area in its place
-    juce::String editFolders (FolderTree::Area, const std::function<juce::String (FolderNode&)>& edit);   // "" on success
+    // "" on success; renamedTop: a top-level folder renamed by hand (old name, new name), also when it merged into
+    // an existing one, so that the stored sets of Menü-Ordner follow
+    juce::String editFolders (FolderTree::Area, const std::function<juce::String (FolderNode&)>& edit,
+                              const std::optional<std::pair<juce::String, juce::String>>& renamedTop = {});
     // top-level folders the main menu leaves out (System → Menü-Ordner); saved at once
     bool folderHidden (FolderTree::Area area, const juce::String& name) const { return folderTree.isHidden (area, name); }
     juce::String setFolderHidden (FolderTree::Area, const juce::String& name, bool hidden);

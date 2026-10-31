@@ -239,7 +239,8 @@ FolderNode Library::folders (FolderTree::Area area) const
     return folderTree.resolve (area, list);
 }
 
-juce::String Library::editFolders (FolderTree::Area area, const std::function<juce::String (FolderNode&)>& edit)
+juce::String Library::editFolders (FolderTree::Area area, const std::function<juce::String (FolderNode&)>& edit,
+                                   const std::optional<std::pair<juce::String, juce::String>>& renamedTop)
 {
     auto topLevel = [] (const FolderNode& node)
     {
@@ -259,15 +260,25 @@ juce::String Library::editFolders (FolderTree::Area area, const std::function<ju
     if (const auto error = changed.save (folderFile()); error.isNotEmpty())
         return error;
     folderTree = std::move (changed);
-    juce::StringArray gone, came;   // one name went, one came: renamed, and the stored slots of Menü-Ordner follow
-    for (const auto& name : before)
-        if (! after.contains (name, true))
-            gone.add (name);
-    for (const auto& name : after)
-        if (! before.contains (name, true))
-            came.add (name);
-    if (gone.size() == 1 && came.size() == 1)
-        menufolderslots::followRename (area, gone[0], came[0]);
+    // a top-level folder renamed: the stored sets of Menü-Ordner follow. Said outright by the caller (then also
+    // when it merged into an existing name), otherwise read off the names: one went, one came
+    juce::String from, to;
+    if (renamedTop)
+        std::tie (from, to) = *renamedTop;
+    else
+    {
+        juce::StringArray gone, came;
+        for (const auto& name : before)
+            if (! after.contains (name, true))
+                gone.add (name);
+        for (const auto& name : after)
+            if (! before.contains (name, true))
+                came.add (name);
+        if (gone.size() == 1 && came.size() == 1)
+            from = gone[0], to = came[0];
+    }
+    if (from.isNotEmpty() && to.isNotEmpty() && from != to)
+        menufolderslots::followRename (area, from, to);
     return {};
 }
 
