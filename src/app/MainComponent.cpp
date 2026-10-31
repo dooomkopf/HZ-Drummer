@@ -690,7 +690,17 @@ void MainComponent::showLoopAndTrainer()
     loopButton.setVisible (! workshop && view.spans != nullptr);   // a range is picked in the strip
     trainerButton.setVisible (! workshop);
     if (workshop != std::exchange (workshopWasOpen, workshop))
-        sendLoop();   // the workshop opened or closed: the loop pauses or comes back
+    {
+        if (workshop)
+        {
+            // the workshop moves the position at will: loop and trainer go off (the range stays), so that
+            // switching them on again afterwards is unambiguous (both jump to the range start, see below)
+            loopOn = false;
+            if (trainer.on)
+                setTrainerOn (false);
+        }
+        sendLoop();
+    }
 }
 
 bool MainComponent::stripShowsSelectionPlan() const
@@ -790,6 +800,8 @@ void MainComponent::setTrainerOn (bool on)
         trainerSettingTempo = true;
         setTempo (trainer.from);
         trainerSettingTempo = false;
+        if (loopOn && loopFirst >= 0 && stripShowsSelectionPlan() && (view.bar < loopFirst || view.bar > loopLast))
+            seekToBar (loopFirst);   // with a loop on, practice starts at its range, not somewhere outside
     }
     trainerButton.setToggleState (on, juce::dontSendNotification);
 }

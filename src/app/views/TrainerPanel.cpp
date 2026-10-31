@@ -25,9 +25,28 @@ public:
             if (e.mods.isPopupMenu())
             {
                 if (onMenu) onMenu();
+                return;
             }
-            else if (e.getNumberOfClicks() == 1 && ! e.mouseWasDraggedSinceMouseDown() && onClick)
-                onClick();
+            if (e.mouseWasDraggedSinceMouseDown())
+                return;
+            if (e.getNumberOfClicks() > 1)
+            {
+                ++clickToken;   // a double click renames (the label does that), it does not load
+                return;
+            }
+            if (! view.used)
+            {
+                if (onClick) onClick();   // a free slot: stored at once
+                return;
+            }
+            // a taken slot: loaded once it is clear that no double click follows
+            const int token = ++clickToken;
+            juce::Timer::callAfterDelay (juce::MouseEvent::getDoubleClickTimeout() + 20,
+                                         [safe = juce::Component::SafePointer<SlotRow> (this), token]
+            {
+                if (safe != nullptr && safe->clickToken == token && safe->onClick)
+                    safe->onClick();
+            });
         };
         name.onTextChange = [this] { if (onRenamed) onRenamed (name.getText()); };
         addChildComponent (clear);
@@ -111,6 +130,7 @@ private:
     juce::Rectangle<int> info;
     SlotView view;
     bool active = false;
+    int clickToken = 0;   // a click waits for a possible double click; a newer click or the double click voids it
 };
 
 TrainerPanel::TrainerPanel (const Values& v)

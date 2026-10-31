@@ -218,10 +218,14 @@ soweit sie hier nicht abweichen; überholte Stellen stehen im vorletzten Abschni
    der Runde und Pause/Weiter lassen keinen Schlag aus und spielen keinen doppelt; Weiter setzt die Runde
    fort (gleiche Humanisierung, gleiche Versätze, gleicher Bereichszustand). Wird der Loop in einer Runde
    ausgeschaltet, die am Bereichsanfang begann, bleiben Schläge aus den Takten davor bis zur nächsten Runde
-   draußen. Liegt die Position beim Setzen oder Einschalten außerhalb, geht es am Bereichsanfang los. Der Bereich gehört zur gewählten Auswahl (deren
+   draußen. Liegt die Position beim Setzen oder Einschalten außerhalb, geht es am Bereichsanfang los.
+   Grundsatz: Solange der Loop an ist, gibt es keine Position außerhalb des Bereichs; jeder Sprung aus der
+   Oberfläche (Takt-Leiste, Zurückspulen, N/B) dorthin landet am Bereichsanfang (seekToBar). [E 31.10.] Der Bereich gehört zur gewählten Auswahl (deren
    zuletzt gesendetem Plan) und verfällt bei einer anderen; Einzählen und Vorhören setzen ihn nur aus.
-   Solange die Werkstatt offen ist (oder etwas aus ihr spielt), sind Loop- und Trainer-Knopf ausgeblendet,
-   die Tasten L und S wirkungslos, Loop und Trainer ruhen und gehen danach weiter. Dass sie offen ist,
+   Solange die Werkstatt offen ist (oder etwas aus ihr spielt), sind Loop- und Trainer-Knopf ausgeblendet
+   und die Tasten L und S wirkungslos. Beim Öffnen gehen Loop und Trainer aus (der Bereich bleibt), weil die
+   Werkstatt die Position beliebig verschiebt; danach wieder eingeschaltet, springen Loop bzw. Trainer (bei
+   eingeschaltetem Loop) an den Bereichsanfang, wenn die Position außerhalb liegt. [E 31.10.] Dass sie offen ist,
    zeigt „Bearbeiten“: lila getönt mit hellem Rand und einem atmenden Neon-Schein (theme::workshopGlow). Gesetzt wird er nur, solange die Takt-Leiste den zuletzt
    gesendeten Plan der Auswahl zeigt (nicht die vorige Auswahl oder eine ältere Fassung, deren Wechsel noch
    aufs Taktende wartet), damit Bereich und Sprung aus denselben Takten kommen. Shift + Ziehen innerhalb des

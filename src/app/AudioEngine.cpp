@@ -110,6 +110,11 @@ void AudioEngine::process (float* left, float* right, int numSamples)
     kitInUseByAudio = sampler.getKit();
     const bool samplesOk = sampler.getKit() != nullptr && std::abs (sampler.getKit()->sampleRate - sampleRate) < 0.5;
 
+    // A seek is read before the plans and applied after them: seen here, the plan sent right before it is seen
+    // too (sendPlan, then seek), so the jump lands in that plan and not in the one it replaces.
+    const auto seekNow = seekSerial.load();
+    const auto seekTo = seekTarget.load();
+
     // New plans: the newest wins, the player hands back skipped ones. Only take as many as can
     // safely be returned (minus one reserve slot for the switch at the loop end).
     {
@@ -126,10 +131,10 @@ void AudioEngine::process (float* left, float* right, int numSamples)
         if (c.play) player.start(); else player.stop();
         appliedGeneration = c.generation;
     }
-    if (const auto serial = seekSerial.load(); serial != appliedSeek)
+    if (seekNow != appliedSeek)
     {
-        player.seek (seekTarget.load());
-        appliedSeek = serial;
+        player.seek (seekTo);
+        appliedSeek = seekNow;
     }
     if (const auto range = loopRange.load(); range != appliedLoopRange)
     {

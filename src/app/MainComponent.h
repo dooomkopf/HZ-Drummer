@@ -152,6 +152,8 @@ private:
     TrainerPanel::SlotView trainerSlotView (int slot) const;
     TrainerPanel::SlotView storeTrainerSlot (int slot);                 // the present setup into the slot
     std::optional<TrainerPanel::Values> loadTrainerSlot (int slot);     // the slot's setup back
+    bool slotIsSelection (int slot) const;   // the slot holds what is selected now
+    void saveTrainerSlots();                 // to trainer.json; says so if that fails
     double trainerTempo = 0.0;
     int trainerPasses = 0, trainerLastLoop = -1;
     std::uint16_t trainerGeneration = 0;   // the run (start) whose passes are counted

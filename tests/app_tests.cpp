@@ -360,6 +360,8 @@ static void testTrainerSlots()
     const auto wild = trainerslots::load (file);
     CHECK (wild[0].from < wild[0].to && wild[0].to <= 320.0 && wild[0].repeats == 5 && wild[0].loopFirst < 0);
 
+    CHECK (! trainerslots::save (slots, juce::File ("/proc/hz-drummer-gibt-es-nicht/trainer.json")));   // not writable: false
+
     file.replaceWithText ("kein JSON");
     const auto broken = trainerslots::load (file);
     CHECK (broken[0].isFree());

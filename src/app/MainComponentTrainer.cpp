@@ -13,7 +13,7 @@ void MainComponent::wireTrainerSlots (TrainerPanel& panel)
     for (int i = 0; i < trainerslots::count; ++i)
         views.push_back (trainerSlotView (i));
     panel.setSlots (views);
-    panel.setActiveSlot (activeTrainerSlot);
+    panel.setActiveSlot (activeTrainerSlot >= 0 && slotIsSelection (activeTrainerSlot) ? activeTrainerSlot : -1);
 
     const juce::Component::SafePointer<MainComponent> safe (this);
     panel.onStoreSlot = [safe] (int i) { return safe != nullptr ? safe->storeTrainerSlot (i) : TrainerPanel::SlotView(); };
@@ -26,7 +26,7 @@ void MainComponent::wireTrainerSlots (TrainerPanel& panel)
         if (safe == nullptr || name.trim().isEmpty())
             return;
         safe->trainerSlots[(size_t) i].name = name.trim();
-        trainerslots::save (safe->trainerSlots, trainerslots::file());
+        safe->saveTrainerSlots();
     };
     panel.onClearSlot = [safe] (int i)
     {
@@ -35,8 +35,28 @@ void MainComponent::wireTrainerSlots (TrainerPanel& panel)
         safe->trainerSlots[(size_t) i] = {};
         if (safe->activeTrainerSlot == i)
             safe->activeTrainerSlot = -1;
-        trainerslots::save (safe->trainerSlots, trainerslots::file());
+        safe->saveTrainerSlots();
     };
+}
+
+bool MainComponent::slotIsSelection (int slot) const
+{
+    const auto& s = trainerSlots[(size_t) slot];
+    if (s.isFree())
+        return false;
+    return patternMode() ? s.patternId == library.get (currentPattern).id
+                         : s.patternId.empty() && s.meterKey == MeterLibrary::key (meters.get (currentMeter));
+}
+
+void MainComponent::saveTrainerSlots()
+{
+    if (trainerslots::save (trainerSlots, trainerslots::file()))
+        return;
+    const auto path = trainerslots::file().getFullPathName();
+    juce::Logger::writeToLog ("Trainer-Speicherplätze nicht gespeichert: "_u + path);
+    juce::AlertWindow::showMessageBoxAsync (juce::MessageBoxIconType::WarningIcon, "Speicherplätze"_u,
+                                            "Die Speicherplätze konnten nicht gespeichert werden:\n"_u + path
+                                                + "\n\nIst die Platte voll oder der Ordner schreibgeschützt?"_u);
 }
 
 TrainerPanel::SlotView MainComponent::trainerSlotView (int slot) const
@@ -77,7 +97,7 @@ TrainerPanel::SlotView MainComponent::storeTrainerSlot (int slot)
 
     trainerSlots[(size_t) slot] = s;
     activeTrainerSlot = slot;   // this setup is the one in effect
-    trainerslots::save (trainerSlots, trainerslots::file());
+    saveTrainerSlots();
     return trainerSlotView (slot);
 }
 
@@ -98,22 +118,30 @@ std::optional<TrainerPanel::Values> MainComponent::loadTrainerSlot (int slot)
     else
         return std::nullopt;
 
-    // the range comes back (the selection cleared the one before); playback starts at it
-    if (const auto* selection = plans.find (selectionTag); selection != nullptr && s.loopFirst >= 0
-        && s.loopFirst < (int) selection->bars.size())
+    // the slot's range replaces whatever was set, also when the same entry was selected already
+    clearLoop();
+    const auto* selection = plans.find (selectionTag);
+    int startBar = 0;
+    if (selection != nullptr && s.loopFirst >= 0 && s.loopFirst < (int) selection->bars.size())
     {
         loopFirst = s.loopFirst;
         loopLast = juce::jmin (s.loopLast, (int) selection->bars.size() - 1);
         loopOn = s.loopOn;
         loopPatternId = selection->patternId;
         sendLoop();
-        if (loopOn)
-        {
-            if (control.play)
-                engine.seek (selection->bars[(size_t) loopFirst].start);   // the new plan waits for the bar end and starts there
-            else
-                seekToBar (loopFirst);
-        }
+        startBar = loopFirst;
+    }
+
+    // playback goes to the slot's spot: the start of its range, else the beginning (loop on or off)
+    if (selection != nullptr && startBar < (int) selection->bars.size())
+    {
+        const double at = selection->bars[(size_t) startBar].start;
+        if (countInTag >= 0)
+            countInResume = at;   // a count-in is running: after it, playback goes on there
+        if (control.play)
+            engine.seek (at);     // the new plan waits for the bar end; the jump lands in it
+        else
+            seekToBar (startBar);
     }
 
     activeTrainerSlot = slot;   // after the selection, which would have cleared it

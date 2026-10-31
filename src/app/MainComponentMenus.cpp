@@ -585,6 +585,8 @@ void MainComponent::seekToBar (int bar)
     const auto* info = view.plan;
     if (info == nullptr || bar < 0 || bar >= (int) info->bars.size())
         return;
+    if (loopOn && loopFirst >= 0 && stripShowsSelectionPlan() && (bar < loopFirst || bar > loopLast))
+        bar = loopFirst;   // with the loop on, playback never leaves its range: outside means its start
 
     engine.seek (info->bars[(size_t) bar].start);
     pendingDisplay.clear();   // pulses of the old position are no longer relevant

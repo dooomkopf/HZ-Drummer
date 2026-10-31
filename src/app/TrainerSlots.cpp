@@ -63,8 +63,19 @@ bool save (const Slots& slots, const juce::File& f)
     auto* root = new juce::DynamicObject();
     root->setProperty ("version", 1);
     root->setProperty ("plaetze", list);
-    f.getParentDirectory().createDirectory();
+    if (f.getParentDirectory().createDirectory().failed())
+        return false;
     juce::TemporaryFile temp (f, juce::TemporaryFile::useHiddenFile);   // hidden: a leftover after a crash is never loaded
-    return temp.getFile().replaceWithText (juce::JSON::toString (juce::var (root))) && temp.overwriteTargetFileWithTemporary();
+    {
+        // written and flushed by hand: File::replaceWithText ignores a failed write and would put an empty or
+        // half file in place of the slots when the disk is full
+        juce::FileOutputStream out (temp.getFile());
+        if (! out.openedOk() || ! out.writeText (juce::JSON::toString (juce::var (root)), false, false, "\n"))
+            return false;
+        out.flush();
+        if (out.getStatus().failed())
+            return false;
+    }
+    return temp.overwriteTargetFileWithTemporary();
 }
 }
