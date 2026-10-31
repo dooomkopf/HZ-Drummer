@@ -46,7 +46,6 @@ QuellenPanel::QuellenPanel (const juce::File& scriptFile, const juce::File& data
         addAndMakeVisible (tick);
         tick->setColour (juce::ToggleButton::textColourId, theme::textMain);
         tick->setColour (juce::ToggleButton::tickColourId, theme::textMain);
-        tick->setEnabled (s.usable);
         tick->onClick = [this]
         {
             bool any = false;
@@ -59,13 +58,7 @@ QuellenPanel::QuellenPanel (const juce::File& scriptFile, const juce::File& data
         label->setJustificationType (juce::Justification::topLeft);
         label->setColour (juce::Label::textColourId, theme::textDim);
         label->setFont (juce::FontOptions (13.5f));
-        juce::String text = s.text + "\nHerkunft: " + s.origin + "  " + juce::String (juce::CharPointer_UTF8 ("\xc2\xb7")) + "  " + s.size
-                          + "\n" + s.hint;
-        if (s.present)
-            text << "  " << juce::String (juce::CharPointer_UTF8 ("\xc2\xb7")) << "  schon da";
-        if (! s.usable)
-            text << "\nGeht hier nicht: " << s.reason;
-        label->setText (text, juce::dontSendNotification);
+        showSource (ticks.size() - 1);
     }
 
     addAndMakeVisible (status);
@@ -87,6 +80,22 @@ QuellenPanel::~QuellenPanel()
     signalThreadShouldExit();
     process.kill();
     stopThread (4000);
+}
+
+void QuellenPanel::showSource (int index)
+{
+    const auto& s = sources[(size_t) index];
+    const juce::String dot (juce::CharPointer_UTF8 ("  \xc2\xb7  "));
+    juce::String text = s.text + "\nHerkunft: " + s.origin + dot + s.size + "\n" + s.hint;
+    if (s.present)
+        text << dot << "schon da";
+    if (! s.usable)
+        text << "\nGeht hier nicht: " << s.reason;
+    details[index]->setText (text, juce::dontSendNotification);
+    // there already: a ticked, greyed box, so it is not loaded twice; not usable here: greyed and empty
+    ticks[index]->setToggleState (s.present, juce::dontSendNotification);
+    ticks[index]->setEnabled (s.usable && ! s.present);   // during an import startImport() greys them all
+    ticks[index]->setTooltip (s.present ? "Schon im Datenordner" : juce::String());
 }
 
 void QuellenPanel::paint (juce::Graphics& g)
@@ -120,7 +129,7 @@ void QuellenPanel::startImport()
         return;
     queue.clear();
     for (int i = 0; i < ticks.size(); ++i)
-        if (ticks[i]->getToggleState() && sources[(size_t) i].usable)
+        if (ticks[i]->getToggleState() && sources[(size_t) i].usable && ! sources[(size_t) i].present)
             queue.add (sources[(size_t) i].id);
     if (queue.isEmpty())
         return;
@@ -202,6 +211,14 @@ void QuellenPanel::run()
         });
         installed->wait (120000);
         reports.add (name + ": " + *report);
+        juce::MessageManager::callAsync ([safe = juce::Component::SafePointer<QuellenPanel> (this), id]
+        {
+            if (safe == nullptr)
+                return;
+            for (size_t i = 0; i < safe->sources.size(); ++i)
+                if (safe->sources[i].id == id)
+                    safe->sources[i].present = true;   // done: ticked and greyed from now on
+        });
         juce::Logger::writeToLog ("Quellen: " + reports[reports.size() - 1]);
     }
     setStatus (reports.joinIntoString ("  " + juce::String (juce::CharPointer_UTF8 ("\xc2\xb7")) + "  "));
@@ -215,9 +232,6 @@ void QuellenPanel::run()
 void QuellenPanel::finished()
 {
     for (int i = 0; i < ticks.size(); ++i)
-    {
-        ticks[i]->setEnabled (sources[(size_t) i].usable);
-        ticks[i]->setToggleState (false, juce::dontSendNotification);
-    }
+        showSource (i);
     importButton.setEnabled (false);
 }

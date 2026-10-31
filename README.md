@@ -1,14 +1,26 @@
 # HZ-Drummer
 
-Drum-Begleitprogramm zum Gitarre-Üben, gebaut für Metal: realistische Samples, Patterns in allen Taktarten bis hin zu Polyrhythmen, eine Bibliothek von D-Beat bis Tech-Death, ein Raster-Editor für eigene Grooves und ein Arranger, der aus Bausteinen ganze Songabläufe macht. C++ mit JUCE, entwickelt und getestet unter Ubuntu 22.04.
+Drum-Machine zum Üben und Mitspielen, für Gitarre, Bass und Schlagzeug, gebaut für Metal: realistische Samples, Patterns in allen Taktarten bis hin zu Polyrhythmen, eine Bibliothek von D-Beat bis Tech-Death, ein Raster-Editor für eigene Grooves und ein Arranger, der aus Bausteinen ganze Songabläufe macht. C++ mit JUCE, entwickelt und getestet unter Ubuntu 22.04.
 
-Das Programm ist ein Übungswerkzeug, kein Drum-Computer für Aufnahmen: Es soll ohne Umwege den richtigen Groove im richtigen Tempo liefern, damit man zur Gitarre greifen kann.
+**Auf einen Blick**
 
-![Hauptfenster während der Wiedergabe eines Songs](docs/bilder/hauptfenster.png)
+- **Drummer und Drum-Machine** zur einfachen Erstellung von kleinen Bausteinen bis zu komplexen Arrangements (Songs)
+- **Große Bibliothek**, aktuell mit Fokus auf Metal
+- **Quellenimport**: weitere Bausteine per Klick von ihren Originalquellen
+- **Jeder Baustein individuell anpassbar**
+- **Einzählen, Loops und Speed-Trainer** zum Üben
+
+Gedacht ist es zum Üben, nicht für Studioaufnahmen: Es soll ohne Umwege den richtigen Groove im richtigen Tempo liefern, damit man gleich zum Instrument greifen kann.
+
+![Startbild von HZ-Drummer](docs/bilder/startbild.png)
 
 <p>
-<img src="docs/bilder/raster.png" alt="Raster-Editor mit Mute und Solo je Spur" width="49%">
-<img src="docs/bilder/arranger.png" alt="Arranger mit Suche, Ablage und Ablauf" width="49%">
+<img src="docs/bilder/hauptfenster.png" alt="Hauptfenster: Beispiel-Arrangement in ungeraden Takten mit Loop-Bereich und Speed-Trainer" width="49%">
+<img src="docs/bilder/hauptfenster-song.png" alt="Hauptfenster: ein Song in 15/8 mit dreizeiliger Takt-Leiste" width="49%">
+</p>
+<p>
+<img src="docs/bilder/raster.png" alt="Werkstatt, Editor: Raster mit Swing, Versatz in ms und Mute/Solo je Spur" width="49%">
+<img src="docs/bilder/arranger.png" alt="Werkstatt, Arranger: Suche, Ablage und Ablauf mit Positionsstrich" width="49%">
 </p>
 <p>
 <img src="docs/bilder/suche.png" alt="Schnellsuche mit Abzeichen" width="49%">
@@ -17,14 +29,19 @@ Das Programm ist ein Übungswerkzeug, kein Drum-Computer für Aufnahmen: Es soll
 
 ## Was es kann
 
-- **Patterns** in beliebigen Taktarten, auch gemischt innerhalb eines Patterns, mit Akzenten, Ghost-Notes, Flams, offener HiHat, Swing und einstellbarer „Menschlichkeit“.
+- **Patterns** in beliebigen Taktarten, auch gemischt innerhalb eines Patterns, mit Akzenten, Ghost-Notes, Flams, offener HiHat, Swing, verzögerten oder vorgezogenen Schlägen (Versatz bis ±100 ms, „laid back“ oder treibend) und einstellbarer „Menschlichkeit“.
 - **Bibliothek** mit Grooves nach Stil (D-Beat, Thrash, Death, Grind, Doom, Hardcore, Prog, Tech-Death, Jazz) und Vier-Takt-Phrasen mit Übergängen.
-- **Raster-Editor** („Werkstatt“): Schläge setzen, Lautstärke ziehen, Takte und Taktarten je Takt ändern, Mute und Solo je Spur, Rückgängig und Wiederholen, sofort hörbar.
-- **Arranger**: Songabläufe aus Bausteinen, mit Ablage, Taktbereichen, lokalen Varianten und Sprung auf jeden Block.
+- **Raster-Editor** („Werkstatt“): Schläge setzen, Lautstärke ziehen, Takte und Taktarten je Takt ändern, Mute und Solo je Spur, Besen-Spuren, „Übertragen auf“ (eine ganze Spur auf eine andere, etwa Hi-Hat auf Ride), Rückgängig und Wiederholen, sofort hörbar.
+- **Arranger**: Songabläufe aus Bausteinen, mit Ablage, Taktbereichen, lokalen Varianten, Sprung auf jeden Block und Spulen am Positionsstrich, auch mitten in lange Bausteine.
+- **Abzeichen** aus Farbe und Form an jedem Baustein, damit man ihn in Menü, Ablage und Ablauf sofort wiedererkennt.
+- **Schnellnavigation per Pfeiltasten** durch Ordner und Favoriten, ein kurz eingeblendetes Menü zeigt, wo man ist; **Verlauf** mit Alt+←/→ wie im Browser, um einen guten Fund wiederzufinden.
+- **Loop und Speed-Trainer**: einen Bereich ganzer Takte per Shift+Ziehen loopen, das Tempo nach jeder Runde stufenweise steigern; zehn benannte **Speicherplätze** für Übestellen mit Bereich und Trainer-Werten.
 - **Suche** über alles mit Filtern wie `7/8` oder `160-190 bpm`, Vorhören direkt im Menü.
 - **Einzählen** vor dem Start, Tap-Tempo, Mixer je Instrument mit Pegelanzeige, Metronom mit eigenen Taktarten.
 - **Ordnerstruktur** und **Papierkorb** für eigene Patterns und Songs.
-- **Community-Bausteine**: kurze Loops von Carcass und Exhorder zum Mitspielen, siehe [community/](community/).
+- **Startpaket**: Groove MIDI (echte Einspielungen), R.P. Bardet, kurze Loops von Carcass und Exhorder und drei Beispiel-Arrangements, beim ersten Start schon da, siehe [community/](community/).
+- **Quellenimport** per Klick (System › Quellen): weitere Bausteine, die nicht mitgeliefert werden dürfen (MT Power, Band-Songs, Guitar-Pro-Tabs, MIDI), lädt das Programm von der Originalquelle und wandelt sie auf dem eigenen Rechner um, mit Import-Log.
+- **Import-Vorlagen** für Guitar Pro, MIDI, Hydrogen und gedruckte Pattern-Bücher unter [tools/import](tools/import/README.md), auch als Vorlage für KI-Assistenten.
 
 ## Voraussetzungen
 

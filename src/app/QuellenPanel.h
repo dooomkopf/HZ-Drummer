@@ -32,6 +32,7 @@ private:
     void startImport();
     void setStatus (const juce::String&);   // any thread
     void finished();                         // message thread
+    void showSource (int index);             // tick and text: a source that is there keeps a greyed tick
 
     juce::File script, data;
     std::vector<Source> sources;
