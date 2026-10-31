@@ -31,8 +31,11 @@ ordner = data / "ordner.json"
 tree = json.loads(ordner.read_text(encoding="utf-8"))
 area = tree.setdefault("songs", {"folders": [], "items": []})
 ids = ["song." + json.loads(f.read_text(encoding="utf-8"))["id"] for f in songs]
-for node in [area] + area.get("folders", []):   # never twice
+def leave(node):   # never twice: out of every folder, at any depth, before it goes into the band's
     node["items"] = [i for i in node.get("items", []) if i not in ids]
+    for sub in node.get("folders", []):
+        leave(sub)
+leave(area)
 folder = next((f for f in area["folders"] if f["name"].lower() == band.lower()), None)
 if folder is None:
     folder = {"name": band, "folders": [], "items": []}

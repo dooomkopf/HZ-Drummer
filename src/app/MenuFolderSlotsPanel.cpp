@@ -40,6 +40,7 @@ public:
         {
             if (e.mods.isPopupMenu())
             {
+                ++clickToken;   // a click still waiting is void
                 if (! fixed && onMenu) onMenu();
                 return;
             }
@@ -60,7 +61,7 @@ public:
             juce::Timer::callAfterDelay (juce::MouseEvent::getDoubleClickTimeout() + 20,
                                          [safe = juce::Component::SafePointer<Cell> (this), token]
             {
-                if (safe != nullptr && safe->clickToken == token && safe->onClick)
+                if (safe != nullptr && safe->clickToken == token && safe->used && safe->onClick)   // cleared meanwhile: nothing
                     safe->onClick();
             });
         };
@@ -68,7 +69,7 @@ public:
         addChildComponent (clearButton);
         clearButton.setTooltip ("Platz leeren");
         clearButton.setWantsKeyboardFocus (false);
-        clearButton.onClick = [this] { if (onClear) onClear(); };
+        clearButton.onClick = [this] { ++clickToken; if (onClear) onClear(); };   // a click still waiting must not store again
     }
 
     void show (const MenuFolderSlot& s, bool isActive)
@@ -174,6 +175,8 @@ void MenuFolderSlotsPanel::current (AreaNames& folders, AreaNames& hidden) const
 
 void MenuFolderSlotsPanel::update()
 {
+    // read anew: a rename in Ordnerstruktur may have changed the file (every change here is saved at once)
+    slots = menufolderslots::load (menufolderslots::file());
     AreaNames folders, hidden;
     current (folders, hidden);
     for (int i = 0; i < cells.size(); ++i)

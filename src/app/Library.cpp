@@ -1,4 +1,5 @@
 #include "app/Library.h"
+#include "app/MenuFolderSlots.h"
 #include "app/SongRename.h"
 
 #include "app/KitLoader.h"
@@ -251,21 +252,30 @@ juce::String Library::editFolders (FolderTree::Area area, const std::function<ju
     const auto before = topLevel (root);
     if (const auto error = edit (root); error.isNotEmpty())
         return error;
+    const auto after = topLevel (root);
     auto changed = folderTree;
-    changed.followTopLevel (area, before, topLevel (root));   // System > Menü-Ordner: hidden folders keep up
+    changed.followTopLevel (area, before, after);   // System > Menü-Ordner: hidden folders keep up
     changed.set (area, std::move (root));
     if (const auto error = changed.save (folderFile()); error.isNotEmpty())
         return error;
     folderTree = std::move (changed);
+    juce::StringArray gone, came;   // one name went, one came: renamed, and the stored slots of Menü-Ordner follow
+    for (const auto& name : before)
+        if (! after.contains (name, true))
+            gone.add (name);
+    for (const auto& name : after)
+        if (! before.contains (name, true))
+            came.add (name);
+    if (gone.size() == 1 && came.size() == 1)
+        menufolderslots::followRename (area, gone[0], came[0]);
     return {};
 }
 
 juce::String Library::setHiddenFolders (const std::array<juce::StringArray, FolderTree::NumAreas>& hide)
 {
     auto changed = folderTree;
-    for (int a = 0; a < FolderTree::NumAreas; ++a)
-        for (const auto& f : folders ((FolderTree::Area) a).folders)
-            changed.setHidden ((FolderTree::Area) a, f.name, hide[(size_t) a].contains (f.name, true));
+    for (int a = 0; a < FolderTree::NumAreas; ++a)   // exactly these: names of folders gone just now do not stay hidden
+        changed.setHiddenFolders ((FolderTree::Area) a, hide[(size_t) a]);
     if (const auto error = changed.save (folderFile()); error.isNotEmpty())
         return error;
     folderTree = std::move (changed);

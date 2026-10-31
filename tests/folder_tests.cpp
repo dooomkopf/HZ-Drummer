@@ -332,6 +332,17 @@ static void testMenuFolderSlots()
            && back[2].all[FolderTree::Patterns] && ! back[2].all[FolderTree::Bundled]);
     CHECK (back[7].isFree() && back[8].name == "Nur Arrangements" && back[0].name == "Minimal" && back[9].name == "Maximal");
     file.deleteFile();
+
+    CHECK (menufolderslots::save (back, file));   // Umbenennen in der Ordnerstruktur: die Liste zieht mit
+    menufolderslots::followRename (FolderTree::Songs, "metallica", "Metallica (Live)", file);
+    const auto renamed = menufolderslots::load (file);
+    CHECK (renamed[2].shown[FolderTree::Songs] == juce::StringArray ({ "Metallica (Live)" }));
+    file.deleteFile();
+
+    FolderTree tree;   // ein Platz setzt die Ausblendliste ganz: ein gerade verschwundener Ordner bleibt nicht ausgeblendet
+    tree.setHidden (FolderTree::Patterns, "Weg", true);
+    tree.setHiddenFolders (FolderTree::Patterns, juce::StringArray ({ "Death" }));
+    CHECK (! tree.isHidden (FolderTree::Patterns, "Weg") && tree.isHidden (FolderTree::Patterns, "death"));
 }
 
 void runFolderTests()

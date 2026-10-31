@@ -146,6 +146,9 @@ def parse(root, want=None):
             drum_idx = k
     if drum_idx is None:
         return tracks, None
+    # a master bar lists one bar per staff of every track, in track order (a piano has two): the drum track's first
+    staves = [len(t.findall("Staves/Staff")) or 1 for t in root.find("Tracks").findall("Track")]
+    drum_bar = sum(staves[:drum_idx])
     bars = {int(b.get("id")): b for b in root.find("Bars").findall("Bar")}
     voices = {int(v.get("id")): v for v in root.find("Voices").findall("Voice")}
     beats = {int(b.get("id")): b for b in root.find("Beats").findall("Beat")}
@@ -178,8 +181,8 @@ def parse(root, want=None):
         rep_close = max(0, int(rep.get("count", "0")) - 1) if rep is not None and rep.get("end") == "true" else 0
         alt = sum(1 << (int(n) - 1) for n in text(mb, "AlternateEndings").split() if n.isdigit() and 0 < int(n) <= 32)
         hits = []
-        if drum_idx < len(bar_ids) and bar_ids[drum_idx] in bars:
-            bar = bars[bar_ids[drum_idx]]
+        if drum_bar < len(bar_ids) and bar_ids[drum_bar] in bars:
+            bar = bars[bar_ids[drum_bar]]
             for vid in ids(text(bar, "Voices")):
                 if vid < 0 or vid not in voices:
                     continue

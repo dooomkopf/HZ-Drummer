@@ -11,7 +11,10 @@ Aufruf (immer mit python3 -I):
   Enden), Probenzeichen als MARKER, N-tolen, Tremolo-Wirbel als Einzelschläge, Ein-Takt-Wiederholungszeichen.
 - Tonhöhe = General-MIDI-Schlagzeugnote; liegt sie außerhalb von GM (27–87), gilt der Name aus dem Schlagzeug-Set der
   Datei ("Snare", "Kick" …).
-- Lautstärke: die eigene Velocity der Note, sonst die Dynamik davor (mf = 80); Akzent, Marcato, sforzato = Akzent.
+- Lautstärke: die eigene Velocity der Note, sonst die Dynamik an ihrer Stelle, gleich in welcher Stimme sie steht
+  (mf = 80); Akzent, Marcato, sforzato = Akzent.
+- Steht das Schlagzeug nicht oben: Tempo, Probenzeichen, Wiederholungen und Volten aus der obersten Notenzeile
+  (MuseScore schreibt sie nur dorthin).
 - Was nicht ausgewertet wird, steht als Zeile "HINWEIS: …" am Ende (Sprünge D.S./D.C./Coda, Vorschlagsnoten,
   Swing, Gabeln, Fermaten, Wiederholungszeichen über mehrere Takte). Defekte Datei: eine Zeile auf stderr, Ausgang 1.
 Nur Standardbibliothek, liest nur.
@@ -98,6 +101,7 @@ class StaffReader:
     def __init__(self, drums, division, velocity_offset=False):
         self.drums, self.division = drums, division
         self.velocity_offset = velocity_offset   # MuseScore before 4: <velocity> without <veloType> is an offset in %
+        self.tempo_seen = False                  # a tempo mark in this staff (else the top staff's count)
         self.num, self.den, self.tempo, self.dyn = 4, 4, 120.0, 80
         self.tuplet_defs, self.tie_ids, self.volta_start, self.alt = {}, set(), {}, Counter()
         self.mstart = 0     # start of the measure in Division ticks (positions of MuseScore 1.x/2.x)
@@ -133,8 +137,20 @@ class StaffReader:
                         close=max(0, int(m.findtext("endRepeat") or 2) - 1) if m.find("endRepeat") is not None else 0,
                         marker="", hits=[])
         self.nr, self.length, self.tempos = nr, length, []
+        self.dyns, self.pending = [], []   # dynamics with their place, hits waiting for the loudness at theirs
         for voice in m.findall("voice") or [m]:
             self.walk(voice, F(0), [])
+        # the loudness of a hit: the last dynamic up to its place, in whichever voice it stands (MuseScore: per staff)
+        dyns = sorted(self.dyns, key=lambda d: d[0])
+        for pos, gm, spec, ghost, acc in self.pending:
+            dyn = self.dyn
+            for at, level in dyns:
+                if at <= pos:
+                    dyn = level
+            vel = dyn if spec is None else dyn * (100 + spec[0]) // 100 if spec[1] else spec[0]
+            self.bar["hits"].append((round(pos * 4 * TPQ), gm, max(1, min(127, vel)), ghost, acc))
+        if dyns:
+            self.dyn = dyns[-1][1]
         if self.tempos:
             at_start = [t for pos, t in self.tempos if pos == 0]
             self.bar["tempo"] = at_start[-1] if at_start else self.tempo
@@ -159,8 +175,12 @@ class StaffReader:
                 scales = scales[:-1]
             elif tag == "Tempo" and el.findtext("tempo"):
                 self.tempos.append((cursor, float(el.findtext("tempo")) * 60))
+                self.tempo_seen = True
             elif tag == "Dynamic":
-                self.dyn = int(el.findtext("velocity") or DYNAMIC.get(el.findtext("subtype") or "", self.dyn))
+                v = int(el.findtext("velocity") or 0)   # 0 or less: the mark's own loudness, as MuseScore plays it
+                level = v if v > 0 else DYNAMIC.get(el.findtext("subtype") or "")
+                if level:
+                    self.dyns.append((cursor, level))   # for every voice, from its place on
             elif tag == "RehearsalMark" and not self.bar["marker"]:
                 self.bar["marker"] = text_of(el.find("text")) or text_of(el)
             elif tag == "Spanner" and el.get("type") == "Volta" and el.find("Volta") is not None:
@@ -220,10 +240,10 @@ class StaffReader:
                 gm = self.by_name[pitch] or pitch
             v, kind = note.findtext("velocity"), note.findtext("veloType")
             offset = kind == "offset" or (kind is None and self.velocity_offset)
-            vel = self.dyn if v is None else self.dyn * (100 + int(v)) // 100 if offset else int(v)
+            spec = None if v is None else (int(v), offset)   # its own loudness, absolute or in % of the dynamic
             ghost = int(note.findtext("ghost") == "1" or any("Parenthesis" in (s.findtext("name") or "") for s in note.findall("Symbol")))
             for pos in strokes:
-                self.bar["hits"].append((round(pos * 4 * TPQ), gm, max(1, min(127, vel)), ghost, acc))
+                self.pending.append((pos, gm, spec, ghost, acc))
 
     def volta(self, v, first, last):
         mask = sum(1 << (int(n) - 1) for n in re.split(r"[,\s]+", v.findtext("endings") or "") if n.isdigit() and 0 < int(n) <= 32)
@@ -247,6 +267,25 @@ class StaffReader:
         return out
 
 
+def merge_top_staff(bars, reader, top, score, division, velocity_offset):
+    """What MuseScore writes into the top staff only (tempo, rehearsal marks, repeat signs, voltas, jumps) into the
+    drum staff's bars: the top staff read the same way, those taken from it."""
+    upper = StaffReader({}, division, velocity_offset)
+    try:
+        system = upper.read(top.findall("Measure"), score)
+    except (ValueError, ZeroDivisionError, TypeError, AttributeError):
+        return   # something in the top staff the reader does not know: the drum staff as it is
+    for b, s in zip(bars, system):
+        b["open"] = b["open"] or s["open"]
+        b["close"] = b["close"] or s["close"]
+        b["alt"] |= s["alt"]
+        b["marker"] = b["marker"] or s["marker"]
+        if not reader.tempo_seen:
+            b["tempo"] = s["tempo"]
+    for tag in ("Jump", "Marker", "swing"):
+        reader.seen[tag] += upper.seen[tag]
+
+
 def main():
     args = sys.argv[1:]
     path = args[0]
@@ -267,10 +306,14 @@ def main():
         print("NODRUMS")
         return
     version = re.match(r"\d+", root.get("version") or "")   # <museScore version="3.02">
-    reader = StaffReader(pick[4], int(score.findtext("Division") or root.findtext("Division") or 480),
-                         version is not None and int(version.group()) < 4)
+    division = int(score.findtext("Division") or root.findtext("Division") or 480)
+    offset = version is not None and int(version.group()) < 4
+    reader = StaffReader(pick[4], division, offset)
     try:
         bars = reader.read(staff.findall("Measure"), score)
+        top = score.find("Staff")
+        if top is not None and top is not staff:
+            merge_top_staff(bars, reader, top, score, division, offset)
     except (ValueError, ZeroDivisionError, TypeError, AttributeError) as e:
         sys.exit(f"{name}: Aufbau nicht lesbar ({type(e).__name__}: {e})")
     start = 0

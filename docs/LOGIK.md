@@ -279,7 +279,8 @@ soweit sie hier nicht abweichen; überholte Stellen stehen im vorletzten Abschni
    Arrangements“ werden vorbelegt, solange es die Datei nicht gibt, und lassen sich leeren. Ein Platz hält je
    Bereich „alle“ (beim Ablegen nichts ausgeblendet; spätere Ordner kommen mit) oder die Liste der sichtbaren
    Ordner (spätere bleiben aus); Namen ohne Groß- und Kleinschreibung, verschwundene werden übergangen.
-   Abrufen setzt alle Haken in einem Schreibvorgang. Gelb umrandet ist der Platz, dessen Auswahl genau den
+   Abrufen setzt alle Haken in einem Schreibvorgang; die Ausblendliste wird dabei ganz ersetzt. Wird ein
+   Ordner der obersten Ebene umbenannt (ein Name geht, einer kommt), ziehen die gespeicherten Listen mit. Gelb umrandet ist der Platz, dessen Auswahl genau den
    jetzigen Haken entspricht. [Code] Benennt man einen ausgeblendeten Ordner um, bleibt er ausgeblendet. Verschwindet ein Name
    von der obersten Ebene, vergisst die Liste ihn. [Bed., Code]
 5. Im Menü fällt vorn weg, was die Ordner schon sagen: „Carcass – CJQ – 01 Intro“ im Ordner Carcass › CJQ

@@ -35,6 +35,7 @@ public:
     // Top-level folders the main menu leaves out (System → Menü-Ordner); stored with the tree. Names compare
     // without case. The search and the arranger still know every entry.
     bool isHidden (Area area, const juce::String& folder) const   { return hidden[(size_t) area].contains (folder, true); }
+    void setHiddenFolders (Area area, const juce::StringArray& folders)   { hidden[(size_t) area] = folders; }   // exactly these
     void setHidden (Area, const juce::String& folder, bool hide);
     // after one edit of the tree, with its top-level folder names before and after: a renamed folder stays
     // hidden under its new name (one name went, one came), names no longer at the top are forgotten
