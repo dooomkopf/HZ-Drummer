@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Bereitet eine Band aus Guitar-Pro-Dateien zum Einspielen vor (nur Vorbereitungsordner, keine App-Daten).
 
-Aufruf: import_band.py <ordner mit .gp3/.gp4/.gp5> <Bandname> <staging-ordner> [--nur "Titel1;Titel2"] [--ohne "Titel;..."]
+Aufruf: import_band.py <ordner mit .gp3/.gp4/.gp5> <Bandname> <staging-ordner> [--nur "Titel1;Titel2"] [--ohne "Titel;..."] [--spielweise]
 
 - Dekodiert jede Datei mit tools/gpdrums/GpDrums156.java (TuxGuitar 1.5.6), alle Schlagzeugspuren zusammengeführt
   (z.B. Hände und Füße in getrennten Spuren).
@@ -85,6 +85,9 @@ def main():
         k = args.index("--nur"); only = {t.strip().lower() for t in args[k + 1].split(";")}; del args[k:k + 2]
     if "--ohne" in args:
         k = args.index("--ohne"); without = {t.strip().lower() for t in args[k + 1].split(";")}; del args[k:k + 2]
+    by_style = "--spielweise" in args   # Bausteine nach Spielweise (gp2json.py --spielweise)
+    if by_style:
+        args.remove("--spielweise")
     src, band, staging = Path(args[0]), args[1], Path(args[2])
     decoded_dir = staging / "decoded"
     decoded_dir.mkdir(parents=True, exist_ok=True)
@@ -113,7 +116,8 @@ def main():
         prefix = f"user.{slug(band)}-{slug(title)}"
         print(f"=== {title}  ({f.name})")
         result = subprocess.run([sys.executable, "-I", str(CONVERTER), str(txt), str(staging / "patterns"),
-                                 f"{band} – {title}", prefix, "--tags", f"band:{band},song:{title}"],
+                                 f"{band} – {title}", prefix, "--tags", f"band:{band},song:{title}"]
+                                + (["--spielweise"] if by_style else []),
                                 capture_output=True, text=True)
         print("\n".join(l for l in result.stdout.splitlines() if not l.startswith("  user.")))
         if result.returncode != 0:

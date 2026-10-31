@@ -2,12 +2,17 @@
 """Übersetzt die Ausgabe von GpDrums.java in HZ-Drummer-Patterns (JSON) – mit Dynamik.
 
 Aufruf:
-  gp2json.py <gpdrums-ausgabe.txt> <zielordner> <titel> <id-präfix> [abschnitte] [--tags a,b,...]
+  gp2json.py <gpdrums-ausgabe.txt> <zielordner> <titel> <id-präfix> [abschnitte] [--tags a,b,...] [--spielweise]
 
   abschnitte: "1:Intro,25:Strophe,41:Strophe 2,..."  (Taktnummern im gespielten Song, d.h. nach dem
               Ausrollen der Wiederholungen und ohne leere Anfangstakte; ohne Angabe: Marker aus der
               Guitar-Pro-Datei, sonst 8-Takt-Teile)
   --tags:     zusätzliche Tags, z.B. "band:Gorguts,song:Obscura" (Ordner im Baustein-Menü)
+  --spielweise: Bausteine nach Spielweise statt nach ganzen Abschnitten: geschnitten wird, wo Taktart, Tempo,
+              Spielart (Blast, Doppelbass, Groove, Fill) oder das Zeitmaß-Becken wechselt, innerhalb der Marker;
+              2 bis 8 echte Takte je Baustein (längere Strecken in Vierern, ein Einzeltakt hängt am Vorgänger),
+              Namen wie "Riff A – Doppelbass mit Ride"; nur exakt Gleiches wird zusammengelegt
+  Versatz:    ein optionales 8. Feld der HIT-Zeile (ms, z.B. von mid2gpdrums.py) wird "lag" (höchstens ±100)
 
 Wiederholungen werden ausgerollt wie beim Abspielen in TuxGuitar: |: ... :| mit Anzahl, alternative
 Enden (1., 2. ...) nur im passenden Durchgang. Gleiche Abschnitte werden ein Baustein; folgen sie
@@ -62,8 +67,9 @@ def parse(path):
             markers[int(p[1])] = " ".join(p[2:])
         elif p[0] == "HIT":
             nr, off, note, vel, ghost, acc = (int(x) for x in p[1:7])
+            lag = max(-100.0, min(100.0, float(p[7]))) if len(p) > 7 else 0.0
             if note in VOICE:
-                bars[nr]["hits"].append(dict(off=off, voice=VOICE[note], vel=vel, ghost=ghost, acc=acc))
+                bars[nr]["hits"].append(dict(off=off, voice=VOICE[note], vel=vel, ghost=ghost, acc=acc, lag=lag))
             else:
                 unknown[note] = unknown.get(note, 0) + 1
     return bars, markers, unknown
@@ -108,7 +114,102 @@ def unroll(bars):
 
 
 def content_key(part):
-    return tuple((b["num"], b["den"], b["length"], tuple(sorted((h["off"], h["voice"], h["v"]) for h in b["hits"]))) for b in part)
+    # the offset to 10 ms, as the editor shows it: what sounds the same is the same
+    return tuple((b["num"], b["den"], b["length"], tuple(sorted((h["off"], h["voice"], h["v"], round(h.get("lag", 0.0) / 10))
+                                                                for h in b["hits"]))) for b in part)
+
+
+CYMBAL_NAMES = {"hihat": "Hi-Hat", "hihat.open": "offener Hi-Hat", "ride": "Ride", "china": "China", "crash": "Crash"}
+
+
+def bar_style(bar):
+    """Spielart eines Takts und sein Zeitmaß-Becken (das Becken, das mindestens einmal je Viertel läuft)."""
+    quarters = bar["length"] / TPQ
+    if quarters <= 0 or not bar["hits"]:
+        return ("Pause", None)
+    count = {}
+    for h in bar["hits"]:
+        count[h["voice"]] = count.get(h["voice"], 0) + 1
+    kick = count.get("kick", 0) / quarters
+    snare = (count.get("snare", 0)) / quarters
+    toms = sum(count.get(t, 0) for t in ("tom1", "tom2", "tom3", "tom4"))
+    cym = {"hihat": count.get("hihat", 0), "hihat.open": count.get("hihat.open", 0),
+           "ride": count.get("ride", 0) + count.get("ride.bell", 0), "china": count.get("china", 0),
+           "crash": count.get("crash1", 0) + count.get("crash2", 0) + count.get("splash", 0)}
+    main = max(cym, key=cym.get)
+    timekeeper = main if cym[main] >= quarters else None
+    if toms >= 4 and toms >= sum(cym.values()):
+        return ("Fill", None)
+    if snare >= 2 and kick >= 2:
+        return ("Blast", timekeeper)
+    if kick >= 3.5:
+        return ("Doppelbass", timekeeper)
+    return ("Groove", timekeeper)
+
+
+def style_name(style, bars=1):
+    kind, cymbal = style
+    if kind == "Fill" and bars > 1:
+        kind = "Tom-Groove"   # several bars of toms: a groove on them, not a fill
+    return kind if cymbal is None else f"{kind} mit {CYMBAL_NAMES[cymbal]}"
+
+
+def clean_marker(name):
+    """Markernamen ohne Tempoangaben ("Verse 1 - tempo: 194" -> "Verse 1"): das Tempo steht im Baustein."""
+    return re.sub(r"\s*[-–(]?\s*tempo\s*:?\s*\d+\s*\)?", "", name, flags=re.IGNORECASE).strip(" -–")
+
+
+def style_sections(song, marked):
+    """Abschnitte nach Spielweise: marked = [(start, markername)] (1-basiert, mindestens einer bei 1).
+    Gibt [(start, name)] zurück; Schnitte bei Wechsel von Taktart, Tempo, Spielart oder Zeitmaß-Becken."""
+    out = []   # [start, name]
+    for k, (start, marker) in enumerate(marked):
+        end = marked[k + 1][0] - 1 if k + 1 < len(marked) else len(song)
+        marker = clean_marker(marker)
+        sig = lambda n: (song[n - 1]["num"], song[n - 1]["den"], song[n - 1]["tempo"], bar_style(song[n - 1]))
+        runs = []   # [start, end, style]
+        for n in range(start, end + 1):
+            if runs and sig(n) == sig(runs[-1][0]):
+                runs[-1][1] = n
+            else:
+                runs.append([n, n, bar_style(song[n - 1])])
+        # a single bar (a fill, a break) belongs to the run before it (a long run is cut in fours below)
+        merged = []
+        for r in runs:
+            if r[1] == r[0] and merged:
+                merged[-1][1] = r[1]
+            elif merged and merged[-1][1] == merged[-1][0] and merged[-1][1] + 1 == r[0]:
+                merged[-1][1] = r[1]   # a single bar at the start goes with the run after it
+                merged[-1][2] = r[2]
+            else:
+                merged.append(list(r))
+        # long runs in fours; a remainder of one bar goes with the last four
+        for a, b, style in merged:
+            length = b - a + 1
+            pieces = [4] * (length // 4) if length > 8 else [length]
+            if length > 8 and length % 4:
+                if length % 4 == 1:
+                    pieces[-1] += 1
+                else:
+                    pieces.append(length % 4)
+            pos = a
+            for size in pieces:
+                name = style_name(style, size)
+                out.append([pos, f"{marker} – {name}" if marker else name])
+                pos += size
+    # a section of a single bar (a marker on one bar) joins its neighbour: the one before, else the one after
+    k = 0
+    while k < len(out) and len(out) > 1:
+        end = out[k + 1][0] - 1 if k + 1 < len(out) else len(song)
+        if end == out[k][0]:
+            if k > 0:
+                del out[k]
+                continue
+            out[1][0] = out[0][0]
+            del out[0]
+            continue
+        k += 1
+    return [tuple(x) for x in out]
 
 
 def beat_ticks(bar):
@@ -189,6 +290,8 @@ def make_pattern(pid, name, tags, tempo, bars, seed):
     for b in bars:
         for h in sorted(b["hits"], key=lambda h: (h["off"], h["voice"])):
             ev = {"id": eid, "voice": h["voice"], "pos": frac(pos + h["off"]), "vel": h["v"]}
+            if abs(h.get("lag", 0.0)) >= 0.5:
+                ev["lag"] = round(h["lag"], 1)   # ms later (-: earlier) than its place, as played
             (feet if h["voice"] in FEET else hands).append(ev)
             eid += 1
         pos += b["length"]
@@ -215,6 +318,9 @@ def main():
         k = args.index("--tags")
         tags += [t.strip() for t in args[k + 1].split(",") if t.strip()]
         del args[k:k + 2]
+    by_style = "--spielweise" in args
+    if by_style:
+        args.remove("--spielweise")
     src, outdir, title, prefix = args[:4]
     section_arg = args[4] if len(args) > 4 else ""
 
@@ -246,8 +352,10 @@ def main():
         sections = [(i + 1, markers[n]) for i, n in enumerate(played) if n in markers]
         if not sections or sections[0][0] != 1:
             sections.insert(0, (1, "Anfang"))
-    else:
+    elif not by_style:
         sections = [(i + 1, f"Teil {i // 8 + 1}") for i in range(0, len(song), 8)]
+    if by_style:   # within the markers (or the whole song): by playing style
+        sections = style_sections(song, sections if sections else [(1, "")])
 
     os.makedirs(outdir, exist_ok=True)
     seed = abs(hash(prefix)) % 100000 + 1

@@ -14,6 +14,8 @@ selbst im Feld `origin.operators` (Quelle, Datei, Takte, Lizenz). Die Umwandler 
 | MT Power Drum Kit 2 (Manda Audio), Groove-Bibliothek als Hydrogen-Songs | [github.com/torgeir/drumgizmo-aasimonster-reaper](https://github.com/torgeir/drumgizmo-aasimonster-reaper) | keine Lizenzangabe, nur privat | 382 | `hydrogen/mt_import_all.py` |
 | Band-Songs aus dem Hydrogen-Repository: AC/DC, Nirvana, ZZ Top, Led Zeppelin | [Hydrogen Song-and-pattern-repository](https://github.com/hydrogen-music/Song-and-pattern-repository) | CC0 (in den Song-Dateien) | 56 | `hydrogen/h2import.py` |
 | Guitar-Pro-Tabs: Gorguts, Necrophagist | [YetAnotherMorty/Guitar-Pro-Tabs](https://github.com/YetAnotherMorty/Guitar-Pro-Tabs) (Community-Abschriften) | keine Lizenzangabe, nur privat | 35 | `gpdrums/import_band.py` |
+| Guitar-Pro-Tabs: Atheist (Mineral, Piece Of Time, Unholy War), nach Spielweise zerlegt | [YetAnotherMorty/Guitar-Pro-Tabs](https://github.com/YetAnotherMorty/Guitar-Pro-Tabs) | keine Lizenzangabe, nur privat | 89 | `gpdrums/import_band.py --spielweise` |
+| Jimi Hendrix: zehn Songs als MIDI-Fan-Sequenzen, nach Spielweise zerlegt | [Lakh MIDI Dataset](https://colinraffel.com/projects/lmd/), clean_midi | Datensatz CC BY 4.0, die Sequenzen selbst von Fans: nur privat | 182 | `gpdrums/import_midi_band.py --spielweise` |
 | Carcass | Guitar-Pro-Dateien und eine Songsterr-Abschrift (Nutzer-Transkriptionen), im Datenordner unter `songs-src/` | keine Lizenzangabe, nur privat | 35 | `gpdrums/gp2json.py`, `patternc` |
 | Exhorder | eigene Abschrift nach Bildschirmfoto | eigen | 13 | von Hand |
 

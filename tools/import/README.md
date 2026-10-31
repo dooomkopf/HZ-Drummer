@@ -11,13 +11,15 @@ woher die mitgelieferten Daten stammen, steht in [docs/QUELLEN.md](../../docs/QU
 | Quelle | Skript | Ergebnis |
 |---|---|---|
 | Guitar Pro 3/4/5 | [`../gpdrums/GpDrums156.java`](../gpdrums/GpDrums156.java) (TuxGuitar 1.5.6) bzw. [`GpDrums.java`](../gpdrums/GpDrums.java) (TuxGuitar aus Ubuntu) | Schlagzeugspur als Textzeilen `TRACK`/`BAR`/`MARKER`/`HIT` |
-| | [`../gpdrums/gp2json.py`](../gpdrums/gp2json.py) | ein Song: Wiederholungen und alternative Enden ausgerollt, Abschnitte nach Markern, gleiche Abschnitte = ein Baustein, dazu das Arrangement |
+| | [`../gpdrums/gp2json.py`](../gpdrums/gp2json.py) | ein Song: Wiederholungen und alternative Enden ausgerollt, Abschnitte nach Markern, gleiche Abschnitte = ein Baustein, dazu das Arrangement; mit `--spielweise` Bausteine nach Spielweise (Blast, Doppelbass, Groove, Tom-Groove, je mit Becken), 2 bis 8 Takte |
 | | [`../gpdrums/import_band.py`](../gpdrums/import_band.py) | ein ganzer Band-Ordner: je Song genau eine Fassung (die mit den meisten verschiedenen Takten), mehrere Schlagzeugspuren zusammengeführt, `auswahl.tsv` sagt warum |
 | | [`../gpdrums/gp_je_datei.py`](../gpdrums/gp_je_datei.py) | vorher prüfen: hat die Datei eine Schlagzeugspur mit echten Figuren? |
 | Guitar Pro 7/8 (`.gp`) | [`../gpdrums/gpif_drums.py`](../gpdrums/gpif_drums.py) | dieselben Textzeilen wie `GpDrums.java`, nur Standardbibliothek (Weiterverarbeitung mit `gp2json.py` noch nicht erprobt) |
 | Drum-Tabs (eigenes Format) | `patternc` (C++, [`../patternc`](../patternc)) | Pattern-JSON, siehe docs/FORMATE.md |
 | MIDI (Kanal 10) | [`midi/midiscan.py`](midi/midiscan.py) | MIDI-Leser ohne Fremdpakete; Statistik, einen Takt als Positionen je Stimme, Belegungen GM und Roland TD-11 |
 | | [`midi/midi_je_datei.py`](midi/midi_je_datei.py) | vorher prüfen: echte Figuren oder nur ein Grundbeat? |
+| | [`../gpdrums/mid2gpdrums.py`](../gpdrums/mid2gpdrums.py) | eine MIDI-Datei in die Textzeilen von `GpDrums.java`: danach geht sie durch `gp2json.py` wie eine Guitar-Pro-Datei (Raster je Takt, Versatz in ms bleibt) |
+| | [`../gpdrums/import_midi_band.py`](../gpdrums/import_midi_band.py) | eine Band aus ausgewählten MIDI-Dateien (je Song eine), wie `import_band.py` |
 | | [`midi/gmd_import.py`](midi/gmd_import.py) | Groove MIDI Dataset: echte Einspielungen, Timing bleibt als Versatz in ms erhalten, 8-Takt-Ausschnitte und Arrangements |
 | | [`midi/lmd_drums.py`](midi/lmd_drums.py), [`midi/pdmx_drums.py`](midi/pdmx_drums.py) | Schlagzeugspuren aus Lakh MIDI bzw. PDMX ziehen, ohne die Archive zu entpacken |
 | | [`midi/dupes.py`](midi/dupes.py) | gleiche Grooves über mehrere Ordner finden |
@@ -31,8 +33,8 @@ woher die mitgelieferten Daten stammen, steht in [docs/QUELLEN.md](../../docs/QU
 ## Ablauf am Beispiel einer Band in Guitar Pro
 
 ```bash
-# 1. umwandeln, nur in einen Vorbereitungsordner
-python3 -I tools/gpdrums/import_band.py ~/tabs/Atheist Atheist /var/tmp/hz-import/atheist
+# 1. umwandeln, nur in einen Vorbereitungsordner (Bausteine nach Spielweise)
+python3 -I tools/gpdrums/import_band.py ~/tabs/Atheist Atheist /var/tmp/hz-import/atheist --spielweise
 # 2. ansehen: auswahl.tsv, patterns/, songs/
 # 3. HZ-Drummer beenden, dann einspielen (Sicherung des Datenordners kommt vorher)
 python3 -I tools/gpdrums/install_band.py /var/tmp/hz-import/atheist Atheist
