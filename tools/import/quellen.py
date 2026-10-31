@@ -44,6 +44,12 @@ HYDROGEN_SONGS = ["ACDC/Back_in_Black/Back_in_Black.h2song", "Led_Zeppelin/Immig
 GP_BANDS = [("Atheist", "A/Atheist", ["Atheist - Mineral.gp4", "Atheist - Piece Of Time.gp4", "Atheist - Unholy War.gp4"]),
             ("Gorguts", "G/Gorguts", ["Gorguts - Inverted.gp4", "Gorguts - Nostalgia.gp4", "Gorguts - Obscura.gp4"]),
             ("Necrophagist", "N/Necrophagist", ["Necrophagist - Seven.gp4"])]
+# Metallica (bis ...And Justice for All), Death, Black Sabbath aus demselben Archiv: je Song die Fassung, die
+# import_band.py unter allen dort gewählt hat, gespeichert unter sauberem Titel (das Archiv hat Tippfehler)
+GP_LISTS = {}
+for _line in (HERE / "quellen-guitarpro.tsv").read_text(encoding="utf-8").splitlines()[1:]:
+    _band, _path, _title = _line.split("\t")
+    GP_LISTS.setdefault(_band, []).append((_path, _title))
 HENDRIX = ["1983... (A Merman I Should Turn to Be).mid", "All Along The Watchtower.1.mid", "Fire.2.mid", "Foxy Lady.mid",
            "Hey Joe.1.mid", "Little Wing.mid", "Purple Haze.mid", "The Wind Cries Mary.mid",
            "Third Stone From the Sun.mid", "Wild Thing.mid"]
@@ -69,6 +75,24 @@ SOURCES = [
      "herkunft": "github.com/YetAnotherMorty/Guitar-Pro-Tabs",
      "hinweis": "Ohne Lizenzangabe: nur für den eigenen Gebrauch. Braucht Java und TuxGuitar 1.5.6 (docs/SETUP.md).",
      "groesse": "unter 1 MB", "praefixe": ["user.atheist-", "user.gorguts-", "user.necrophagist-"]},
+    {"id": "gp-metallica", "name": "Guitar Pro: Metallica bis …And Justice for All",
+     "beschreibung": f"Die {len(GP_LISTS['Metallica'])} Songs von Kill 'Em All, Ride the Lightning, Master of Puppets und "
+                     "…And Justice for All, nach Spielweise in Bausteine zu 2 bis 8 Takten zerlegt, je Song ein Arrangement",
+     "herkunft": "github.com/YetAnotherMorty/Guitar-Pro-Tabs",
+     "hinweis": "Ohne Lizenzangabe: nur für den eigenen Gebrauch. Braucht Java und TuxGuitar 1.5.6 (docs/SETUP.md).",
+     "groesse": "rund 2,4 MB", "praefixe": ["user.metallica-"]},
+    {"id": "gp-death", "name": "Guitar Pro: Death",
+     "beschreibung": f"{len(GP_LISTS['Death'])} Songs von Scream Bloody Gore bis The Sound of Perseverance, nach Spielweise "
+                     "zerlegt, je Song ein Arrangement",
+     "herkunft": "github.com/YetAnotherMorty/Guitar-Pro-Tabs",
+     "hinweis": "Ohne Lizenzangabe: nur für den eigenen Gebrauch. Braucht Java und TuxGuitar 1.5.6 (docs/SETUP.md).",
+     "groesse": "rund 2,3 MB", "praefixe": ["user.death-"]},
+    {"id": "gp-black-sabbath", "name": "Guitar Pro: Black Sabbath",
+     "beschreibung": f"{len(GP_LISTS['Black Sabbath'])} Songs aus allen Phasen (Ozzy, Dio, Tony Martin, Ian Gillan), nach "
+                     "Spielweise zerlegt, je Song ein Arrangement",
+     "herkunft": "github.com/YetAnotherMorty/Guitar-Pro-Tabs",
+     "hinweis": "Ohne Lizenzangabe: nur für den eigenen Gebrauch. Braucht Java und TuxGuitar 1.5.6 (docs/SETUP.md).",
+     "groesse": "rund 1,3 MB", "praefixe": ["user.black-sabbath-"]},
     {"id": "hendrix", "name": "Jimi Hendrix: zehn Songs",
      "beschreibung": "Fan-Sequenzen als MIDI, nach Spielweise zerlegt; das Spielgefühl bleibt als Versatz erhalten",
      "herkunft": "Lakh MIDI Dataset, clean_midi (colinraffel.com/projects/lmd)",
@@ -214,6 +238,23 @@ def load_gp_bands(staging):
     collect(parts, staging)
 
 
+def load_gp_list(band):
+    """Eine Band aus quellen-guitarpro.tsv laden und umwandeln; Ordner wie die Kennung der Quelle (gp-<band>)."""
+    def load(staging):
+        if reason := tuxguitar_missing():
+            fail(reason)
+        cache = CACHE / ("gp-" + band.lower().replace(" ", "-"))
+        for path, title in GP_LISTS[band]:
+            step(f"Guitar Pro: {band}, {title}")
+            download(raw_github("YetAnotherMorty/Guitar-Pro-Tabs", path), cache / band / f"{band} - {title}{Path(path).suffix}")
+        step(f"Guitar Pro: {band} umwandeln")
+        out = cache / "out"
+        shutil.rmtree(out, ignore_errors=True)
+        run([REPO / "tools" / "gpdrums" / "import_band.py", cache / band, band, out, "--spielweise"])
+        collect([(out, band)], staging)
+    return load
+
+
 def load_hendrix(staging):
     cache = CACHE / "hendrix"
     midi = cache / "midi"
@@ -246,7 +287,8 @@ def load_hendrix(staging):
 CURRENT = ""   # name of the source being loaded, for the import log
 
 LOADERS = {"mt-power": load_mt_power, "hydrogen-bands": load_hydrogen_bands, "gp-bands": load_gp_bands,
-           "hendrix": load_hendrix}
+           "gp-metallica": load_gp_list("Metallica"), "gp-death": load_gp_list("Death"),
+           "gp-black-sabbath": load_gp_list("Black Sabbath"), "hendrix": load_hendrix}
 
 
 def listing(data):
@@ -255,7 +297,7 @@ def listing(data):
     for s in SOURCES:
         entry = {k: v for k, v in s.items() if k != "praefixe"}
         entry["vorhanden"] = any(n.startswith(p) for n in have for p in s["praefixe"])
-        reason = tuxguitar_missing() if s["id"] == "gp-bands" else None
+        reason = tuxguitar_missing() if s["id"].startswith("gp-") else None   # Guitar Pro 3/4/5 needs TuxGuitar
         entry["nutzbar"] = reason is None
         entry["grund"] = reason or ""
         out.append(entry)

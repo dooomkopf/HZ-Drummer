@@ -78,6 +78,9 @@ def main():
             prefix, n = f"{base}-{n}", n + 1
         used.add(prefix)
         print(f"=== {title}  ({readable(f.name)})" + (f", Kennung {prefix} (Kurzname schon vergeben)" if prefix != base else ""))
+        for line in text.stdout.splitlines():
+            if line.startswith("HINWEIS: "):
+                print(line)   # what the reader left out, for the import log
         result = subprocess.run([sys.executable, "-I", str(CONVERTER), str(txt), str(staging / "patterns"),
                                  f"{band} – {title}", prefix,
                                  "--tags", f"band:{band},song:{title}"] + (["--spielweise"] if by_style else []),

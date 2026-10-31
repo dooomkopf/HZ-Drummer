@@ -7,9 +7,14 @@
 
 namespace
 {
+    juce::File quellenFolder()   // where tools/import/quellen.py keeps what it loads, one folder per source
+    {
+        return juce::File::getSpecialLocation (juce::File::userHomeDirectory).getChildFile (".cache/HZ-Drummer/quellen");
+    }
+
     juce::File stagingFor (const juce::String& id)
     {
-        return juce::File::getSpecialLocation (juce::File::userHomeDirectory).getChildFile (".cache/HZ-Drummer/quellen/staging/" + id);
+        return quellenFolder().getChildFile ("staging/" + id);
     }
 }
 
@@ -40,10 +45,13 @@ QuellenPanel::QuellenPanel (const juce::File& scriptFile, const juce::File& data
                                  v["hinweis"].toString(), v["groesse"].toString(), v["grund"].toString(),
                                  (bool) v["nutzbar"], (bool) v["vorhanden"] });
 
+    addAndMakeVisible (viewport);
+    viewport.setViewedComponent (&blocks, false);
+    viewport.setScrollBarsShown (true, false);
     for (const auto& s : sources)
     {
         auto* tick = ticks.add (new juce::ToggleButton (s.name));
-        addAndMakeVisible (tick);
+        blocks.addAndMakeVisible (tick);
         tick->setColour (juce::ToggleButton::textColourId, theme::textMain);
         tick->setColour (juce::ToggleButton::tickColourId, theme::textMain);
         tick->onClick = [this]
@@ -53,8 +61,11 @@ QuellenPanel::QuellenPanel (const juce::File& scriptFile, const juce::File& data
                 any = any || t->getToggleState();
             importButton.setEnabled (any && ! isThreadRunning());
         };
+        auto* folder = folders.add (new juce::TextButton ("Ordner"));
+        blocks.addAndMakeVisible (folder);
+        folder->onClick = [this, id = s.id] { openFolder (quellenFolder().getChildFile (id)); };
         auto* label = details.add (new juce::Label());
-        addAndMakeVisible (label);
+        blocks.addAndMakeVisible (label);
         label->setJustificationType (juce::Justification::topLeft);
         label->setColour (juce::Label::textColourId, theme::textDim);
         label->setFont (juce::FontOptions (13.5f));
@@ -71,8 +82,15 @@ QuellenPanel::QuellenPanel (const juce::File& scriptFile, const juce::File& data
     importButton.onClick = [this] { startImport(); };
     addAndMakeVisible (logButton);
     logButton.onClick = [this] { if (onShowLog) onShowLog(); };
+    addAndMakeVisible (rootButton);
+    rootButton.onClick = [this] { openFolder (quellenFolder()); };
+    rootButton.setEnabled (quellenFolder().isDirectory());
+    rootButton.setTooltip ("Der Ordner mit allen geladenen Quellen im Dateimanager");
 
-    setSize (780, 24 + 84 + (int) sources.size() * 116 + 16 + 30 + 12 + 40 + 20);
+    // as high as the sources need, but not higher than the screen: then the list scrolls
+    const auto* display = juce::Desktop::getInstance().getDisplays().getPrimaryDisplay();
+    const int most = display != nullptr ? display->userArea.getHeight() - 120 : 800;
+    setSize (780, juce::jmin (most, 24 + 84 + (int) sources.size() * 116 + 16 + 30 + 12 + 40 + 20));
 }
 
 QuellenPanel::~QuellenPanel()
@@ -96,6 +114,15 @@ void QuellenPanel::showSource (int index)
     ticks[index]->setToggleState (s.present, juce::dontSendNotification);
     ticks[index]->setEnabled (s.usable && ! s.present);   // during an import startImport() greys them all
     ticks[index]->setTooltip (s.present ? "Schon im Datenordner" : juce::String());
+    const bool loaded = quellenFolder().getChildFile (s.id).isDirectory();
+    folders[index]->setEnabled (loaded);
+    folders[index]->setTooltip (loaded ? "Originaldateien und Umwandlung dieser Quelle im Dateimanager" : "Noch nichts geladen");
+}
+
+void QuellenPanel::openFolder (const juce::File& folder)
+{
+    if (! folder.isDirectory() || ! folder.startAsProcess())   // on Linux through xdg-open
+        status.setText ("Ordner lässt sich nicht öffnen: "_u + folder.getFullPathName(), juce::dontSendNotification);
 }
 
 void QuellenPanel::paint (juce::Graphics& g)
@@ -108,19 +135,26 @@ void QuellenPanel::resized()
     auto r = getLocalBounds().reduced (20, 16);
     intro.setBounds (r.removeFromTop (84));
     r.removeFromTop (8);
+    auto buttons = r.removeFromBottom (40);   // status and buttons stay in place, the sources scroll above them
+    r.removeFromBottom (12);
+    status.setBounds (r.removeFromBottom (30));
+    r.removeFromBottom (8);
+    viewport.setBounds (r);
+    const int height = ticks.size() * 116;
+    blocks.setSize (r.getWidth() - (height > r.getHeight() ? viewport.getScrollBarThickness() + 6 : 0), height);
     for (int i = 0; i < ticks.size(); ++i)
     {
-        auto block = r.removeFromTop (116);   // the name, then up to five lines of detail
-        ticks[i]->setBounds (block.removeFromTop (26));
+        juce::Rectangle<int> block (0, i * 116, blocks.getWidth(), 116);   // the name, then up to five lines of detail
+        auto row = block.removeFromTop (26);
+        folders[i]->setBounds (row.removeFromRight (84));
+        ticks[i]->setBounds (row.withTrimmedRight (8));
         details[i]->setBounds (block.withTrimmedLeft (28).withTrimmedBottom (6));
     }
-    r.removeFromTop (8);
-    status.setBounds (r.removeFromTop (30));
-    r.removeFromTop (12);
-    auto buttons = r.removeFromTop (40);
     importButton.setBounds (buttons.removeFromRight (160));
     buttons.removeFromRight (10);
     logButton.setBounds (buttons.removeFromRight (140));
+    buttons.removeFromRight (10);
+    rootButton.setBounds (buttons.removeFromRight (150));
 }
 
 void QuellenPanel::startImport()
@@ -234,4 +268,5 @@ void QuellenPanel::finished()
     for (int i = 0; i < ticks.size(); ++i)
         showSource (i);
     importButton.setEnabled (false);
+    rootButton.setEnabled (quellenFolder().isDirectory());
 }

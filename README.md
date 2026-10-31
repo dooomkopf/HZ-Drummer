@@ -40,8 +40,9 @@ Gedacht ist es zum Üben, nicht für Studioaufnahmen: Es soll ohne Umwege den ri
 - **Einzählen** vor dem Start, Tap-Tempo, Mixer je Instrument mit Pegelanzeige, Metronom mit eigenen Taktarten.
 - **Ordnerstruktur** und **Papierkorb** für eigene Patterns und Songs.
 - **Startpaket**: Groove MIDI (echte Einspielungen), R.P. Bardet, kurze Loops von Carcass und Exhorder und drei Beispiel-Arrangements, beim ersten Start schon da, siehe [community/](community/).
-- **Quellenimport** per Klick (System › Quellen): weitere Bausteine, die nicht mitgeliefert werden dürfen (MT Power, Band-Songs, Guitar-Pro-Tabs, MIDI), lädt das Programm von der Originalquelle und wandelt sie auf dem eigenen Rechner um, mit Import-Log.
-- **Import-Vorlagen** für Guitar Pro, MIDI, Hydrogen und gedruckte Pattern-Bücher unter [tools/import](tools/import/README.md), auch als Vorlage für KI-Assistenten.
+- **Quellenimport** per Klick (System › Quellen): weitere Bausteine, die nicht mitgeliefert werden dürfen (MT Power, Band-Songs, Guitar-Pro-Tabs von Metallica bis Death, MIDI), lädt das Programm von der Originalquelle und wandelt sie auf dem eigenen Rechner um, mit Import-Log und Knöpfen, die die Ordner öffnen.
+- **Eigene Dateien** aus Guitar Pro (3 bis 8), MuseScore und MIDI werden zu Bausteinen und Arrangements, siehe [Eigene Dateien einspielen](docs/EIGENE-DATEIEN.md).
+- **Import-Vorlagen** für Guitar Pro (3 bis 8), MuseScore, MIDI, Hydrogen und gedruckte Pattern-Bücher unter [tools/import](tools/import/README.md), auch als Vorlage für KI-Assistenten.
 
 ## Voraussetzungen
 
@@ -140,6 +141,7 @@ Nur die persönlichen Einstellungen behalten: statt der dritten Zeile alles in `
 ## Dokumentation
 
 - [Bedienung](docs/BEDIENUNG.md): Hauptfenster, Tasten, Raster-Editor, Arranger
+- [Eigene Dateien einspielen](docs/EIGENE-DATEIEN.md): Guitar Pro, MuseScore und MIDI zu Bausteinen und Arrangements
 - [Dateiformate](docs/FORMATE.md): Drum-Tabs, Pattern-JSON, Song-JSON, Datenordner
 - [Mitmachen](CONTRIBUTING.md): eigene Patterns beisteuern, Code-Beiträge, Fehler melden
 - [Logik und Regeln (Ist-Stand, Grundlage für Reviews)](docs/LOGIK.md)

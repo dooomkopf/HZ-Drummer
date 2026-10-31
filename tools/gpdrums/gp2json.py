@@ -7,7 +7,8 @@ Aufruf:
   abschnitte: "1:Intro,25:Strophe,41:Strophe 2,..."  (Taktnummern im gespielten Song, d.h. nach dem
               Ausrollen der Wiederholungen und ohne leere Anfangstakte; ohne Angabe: Marker aus der
               Guitar-Pro-Datei, sonst 8-Takt-Teile)
-  --tags:     zusätzliche Tags, z.B. "band:Gorguts,song:Obscura" (Ordner im Baustein-Menü)
+  --tags:     zusätzliche Tags, z.B. "band:Gorguts,song:Obscura" (Ordner im Baustein-Menü); ein Komma vor einem
+              Leerzeichen oder zwischen Ziffern gehört zum Tag ("song:Damage, Inc.", "song:1,000 Eyes")
   --spielweise: Bausteine nach Spielweise statt nach ganzen Abschnitten: geschnitten wird, wo Taktart, Tempo,
               Spielart (Blast, Doppelbass, Groove, Fill) oder das Zeitmaß-Becken wechselt, innerhalb der Marker;
               2 bis 8 echte Takte je Baustein (längere Strecken in Vierern, ein Einzeltakt hängt am Vorgänger),
@@ -385,7 +386,8 @@ def main():
     tags = ["song", "abschnitt"]
     if "--tags" in args:
         k = args.index("--tags")
-        tags += [t.strip() for t in args[k + 1].split(",") if t.strip()]
+        # a comma before a space or between digits belongs to the tag: "song:Damage, Inc.", "song:1,000 Eyes"
+        tags += [t.strip() for t in re.split(r",(?!\s|(?<=\d,)\d)", args[k + 1]) if t.strip()]
         del args[k:k + 2]
     by_style = "--spielweise" in args
     if by_style:

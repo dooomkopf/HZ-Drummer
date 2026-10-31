@@ -1,10 +1,12 @@
 # Import-Vorlagen: fremde Schlagzeug-Daten → HZ-Drummer-JSON
 
-Diese Skripte haben die Bausteine aus Guitar Pro, MIDI, Hydrogen und gedruckten Pattern-Büchern
+Diese Skripte haben die Bausteine aus Guitar Pro, MuseScore, MIDI, Hydrogen und gedruckten Pattern-Büchern
 erzeugt, die in HZ-Drummer stecken. Sie sind als **Vorlagen** gedacht: für Menschen, die eine
 eigene Quelle umwandeln wollen, und für KI-Assistenten, die dafür ein neues Skript schreiben.
 Die Zielformate (Pattern-JSON, Song-JSON) beschreibt [docs/FORMATE.md](../../docs/FORMATE.md),
-woher die mitgelieferten Daten stammen, steht in [docs/QUELLEN.md](../../docs/QUELLEN.md).
+woher die mitgelieferten Daten stammen, steht in [docs/QUELLEN.md](../../docs/QUELLEN.md). Schritt für Schritt
+für eigene Dateien (Guitar Pro, MuseScore, MIDI) und für neue Einträge unter System › Quellen:
+[docs/EIGENE-DATEIEN.md](../../docs/EIGENE-DATEIEN.md).
 
 ## Welches Skript für welche Quelle
 
@@ -12,9 +14,10 @@ woher die mitgelieferten Daten stammen, steht in [docs/QUELLEN.md](../../docs/QU
 |---|---|---|
 | Guitar Pro 3/4/5 | [`../gpdrums/GpDrums156.java`](../gpdrums/GpDrums156.java) (TuxGuitar 1.5.6) bzw. [`GpDrums.java`](../gpdrums/GpDrums.java) (TuxGuitar aus Ubuntu) | Schlagzeugspur als Textzeilen `TRACK`/`BAR`/`MARKER`/`HIT` |
 | | [`../gpdrums/gp2json.py`](../gpdrums/gp2json.py) | ein Song: Wiederholungen und alternative Enden ausgerollt, Abschnitte nach Markern, gleiche Abschnitte = ein Baustein, dazu das Arrangement; mit `--spielweise` Bausteine nach Spielweise (Blast, Doppelbass, Groove, Tom-Groove, je mit Becken), 2 bis 8 Takte |
-| | [`../gpdrums/import_band.py`](../gpdrums/import_band.py) | ein ganzer Band-Ordner: je Song genau eine Fassung (die mit den meisten verschiedenen Takten), mehrere Schlagzeugspuren zusammengeführt, `auswahl.tsv` sagt warum |
+| | [`../gpdrums/import_band.py`](../gpdrums/import_band.py) | ein ganzer Band-Ordner, auch gemischt aus Guitar Pro 3 bis 8 und MuseScore: je Song genau eine Fassung (die mit den meisten verschiedenen Takten), mehrere Schlagzeugspuren zusammengeführt, `auswahl.tsv` sagt warum |
 | | [`../gpdrums/gp_je_datei.py`](../gpdrums/gp_je_datei.py) | vorher prüfen: hat die Datei eine Schlagzeugspur mit echten Figuren? |
-| Guitar Pro 7/8 (`.gp`) | [`../gpdrums/gpif_drums.py`](../gpdrums/gpif_drums.py) | dieselben Textzeilen wie `GpDrums.java`, nur Standardbibliothek (Weiterverarbeitung mit `gp2json.py` noch nicht erprobt) |
+| Guitar Pro 6 (`.gpx`) und 7/8 (`.gp`) | [`../gpdrums/gpif_drums.py`](../gpdrums/gpif_drums.py) | dieselben Textzeilen wie `GpDrums.java`, ohne Java, nur Standardbibliothek; Klänge ohne General-MIDI-Note (Rimshot, halb offene Hi-Hat …) werden zur nächsten GM-Note |
+| MuseScore (`.mscz`, `.mscx`) | [`../gpdrums/mscz2gpdrums.py`](../gpdrums/mscz2gpdrums.py) | die Schlagzeug-Notenzeile als dieselben Textzeilen (MuseScore 1 bis 4: Wiederholungen, Volten, N-tolen, Wirbel, Probenzeichen als Marker), nur Standardbibliothek |
 | Drum-Tabs (eigenes Format) | `patternc` (C++, [`../patternc`](../patternc)) | Pattern-JSON, siehe docs/FORMATE.md |
 | MIDI (Kanal 10) | [`midi/midiscan.py`](midi/midiscan.py) | MIDI-Leser ohne Fremdpakete; Statistik, einen Takt als Positionen je Stimme, Belegungen GM und Roland TD-11 |
 | | [`midi/midi_je_datei.py`](midi/midi_je_datei.py) | vorher prüfen: echte Figuren oder nur ein Grundbeat? |
@@ -40,10 +43,11 @@ python3 -I tools/gpdrums/import_band.py ~/tabs/Atheist Atheist /var/tmp/hz-impor
 python3 -I tools/gpdrums/install_band.py /var/tmp/hz-import/atheist Atheist
 ```
 
-Was HZ-Drummer nicht halten kann, passt `gp2json.py` an und meldet es am Ende: Doppelte Schläge
-und Schläge hinter dem Ende überfüllter Takte fallen weg, das Tempo bleibt zwischen 30 und 320,
-und ein Song über 512 Takte oder 8192 Schläge wird in mehrere Arrangements `<id>-teil1`,
-`<id>-teil2` … geteilt. Abschnitte ohne Schläge bleiben als Pause im Song.
+Defekte Dateien und Dateien ohne Schlagzeug werden mit einer Zeile und Grund übersprungen
+(`HINWEIS: Datei: übersprungen, …`). Was HZ-Drummer nicht halten kann, passt `gp2json.py` an und meldet
+es am Ende: Doppelte Schläge und Schläge hinter dem Ende überfüllter Takte fallen weg, das Tempo
+bleibt zwischen 30 und 320, und ein Song über 512 Takte oder 8192 Schläge wird in mehrere
+Arrangements `<id>-teil1`, `<id>-teil2` … geteilt. Abschnitte ohne Schläge bleiben als Pause im Song.
 
 Für Bausteine ohne Arrangement gibt es [`install_patterns.py`](install_patterns.py). Beide
 Einspiel-Skripte brechen ab, solange HZ-Drummer läuft: Das Programm würde seinen Stand sonst

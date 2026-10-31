@@ -33,13 +33,17 @@ private:
     void setStatus (const juce::String&);   // any thread
     void finished();                         // message thread
     void showSource (int index);             // tick and text: a source that is there keeps a greyed tick
+    void openFolder (const juce::File&);     // in the desktop's file manager
 
     juce::File script, data;
     std::vector<Source> sources;
     juce::OwnedArray<juce::ToggleButton> ticks;
     juce::OwnedArray<juce::Label> details;
+    juce::OwnedArray<juce::TextButton> folders;   // a source's folder: its original files and their conversion
+    juce::Component blocks;    // the sources, one block each
+    juce::Viewport viewport;   // scrolls them when they do not fit on the screen
     juce::Label intro, status;
-    juce::TextButton importButton { "Importieren" }, logButton { "Import-Log" };
+    juce::TextButton importButton { "Importieren" }, logButton { "Import-Log" }, rootButton { "Import-Ordner" };
     juce::StringArray queue;   // ids to load, set before the thread starts
     juce::ChildProcess process;
 };
