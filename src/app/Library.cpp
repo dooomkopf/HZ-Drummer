@@ -223,7 +223,7 @@ FolderNode Library::folders (FolderTree::Area area) const
             continue;
         // songs: top level; own patterns: band, then song if they belong to one; bundled: style
         FolderPath place;
-        if (area == FolderTree::Patterns)
+        if (area == FolderTree::Patterns && bandOf (p) != otherBand)   // without a band: at the top, easy to find again
         {
             place.add (bandOf (p));
             if (const auto group = groupOf (p); group.isNotEmpty())
@@ -245,6 +245,16 @@ juce::String Library::editFolders (FolderTree::Area area, const std::function<ju
         return error;
     auto changed = folderTree;
     changed.set (area, std::move (root));
+    if (const auto error = changed.save (folderFile()); error.isNotEmpty())
+        return error;
+    folderTree = std::move (changed);
+    return {};
+}
+
+juce::String Library::setFolderHidden (FolderTree::Area area, const juce::String& name, bool hidden)
+{
+    auto changed = folderTree;
+    changed.setHidden (area, name, hidden);
     if (const auto error = changed.save (folderFile()); error.isNotEmpty())
         return error;
     folderTree = std::move (changed);

@@ -56,6 +56,9 @@ public:
     }
     FolderNode folders (FolderTree::Area) const;             // every entry of the area in its place
     juce::String editFolders (FolderTree::Area, const std::function<juce::String (FolderNode&)>& edit);   // "" on success
+    // top-level folders the main menu leaves out (System → Menü-Ordner); saved at once
+    bool folderHidden (FolderTree::Area area, const juce::String& name) const { return folderTree.isHidden (area, name); }
+    juce::String setFolderHidden (FolderTree::Area, const juce::String& name, bool hidden);
 
     static juce::File userPatternFolder();   // ~/.config/HZ-Drummer/patterns
     static juce::File songFolder();          // ~/.config/HZ-Drummer/songs

@@ -183,10 +183,14 @@ static void testFolderFile()
     CHECK (folders::renameFolder (library, path ({ "techdeath" }), "Tech-Death").isEmpty());
     CHECK (library.folders.size() == 1 && library.folders[0].name == "Tech-Death" && library.folders[0].items.size() == 2);
     tree.set (FolderTree::Bundled, library);
+    tree.setHidden (FolderTree::Patterns, "Carcass", true);   // System → Menü-Ordner: travels with the file
     CHECK (tree.save (file).isEmpty());
 
     FolderTree loaded;
     CHECK (loaded.load (file).isEmpty());
+    CHECK (loaded.isHidden (FolderTree::Patterns, "carcass") && ! loaded.isHidden (FolderTree::Patterns, "Exhorder"));
+    loaded.setHidden (FolderTree::Patterns, "CARCASS", false);
+    CHECK (! loaded.isHidden (FolderTree::Patterns, "Carcass"));
     const auto back = loaded.resolve (FolderTree::Patterns, patterns());
     CHECK (folders::find (back, path ({ "Carcass", "Übungen" })) != nullptr);
     CHECK (loaded.resolve (FolderTree::Bundled, bundled).folders.size() == 1);   // bleibt zusammengelegt

@@ -6,6 +6,7 @@
 #include "app/QuickSearch.h"
 #include "app/PreviewMenuItem.h"
 #include "app/SearchQuery.h"
+#include "app/SearchIndex.h"
 #include "engine/PatternEdit.h"
 #include "engine/TabParser.h"
 
@@ -157,6 +158,13 @@ static void testSharedSearch()
     CHECK (SearchQuery::parse ("140").words == "140"); // bare numbers may be names
     const auto phrase = SearchQuery::parse ("my time");
     CHECK (phrase.score (title, text, 204, meters, true) > phrase.score (title, text, 204, meters, false));
+
+    // the lanes of a pattern are search words: "besen" finds the brushes, "flam" the flams
+    const auto brushed = hz::parseTabs ("name: Besen\ngrid: 1/4\nbs | x . x . |\nws | . x . x |\nhp | x . x . |\nsn | . . f . |\n").patterns.at (0);
+    const auto words = laneSearchWords (brushed);
+    CHECK (words.contains ("besen") && words.contains ("wischer") && words.contains ("pedal") && words.contains ("flam"));
+    CHECK (! words.contains ("china") && ! words.contains ("ride"));
+    CHECK (SearchQuery::parse ("besen").score ("Besen", words.joinIntoString (" "), 120, { { 4, 4 } }, false) > 0);
 }
 
 // All destructive checks operate only on a fresh temporary folder.

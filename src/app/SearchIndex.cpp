@@ -68,6 +68,7 @@ void SearchIndex::build (const Library& lib)
         juce::StringArray words { it.title, it.origin, groupTitle (it.group), Library::meterText (p), juce::String ((int) p.tempo) };
         for (auto& t : p.tags)
             words.add (juce::String (t) + " " + Library::styleTitle (t));
+        words.addArray (laneSearchWords (p));   // "besen", "sidestick", "china" ... find the patterns that use them
         it.haystack = words.joinIntoString (" ").toLowerCase();
         items.push_back (std::move (it));
     }

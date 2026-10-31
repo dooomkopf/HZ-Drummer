@@ -118,6 +118,7 @@ private:
     juce::String laneLabel (const Lane&) const;                    // what the kit really plays ("Zil-Bel" instead of "Kuhglocke")
     bool laneSilent (const Lane&) const;                           // the kit has no sound for it
     void showLaneMenu (int lane);                                  // right click on a lane name: "Übertragen auf"
+    void setStretch (double percent, int anchorX);                 // bar width in %, the time at anchorX (viewport) stays put
 
     EditorHost& host;
     EditorHost::Playhead lastPlayhead;
@@ -129,6 +130,7 @@ private:
     hz::Pattern tempoBefore;
     bool tempoDragging = false;
     int rowH = 26;
+    float stretch = 1.0f;          // how much wider than usual the bars are drawn; only for the pattern in hand
     bool userPattern = false;
     bool dirty = false;
     bool blockMode = false;        // see setBlockPattern
@@ -149,7 +151,8 @@ private:
     juce::ComboBox swingBox;
     juce::Slider humanizeSlider;
     juce::Slider tempoSlider;   // the pattern's own tempo (what it starts with when selected)
-    juce::Label humanizeLabel { {}, "Menschlich" }, infoLabel;
+    juce::Slider stretchSlider; // "Breite": the view only, back to 100 % when another pattern comes in
+    juce::Label humanizeLabel { {}, "Menschlich" }, stretchLabel { {}, "Breite" }, infoLabel;
     HelpLine help;   // the two lines at the foot; own text: hilfezeile-raster.txt in the data folder
     std::unique_ptr<EditorGrid> grid;
     juce::Viewport viewport;

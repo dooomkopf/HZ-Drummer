@@ -142,3 +142,76 @@ private:
     juce::TextEditor output;
     juce::TextButton reload { "Aktualisieren" }, clear { "Log leeren" };
 };
+
+// System → Menü-Ordner: a tick per top-level folder says whether the Baustein menu of the main window shows it;
+// saved at once (ordner.json). The search (Strg+K) and the arranger still know every entry.
+class MenuFoldersPanel : public juce::Component
+{
+public:
+    explicit MenuFoldersPanel (Library& lib) : library (lib)
+    {
+        addAndMakeVisible (hint);
+        hint.setText ("Haken weg: Der Ordner fehlt im Baustein-Menü des Hauptfensters. Suchen (Strg+K) und der Arranger finden seine Bausteine weiterhin."_u,
+                      juce::dontSendNotification);
+        hint.setFont (juce::FontOptions (14.0f));
+        hint.setColour (juce::Label::textColourId, juce::Colour (0xffe07a70));   // the light red of all help lines
+        hint.setJustificationType (juce::Justification::topLeft);
+        addAndMakeVisible (viewport);
+        viewport.setViewedComponent (&list, false);
+        viewport.setScrollBarsShown (true, false);
+    }
+
+    void refresh()
+    {
+        list.removeAllChildren();
+        rows.clear();
+        const int width = juce::jmax (320, viewport.getWidth() - 24);
+        int y = 4;
+        for (auto area : { FolderTree::Songs, FolderTree::Patterns, FolderTree::Bundled })
+        {
+            auto* title = new juce::Label();
+            rows.add (title);
+            title->setText (area == FolderTree::Songs ? "Arrangements (Songs)"_u : area == FolderTree::Patterns ? "Bausteine (Pattern)" : "Bibliothek-Bausteine",
+                            juce::dontSendNotification);
+            title->setFont (juce::FontOptions (15.0f, juce::Font::bold));
+            title->setColour (juce::Label::textColourId, theme::textMain);
+            list.addAndMakeVisible (title);
+            title->setBounds (0, y, width, 26);
+            y += 28;
+            for (const auto& f : library.folders (area).folders)
+            {
+                auto* tick = new juce::ToggleButton (f.name + "   (" + juce::String (folders::countItems (f)) + ")");
+                rows.add (tick);
+                tick->setColour (juce::ToggleButton::textColourId, theme::textMain);
+                tick->setColour (juce::ToggleButton::tickColourId, theme::textMain);
+                tick->setToggleState (! library.folderHidden (area, f.name), juce::dontSendNotification);
+                tick->onClick = [this, area, name = f.name, tick]
+                {
+                    if (const auto error = library.setFolderHidden (area, name, ! tick->getToggleState()); error.isNotEmpty())
+                        juce::AlertWindow::showMessageBoxAsync (juce::MessageBoxIconType::WarningIcon, "Nicht gespeichert", error);
+                };
+                list.addAndMakeVisible (tick);
+                tick->setBounds (12, y, width - 12, 26);
+                y += 28;
+            }
+            y += 12;
+        }
+        list.setSize (width + 12, y);
+    }
+
+    void resized() override
+    {
+        auto r = getLocalBounds().reduced (12);
+        hint.setBounds (r.removeFromTop (44));
+        r.removeFromTop (6);
+        viewport.setBounds (r);
+        refresh();   // the rows follow the width
+    }
+
+private:
+    Library& library;
+    juce::Label hint;
+    juce::Viewport viewport;
+    juce::Component list;
+    juce::OwnedArray<juce::Component> rows;
+};

@@ -173,6 +173,12 @@ void ArrangerPanel::libraryChanged()
     updateDetail();
 }
 
+void ArrangerPanel::badgesChanged()
+{
+    libraryChanged();   // search index (Finden) and sequence
+    modelChanged();     // Ablage cards
+}
+
 void ArrangerPanel::loadSong (const Song& s)
 {
     confirmDiscard ([this, s]

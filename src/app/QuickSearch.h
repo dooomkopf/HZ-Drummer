@@ -26,17 +26,24 @@ public:
         std::vector<std::pair<int, int>> meters;
         int colour = -1, shape = 0;
         std::function<void()> action;
+        std::function<void()> preview;        // the play button behind the kind (mouse over the row): plays it, again: stops
+        std::function<bool()> isPreviewing;   // shown as a stop mark
     };
 
     QuickSearch();
 
     void open (std::vector<Item> items);
-    void close();
+    void close (bool chosen = false);   // dismissed (Esc, click outside): onDismiss, e.g. to end a preview
+
+    std::function<void()> onDismiss;
 
     void paint (juce::Graphics&) override;
     void resized() override;
     void mouseDown (const juce::MouseEvent&) override;
     void mouseMove (const juce::MouseEvent&) override;
+    void mouseExit (const juce::MouseEvent&) override;
+    void mouseDrag (const juce::MouseEvent&) override;   // the scroll bar on the right can be dragged
+    void mouseUp (const juce::MouseEvent&) override;
     void mouseWheelMove (const juce::MouseEvent&, const juce::MouseWheelDetails&) override;
 
 private:
@@ -46,6 +53,9 @@ private:
     void choose (int index);
     juce::Rectangle<int> panelBounds() const;
     int rowAt (juce::Point<int>) const;   // result index under the point, or -1
+    juce::Rectangle<int> playButton (int row) const;   // behind the kind column of a shown row
+    juce::Rectangle<int> scrollTrack() const;          // the thin bar on the right of the list
+    void scrollToY (int y);                            // the thumb's centre to y (click or drag on the bar)
     int visibleRows() const;              // rows that fit, at most maxRows
     void select (int index);              // clamps and scrolls the selection into view
 
@@ -58,4 +68,6 @@ private:
     std::vector<int> results;   // indices into 'all', best match first
     int selected = 0;
     int first = 0;              // first result shown (scroll position)
+    int hoverRow = -1;          // the row under the mouse (its play button shows)
+    bool draggingScroll = false;
 };

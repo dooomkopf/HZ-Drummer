@@ -1,4 +1,6 @@
 #include "app/SearchQuery.h"
+
+#include <set>
 #include "app/QuickSearch.h"
 
 #include <algorithm>
@@ -106,4 +108,33 @@ int SearchQuery::score (const juce::String& title, const juce::String& haystack,
     if (words.isNotEmpty() && title.toLowerCase().contains (words.trimEnd()))
         value += 300;
     return value + (favorite ? 150 : 0);
+}
+
+juce::StringArray laneSearchWords (const hz::Pattern& p)
+{
+    static const std::pair<const char*, const char*> names[] = {
+        { "kick", "bass bassdrum kick" }, { "snare", "snare" }, { "snare.rim", "rimshot rim" }, { "snare.side", "sidestick" },
+        { "snare.brush", "besen brush" }, { "snare.sweep", "besen wischer brush" }, { "snare.sweeplong", "besen wischer brush" },
+        { "hihat", "hihat" }, { "hihat.open", "hihat offen open" }, { "hihat.half", "hihat halb" }, { "hihat.pedal", "hihat pedal fuss" },
+        { "ride", "ride" }, { "ride.bell", "glocke ride-glocke bell" }, { "ride.brush", "besen ride brush" },
+        { "crash1", "crash" }, { "crash2", "crash" }, { "china", "china" }, { "splash", "splash" },
+        { "tom1", "tom toms" }, { "tom2", "tom toms" }, { "tom3", "tom toms" }, { "tom4", "tom toms" }, { "tom2.brush", "besen tom brush" },
+        { "cowbell", "kuhglocke cowbell" },
+    };
+    std::set<std::string> used;
+    bool flam = false;
+    for (const auto& l : p.layers)
+        for (const auto& e : l.events)
+        {
+            used.insert (hz::voiceKey (e.voice));
+            flam = flam || e.flam;
+        }
+    juce::StringArray out;
+    for (const auto& [key, words] : names)
+        if (used.count (key) > 0)
+            out.addTokens (words, false);
+    if (flam)
+        out.add ("flam");
+    out.removeDuplicates (true);
+    return out;
 }

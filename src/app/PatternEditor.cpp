@@ -22,8 +22,8 @@ PatternEditor::PatternEditor (EditorHost& h) : host (h), help ("hilfezeile-raste
         { { I::Snare, A::Normal },   "Snare", true },     { { I::Snare, A::Rim },     "Snare Rim", false },
         { { I::Snare, A::Side },     "Sidestick", false },
         // brushes: only with a kit that has them (Swirly Drums added to the Aasimonster), else only when used
-        { { I::Snare, A::Brush },    "Snare Besen", false },  { { I::Snare, A::Sweep }, "Besen-Wischer", false },
-        { { I::Snare, A::SweepLong }, "Besen-Wischer lang", false },
+        { { I::Snare, A::Brush },    "Snare Besen", false },  { { I::Snare, A::Sweep }, "Besen kurz", false },
+        { { I::Snare, A::SweepLong }, "Besen lang", false },
         { { I::Tom1, A::Normal },    "Tom 1", true },     { { I::Tom2, A::Normal },   "Tom 2", false },
         { { I::Tom2, A::Brush },     "Tom 2 Besen", false },
         { { I::Tom3, A::Normal },    "Tom 3", true },     { { I::Tom4, A::Normal },   "Tom 4", false },
@@ -110,6 +110,20 @@ PatternEditor::PatternEditor (EditorHost& h) : host (h), help ("hilfezeile-raste
     };
     humanizeSlider.onDragEnd = [this] { humanizeDragging = false; changed (humanizeBefore); };
 
+    // how wide the bars are drawn (also Strg+Mausrad over the raster): the view only, never part of the pattern
+    addAndMakeVisible (stretchLabel);
+    stretchLabel.setColour (juce::Label::textColourId, textDim);
+    addAndMakeVisible (stretchSlider);
+    stretchSlider.setWantsKeyboardFocus (false);
+    stretchSlider.setRange (100.0, 800.0, 5.0);
+    stretchSlider.setSkewFactorFromMidPoint (250.0);   // more travel for the small factors
+    stretchSlider.setValue (100.0, juce::dontSendNotification);
+    stretchSlider.setTextValueSuffix (" %");
+    stretchSlider.getProperties().set ("pill", true);   // value box drawn by HZLook as a pill
+    stretchSlider.setTextBoxStyle (juce::Slider::TextBoxRight, false, 64, 24);
+    stretchSlider.setTooltip ("Breite der Takte, nur in der Ansicht und nur für diesen Baustein. Auch mit Strg+Mausrad über dem Raster.");
+    stretchSlider.onValueChange = [this] { setStretch (stretchSlider.getValue(), viewport.getMaximumVisibleWidth() / 2); };
+
     // the pattern's tempo, a slider like the main window's: one undo step per drag and per typed value; the main tempo follows
     addAndMakeVisible (tempoSlider);
     tempoSlider.setWantsKeyboardFocus (false);
@@ -187,6 +201,11 @@ void PatternEditor::setPattern (const hz::Pattern& p, bool isUserPattern)
 void PatternEditor::load (const hz::Pattern& p, bool isUserPattern)
 {
     grid->cancelDrag();   // a drag in progress belongs to the old document
+    if (pattern.bars.empty() || p.id != pattern.id)   // another pattern: its bars as wide as usual again
+    {
+        stretch = 1.0f;
+        stretchSlider.setValue (100.0, juce::dontSendNotification);
+    }
     pattern = p;
     savedContent = p;
     userPattern = isUserPattern;
@@ -244,7 +263,7 @@ void PatternEditor::updateControls()
     // an empty raster (nothing loaded, or closed): nothing to add to, take over, save or shape
     for (auto* c : { (juce::Component*) &addBarButton, (juce::Component*) &saveAsButton,
                      (juce::Component*) &swingBox, (juce::Component*) &humanizeSlider, (juce::Component*) &humanizeLabel,
-                     (juce::Component*) &allLanesToggle })
+                     (juce::Component*) &stretchSlider, (juce::Component*) &stretchLabel, (juce::Component*) &allLanesToggle })
         c->setEnabled (! pattern.bars.empty());
 
     int best = 0;
@@ -392,6 +411,21 @@ void PatternEditor::timerCallback()
         grabKeyboardFocus();
 }
 
+void PatternEditor::setStretch (double percent, int anchorX)
+{
+    percent = juce::jlimit (stretchSlider.getMinimum(), stretchSlider.getMaximum(), percent);
+    const auto factor = (float) (percent / 100.0);
+    stretchSlider.setValue (percent, juce::dontSendNotification);
+    if (std::abs (factor - stretch) < 0.0001f)
+        return;
+    // every column scales by the same ratio: the point of the raster under anchorX stays under it
+    const double anchorInGrid = viewport.getViewPositionX() + anchorX;
+    const double ratio = factor / stretch;
+    stretch = factor;
+    grid->layoutFor (viewport.getWidth() - 2);
+    viewport.setViewPosition ((int) std::round (anchorInGrid * ratio) - anchorX, viewport.getViewPositionY());   // clamped by the viewport
+}
+
 void PatternEditor::resized()
 {
     auto area = getLocalBounds().reduced (12);
@@ -412,6 +446,9 @@ void PatternEditor::resized()
     row1.removeFromLeft (10);
     humanizeLabel.setBounds (row1.removeFromLeft (90));
     humanizeSlider.setBounds (row1.removeFromLeft (190));   // a little shorter, room for the tempo slider
+    row1.removeFromLeft (16);
+    stretchLabel.setBounds (row1.removeFromLeft (juce::jmin (60, row1.getWidth())));
+    stretchSlider.setBounds (row1.removeFromLeft (juce::jmin (200, row1.getWidth())));   // a narrow window: Strg+Mausrad still works
 
     area.removeFromTop (8);
     auto row2 = area.removeFromTop (32);

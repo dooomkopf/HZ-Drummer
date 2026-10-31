@@ -40,6 +40,7 @@ public:
     bool editSelectedBlock();         // opens the selected block in the raster; false if there is none
     juce::String songName() const     { return juce::String (model.song().name); }
     void libraryChanged();            // patterns/songs changed: rebuild the search index
+    void badgesChanged();             // badges redistributed: Finden, sequence and Ablage draw them anew
     bool hasUnsavedChanges() const    { return model.hasUnsavedChanges(); }
     bool usesPattern (const std::string& id) const;
     void songDeleted (const std::string& libraryId);

@@ -2,6 +2,8 @@
 
 #include <juce_graphics/juce_graphics.h>
 
+#include "app/views/MaterialBadgeCount.h"
+
 // The "badge" that identifies a building block everywhere (Finden, Ablage, sequence, song strip):
 // a colour from a fixed palette plus a light grey geometric mark with a thin dark separator.
 // Colour and mark are derived from the source pattern's id (see Song.cpp, sourceColourIndex /
@@ -14,16 +16,20 @@
 namespace theme
 {
     constexpr int numPartColours = 12;
-    constexpr int numBadgeShapes = 16;
+    constexpr int numOwnMarks = 17;   // 0..16: the geometric marks below
+    constexpr int numBadgeShapes = numOwnMarks + materialbadges::count;   // then the Material Symbols
+    constexpr bool isOwnMark (int shape) { return shape >= 0 && shape < numOwnMarks; }
     constexpr int restColourIndex = 100, clickColourIndex = 101;   // rest/click parts: outside the palette
 
     // Palette colour by index (wraps); rest and click have their own greys
     juce::Colour partColour (int index);
+
 
     // The badge: 'r' filled with the colour, the mark (shape 0..numBadgeShapes-1) in light grey on top
     //   0 plain, 1 top half, 2 bottom half, 3 left half, 4 right half, 5 upper-left triangle,
     //   6 lower-right triangle, 7 horizontal bar, 8 vertical bar, 9 dot,
     //   10..13 triangle with its apex up / right / down / left (base along the opposite edge),
     //   14 cross (horizontal and vertical bar combined), 15 centred square (as wide as the dot)
+    //   16 X; from 17 on Google Material Symbols in the same grey (list: assets/material-symbols/auswahl.txt)
     void drawSourceBadge (juce::Graphics&, juce::Rectangle<float> r, int colourIndex, int shapeIndex);
 }

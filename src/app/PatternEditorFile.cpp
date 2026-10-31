@@ -8,6 +8,8 @@
 #include "engine/MeterCatalog.h"
 #include "engine/PatternEdit.h"
 
+#include <algorithm>
+
 void PatternEditor::clearPattern()
 {
     grid->cancelDrag();
@@ -128,6 +130,10 @@ void PatternEditor::save (bool asNew)
         auto candidate = safe->pattern;
         if (newName.isNotEmpty())
             candidate.name = newName.toStdString();
+        if (createNew)   // a new own pattern stands at the top of the Bausteine, not in the folder of its source
+            candidate.tags.erase (std::remove_if (candidate.tags.begin(), candidate.tags.end(), [] (const std::string& t)
+                                                  { return t.rfind ("band:", 0) == 0 || t.rfind ("song:", 0) == 0; }),
+                                  candidate.tags.end());
 
         if (auto err = safe->host.savePattern (candidate, createNew); err.isNotEmpty())
         {

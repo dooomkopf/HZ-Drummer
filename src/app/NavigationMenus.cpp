@@ -7,6 +7,7 @@
 #include "app/StarButton.h"
 #include "app/Text.h"
 
+#include <algorithm>
 #include <map>
 
 namespace
@@ -117,7 +118,11 @@ juce::PopupMenu buildPatternMenu (const Library& lib, int current, const Pattern
     };
     for (auto area : { FolderTree::Songs, FolderTree::Patterns, FolderTree::Bundled })
     {
-        const auto root = lib.folders (area);
+        auto root = lib.folders (area);
+        // folders switched off under System → Menü-Ordner stay out of the menu (the search still finds their entries)
+        root.folders.erase (std::remove_if (root.folders.begin(), root.folders.end(),
+                                            [&] (const FolderNode& f) { return lib.folderHidden (area, f.name); }),
+                            root.folders.end());
         if (folders::countItems (root) == 0)
             continue;
         menu.addSectionHeader (area == FolderTree::Songs ? "Arrangements (Songs)"_u
@@ -164,7 +169,9 @@ bool addFolderMenu (juce::PopupMenu& menu, const FolderNode& node,
 std::vector<QuickSearch::Item> buildSearchItems (const Library& lib, const MeterLibrary& meters,
                                                  std::function<void (const std::string&)> selectPattern,
                                                  std::function<void (int)> selectMeter,
-                                                 std::function<void()> selectMetronome)
+                                                 std::function<void()> selectMetronome,
+                                                 std::function<void (const std::string&)> previewPattern,
+                                                 std::function<bool (const std::string&)> isPreviewing)
 {
     std::vector<QuickSearch::Item> items;
 
@@ -192,6 +199,10 @@ std::vector<QuickSearch::Item> buildSearchItems (const Library& lib, const Meter
         it.colour = source.colour;
         it.shape = source.shape;
         it.action = [selectPattern, id = source.id] { selectPattern (id); };
+        if (previewPattern)
+            it.preview = [previewPattern, id = source.id] { previewPattern (id); };
+        if (isPreviewing)
+            it.isPreviewing = [isPreviewing, id = source.id] { return isPreviewing (id); };
         items.push_back (std::move (it));
     }
 

@@ -35,4 +35,6 @@ bool addFolderMenu (juce::PopupMenu&, const FolderNode&,
 std::vector<QuickSearch::Item> buildSearchItems (const Library&, const MeterLibrary&,
                                                  std::function<void (const std::string& patternId)> selectPattern,
                                                  std::function<void (int meterIndex)> selectMeter,
-                                                 std::function<void()> selectMetronome);
+                                                 std::function<void()> selectMetronome,
+                                                 std::function<void (const std::string& patternId)> previewPattern = {},
+                                                 std::function<bool (const std::string& patternId)> isPreviewing = {});

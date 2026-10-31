@@ -5,6 +5,8 @@
 #include "app/PatternIO.h"
 #include "app/Song.h"
 #include "app/SongRename.h"
+#include "app/views/MaterialBadgePaths.h"
+#include "app/views/SourceBadge.h"
 #include "engine/TabParser.h"
 
 #include <algorithm>
@@ -446,7 +448,8 @@ static void testBadgeRegistry()
     const auto f = tempFile ("abzeichen.json");
     f.deleteFile();
     std::vector<hz::Pattern> lib;
-    for (int i = 0; i < 200; ++i)
+    const int patternCount = BadgeRegistry::totalBadges() + 96;
+    for (int i = 0; i < patternCount; ++i)   // deliberately exceed the available palette
     {
         hz::Pattern p;
         p.id = "lib.test-" + std::to_string (i);
@@ -456,8 +459,8 @@ static void testBadgeRegistry()
     reg.load (f);
     CHECK (reg.ensure (lib));
     auto st = reg.stats (lib);
-    CHECK (st.patterns == 200 && st.used == BadgeRegistry::totalBadges());   // all 168 taken, the rest must share
-    CHECK (st.shared == 2 * (200 - BadgeRegistry::totalBadges()) || st.shared >= 200 - BadgeRegistry::totalBadges());
+    CHECK (st.patterns == patternCount && st.used == BadgeRegistry::totalBadges());   // all taken, the rest must share
+    CHECK (st.shared == 2 * (patternCount - BadgeRegistry::totalBadges()) || st.shared >= patternCount - BadgeRegistry::totalBadges());
 
     std::vector<hz::Pattern> few (lib.begin(), lib.begin() + 100);
     BadgeRegistry reg2;
@@ -467,7 +470,128 @@ static void testBadgeRegistry()
     CHECK (reg2.badgeFor ("lib.test-7").colour == reg.badgeFor ("lib.test-7").colour
         && reg2.badgeFor ("lib.test-7").shape == reg.badgeFor ("lib.test-7").shape);   // stable across a reload
     CHECK (! reg2.ensure (few));                                      // nothing new: nothing changes
+    // A previously full palette left duplicates: free new slots repair those,
+    // while the first owner and unrelated unique badges remain stable.
+    CHECK (f.replaceWithText (R"({"formatVersion":1,"badges":{"user.a":[2,3],"user.b":[2,3],"user.c":[4,5]}})"));
+    BadgeRegistry expanded;
+    expanded.load (f);
+    std::vector<hz::Pattern> migration (3);
+    migration[0].id = "user.a"; migration[1].id = "user.b"; migration[2].id = "user.c";
+    CHECK (expanded.ensure (migration));
+    CHECK (expanded.stats (migration).shared == 0);
+    CHECK (expanded.badgeFor ("user.a").colour == 2 && expanded.badgeFor ("user.a").shape == 3);
+    CHECK (expanded.badgeFor ("user.c").colour == 4 && expanded.badgeFor ("user.c").shape == 5);
+    CHECK (! expanded.ensure (migration));
+    expanded.load (f);
+    CHECK (! expanded.ensure (migration) && expanded.stats (migration).shared == 0);
     f.deleteFile();
+}
+
+// Badge rules: the small folders get the own marks (whole folders only), or the own marks are spread;
+// redistributing gives every pattern a badge of its own, rolled by a seed, and the rule is kept
+static void testBadgeRules()
+{
+    const auto f = tempFile ("abzeichen-regeln.json");
+    f.deleteFile();
+    std::vector<hz::Pattern> lib;
+    auto add = [&] (const std::string& prefix, int count, const std::string& band)
+    {
+        for (int i = 0; i < count; ++i)
+        {
+            hz::Pattern p;
+            p.id = prefix + std::to_string (i);
+            if (! band.empty())
+                p.tags.push_back ("band:" + band);
+            lib.push_back (p);
+        }
+    };
+    add ("lib.t", 40, "");
+    add ("user.own", 5, "");
+    add ("user.a", 30, "Kleine Band");
+    add ("user.m", 150, "Mittlere Sammlung");   // 5 + 30 + 40 + 150 > 204: this folder does not fit as a whole
+    add ("user.g", 900, "Große Sammlung");
+
+    BadgeRegistry reg;
+    reg.load (f);
+    CHECK (reg.rule() == BadgeRegistry::Rule::OwnFirst);   // the default
+    reg.redistribute (lib, 1);
+    auto own = [&] (const std::string& id) { return theme::isOwnMark (reg.badgeFor (id).shape); };
+    CHECK (own ("lib.t0") && own ("lib.t39") && own ("user.own4") && own ("user.a29"));
+    CHECK (! own ("user.m0") && ! own ("user.m149") && ! own ("user.g5"));
+    CHECK (reg.stats (lib).shared == 0);
+    for (auto& p : lib)
+        CHECK (reg.badgeFor (p.id).shape >= 0 && reg.badgeFor (p.id).shape < theme::numBadgeShapes);
+
+    // the same seed gives the same badges again, another seed mostly others (and keeps the rule)
+    std::vector<BadgeRegistry::Badge> first;
+    for (auto& p : lib)
+        first.push_back (reg.badgeFor (p.id));
+    reg.redistribute (lib, 1);
+    int same = 0;
+    for (size_t i = 0; i < lib.size(); ++i)
+        same += reg.badgeFor (lib[i].id).colour == first[i].colour && reg.badgeFor (lib[i].id).shape == first[i].shape ? 1 : 0;
+    CHECK (same == (int) lib.size());
+    reg.redistribute (lib, 2);
+    same = 0;
+    for (size_t i = 0; i < lib.size(); ++i)
+        same += reg.badgeFor (lib[i].id).colour == first[i].colour && reg.badgeFor (lib[i].id).shape == first[i].shape ? 1 : 0;
+    CHECK (same < (int) lib.size() / 10);
+    CHECK (own ("lib.t0") && own ("user.a29") && ! own ("user.m0") && reg.stats (lib).shared == 0);
+
+    // mixed: about ownBadges() patterns carry an own mark, spread over all folders
+    CHECK (reg.setRule (BadgeRegistry::Rule::Mixed));
+    reg.redistribute (lib, 3);
+    int ownCount = 0, ownInLarge = 0;
+    for (auto& p : lib)
+        if (own (p.id))
+        {
+            ++ownCount;
+            ownInLarge += p.id.rfind ("user.g", 0) == 0 ? 1 : 0;
+        }
+    CHECK (ownCount > BadgeRegistry::ownBadges() * 3 / 4 && ownCount <= BadgeRegistry::ownBadges());
+    CHECK (ownInLarge > ownCount / 2);   // the large folder holds most patterns, so most of the own marks
+    CHECK (reg.stats (lib).shared == 0);
+
+    BadgeRegistry again;
+    again.load (f);
+    CHECK (again.rule() == BadgeRegistry::Rule::Mixed);
+    CHECK (again.badgeFor ("user.m3").colour == reg.badgeFor ("user.m3").colour
+        && again.badgeFor ("user.m3").shape == reg.badgeFor ("user.m3").shape);
+    f.deleteFile();
+}
+
+// Every Material Symbol outline parses into a shape inside its 960 x 960 box (viewBox 0 -960 960 960)
+static void testMaterialPaths()
+{
+    for (size_t i = 0; i < materialbadges::svgPaths.size(); ++i)
+    {
+        const auto path = juce::Drawable::parseSVGPath (materialbadges::svgPaths[i]);
+        const auto b = path.getBounds();
+        const float slack = 48.0f;   // a few glyphs overshoot their box slightly in the font itself (umbrella, pliers)
+        const bool ok = ! path.isEmpty() && b.getX() >= -slack && b.getRight() <= 960.0f + slack
+                     && b.getY() >= -960.0f - slack && b.getBottom() <= slack && b.getWidth() > 100.0f && b.getHeight() > 100.0f;
+        if (! ok)
+            std::printf ("Material-Symbol %s: Umriss %s\n", materialbadges::names[i], b.toString().toRawUTF8());
+        CHECK (ok);
+    }
+
+    // HZ_BADGE_PNG=<file>: the first 100 symbols as 18 px badges on all colours, drawn by JUCE (to look at)
+    if (const auto out = juce::SystemStats::getEnvironmentVariable ("HZ_BADGE_PNG", {}); out.isNotEmpty())
+    {
+        juce::Image image (juce::Image::ARGB, 12 * 23 + 30, 100 * 23 / 4 + 40, true);
+        {
+            juce::Graphics g (image);
+            g.fillAll (juce::Colour (0xff1c1c20));
+            for (int s = 0; s < 100; ++s)
+                for (int c = 0; c < theme::numPartColours; ++c)
+                    if (s % 4 == 0)
+                        theme::drawSourceBadge (g, juce::Rectangle<float> (6.0f + 23.0f * (float) c, 6.0f + 23.0f * (float) (s / 4), 18.0f, 18.0f),
+                                                c, theme::numOwnMarks + s);
+        }
+        juce::File (out).deleteFile();
+        juce::FileOutputStream stream ((juce::File (out)));
+        juce::PNGImageFormat().writeImageToStream (image, stream);
+    }
 }
 
 // Umbenennen eines Patterns: Kopien in Songs folgen, solange sie noch den alten Namen tragen;
@@ -519,6 +643,8 @@ void runSongTests()
 {
     testRenameCopies();
     testBadgeRegistry();
+    testBadgeRules();
+    testMaterialPaths();
     testReadV1();
     testWriteV2RoundTrip();
     testBarRange();

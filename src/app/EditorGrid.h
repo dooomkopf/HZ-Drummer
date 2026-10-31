@@ -40,7 +40,8 @@ public:
         for (auto& b : p.bars)
             totalSteps += (int) (b.lengthInQuarters() / (b.grid * hz::Rational (4))).num;
 
-        const float cellW = juce::jmax ((float) minCellW, (float) availableWidth / (float) juce::jmax (1, totalSteps));
+        const float cellW = juce::jmax ((float) minCellW, (float) availableWidth / (float) juce::jmax (1, totalSteps))
+                          * owner.stretch;   // "Breite": wider bars for a closer look
         columns.clear();
         headers.clear();
 
@@ -372,6 +373,18 @@ public:
         drag.active = false;
         owner.changed (drag.before);
         repaint();
+    }
+
+    // Strg+Mausrad: the bars wider or narrower, the time under the mouse stays; otherwise the viewport scrolls
+    void mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDetails& wheel) override
+    {
+        if (! e.mods.isCommandDown() || wheel.deltaY == 0.0f)
+        {
+            juce::Component::mouseWheelMove (e, wheel);
+            return;
+        }
+        const int anchor = e.getEventRelativeTo (&owner.viewport).getPosition().x;
+        owner.setStretch (owner.stretch * 100.0 * std::exp (wheel.deltaY * 0.7), anchor);   // about 15 % per notch
     }
 
     void mouseDown (const juce::MouseEvent& e) override

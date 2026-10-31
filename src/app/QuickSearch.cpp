@@ -64,7 +64,7 @@ QuickSearch::QuickSearch()
     addAndMakeVisible (field);
     field.setFont (juce::FontOptions (22.0f));
     field.getProperties().set ("pill", true);        // drawn by HZLook as a pill
-    field.setIndents (18, field.getTopIndent());     // text clear of the round ends
+    field.setIndents (18, 4);     // text clear of the round ends; the top indent is set in resized() (centred)
     field.setTextToShowWhenEmpty ("Suchen: Baustein, Arrangement, Stil, Künstler, Taktart (z.B. 7/8) ..."_u, textDim);
     field.onTextChange = [this] { update(); };
     field.onReturnKey = [this] { choose (selected); };
@@ -83,11 +83,14 @@ void QuickSearch::open (std::vector<Item> items)
     field.grabKeyboardFocus();
 }
 
-void QuickSearch::close()
+void QuickSearch::close (bool chosen)
 {
     setVisible (false);
+    hoverRow = -1;
     if (auto* p = getParentComponent())
         p->grabKeyboardFocus();
+    if (! chosen && onDismiss)
+        onDismiss();
 }
 
 void QuickSearch::update()
@@ -120,7 +123,7 @@ void QuickSearch::choose (int index)
     if (index < 0 || index >= (int) results.size())
         return;
     auto action = all[(size_t) results[(size_t) index]].action;
-    close();
+    close (true);
     if (action)
         action();
 }
@@ -170,6 +173,8 @@ juce::Rectangle<int> QuickSearch::panelBounds() const
 void QuickSearch::resized()
 {
     field.setBounds (panelBounds().reduced (14).removeFromTop (44));
+    // the text sits in the middle of the pill: the editor draws from the top, so the top indent makes up the difference
+    field.setIndents (18, juce::jmax (0, (field.getHeight() - juce::roundToInt (field.getFont().getHeight())) / 2 - 1));
 }
 
 int QuickSearch::rowAt (juce::Point<int> p) const
@@ -183,13 +188,63 @@ int QuickSearch::rowAt (juce::Point<int> p) const
     return first + r < (int) results.size() ? first + r : -1;
 }
 
+juce::Rectangle<int> QuickSearch::playButton (int row) const
+{
+    if (row < first || row >= first + visibleRows())
+        return {};
+    const auto list = panelBounds().reduced (14).withTrimmedTop (76);
+    const auto inner = juce::Rectangle<int> (list.getX(), list.getY() + (row - first) * rowH, list.getWidth(), rowH).reduced (10, 0);
+    return inner.withX (inner.getX() + 104).withWidth (26);   // right behind the kind column
+}
+
 void QuickSearch::mouseMove (const juce::MouseEvent& e)
 {
-    if (const int r = rowAt (e.getPosition()); r >= 0 && r != selected)
+    const int r = rowAt (e.getPosition());
+    if (r != hoverRow || (r >= 0 && r != selected))
     {
-        selected = r;
+        hoverRow = r;
+        if (r >= 0)
+            selected = r;
         repaint();
     }
+}
+
+void QuickSearch::mouseExit (const juce::MouseEvent&)
+{
+    if (hoverRow >= 0)
+    {
+        hoverRow = -1;
+        repaint();
+    }
+}
+
+juce::Rectangle<int> QuickSearch::scrollTrack() const
+{
+    return panelBounds().reduced (14).withTrimmedTop (76).withHeight (visibleRows() * rowH).removeFromRight (4).translated (10, 0);
+}
+
+void QuickSearch::scrollToY (int y)
+{
+    const int n = (int) results.size(), rows = visibleRows();
+    if (n <= rows)
+        return;
+    const auto track = scrollTrack().toFloat();
+    const float h = juce::jmax (20.0f, track.getHeight() * (float) rows / (float) n);
+    const float at = ((float) y - track.getY() - h * 0.5f) / juce::jmax (1.0f, track.getHeight() - h);
+    first = juce::jlimit (0, n - rows, juce::roundToInt (at * (float) (n - rows)));
+    selected = juce::jlimit (first, first + rows - 1, selected);
+    repaint();
+}
+
+void QuickSearch::mouseDrag (const juce::MouseEvent& e)
+{
+    if (draggingScroll)
+        scrollToY (e.getPosition().y);
+}
+
+void QuickSearch::mouseUp (const juce::MouseEvent&)
+{
+    draggingScroll = false;
 }
 
 void QuickSearch::mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDetails& wheel)
@@ -209,6 +264,16 @@ void QuickSearch::mouseDown (const juce::MouseEvent& e)
     const int r = rowAt (e.getPosition());
     if (e.mods.isPopupMenu())
         return;   // the player delete button is the sole deletion entry point
+    else if ((int) results.size() > visibleRows() && scrollTrack().expanded (8, 0).contains (e.getPosition()))
+    {
+        draggingScroll = true;
+        scrollToY (e.getPosition().y);
+    }
+    else if (r >= 0 && e.mods.isLeftButtonDown() && playButton (r).contains (e.getPosition()) && all[(size_t) results[(size_t) r]].preview)
+    {
+        all[(size_t) results[(size_t) r]].preview();   // plays, and again: stops; the search stays open
+        repaint();
+    }
     else if (r >= 0 && e.mods.isLeftButtonDown())
         choose (r);
     else if (r < 0 && ! panelBounds().contains (e.getPosition()))
@@ -255,6 +320,24 @@ void QuickSearch::paint (juce::Graphics& g)
         g.setFont (juce::FontOptions (14.0f, juce::Font::bold));
         g.drawText (it.kind, inner.removeFromLeft (104), juce::Justification::centredLeft);   // wide enough for "Arrangement"
 
+        // behind the kind: the play button while the mouse is over the row, a stop mark while it plays
+        const auto play = inner.removeFromLeft (26).withSizeKeepingCentre (20, 20).toFloat();
+        const bool playing = it.isPreviewing && it.isPreviewing();
+        if (it.preview && (r == hoverRow || playing))
+        {
+            g.setColour (playing ? gold : textMain.withAlpha (0.85f));
+            g.drawEllipse (play, 1.5f);
+            if (playing)
+                g.fillRect (play.reduced (6.0f));
+            else
+            {
+                juce::Path triangle;
+                triangle.addTriangle (play.getX() + 7.0f, play.getY() + 5.0f, play.getX() + 7.0f, play.getBottom() - 5.0f,
+                                      play.getRight() - 5.0f, play.getCentreY());
+                g.fillPath (triangle);
+            }
+        }
+
         if (it.favorite)
         {
             g.setColour (gold);
@@ -275,10 +358,10 @@ void QuickSearch::paint (juce::Graphics& g)
         g.drawFittedText (it.detail, inner, juce::Justification::centredLeft, 1);
     }
 
-    // thin scroll indicator on the right when not everything fits
+    // thin scroll bar on the right when not everything fits (click or drag on it scrolls)
     if (const int n = (int) results.size(), rows = visibleRows(); n > rows)
     {
-        const auto track = box.reduced (14).withTrimmedTop (76).withHeight (rows * rowH).removeFromRight (4).translated (10, 0).toFloat();
+        const auto track = scrollTrack().toFloat();
         const float h = juce::jmax (20.0f, track.getHeight() * (float) rows / (float) n);
         const float y = track.getY() + (track.getHeight() - h) * (float) first / (float) (n - rows);
         g.setColour (textDim.withAlpha (0.25f));
@@ -289,6 +372,6 @@ void QuickSearch::paint (juce::Graphics& g)
 
     g.setColour (textDim);
     g.setFont (juce::FontOptions (14.0f));
-    g.drawText (juce::String (results.size()) + " Treffer   ·   ↑↓ Bild↑↓ wählen   ·   Enter übernehmen   ·   Esc schließen"_u,
+    g.drawText (juce::String (results.size()) + " Treffer   ·   ↑↓ Bild↑↓ wählen   ·   Enter übernehmen   ·   ▶ hinter dem Kurzwort: anspielen   ·   Esc schließen"_u,
                 box.reduced (16, 8).removeFromBottom (20), juce::Justification::centredLeft);
 }

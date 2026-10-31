@@ -129,6 +129,7 @@ private:
     void showAudioSettings();
     void showDataTools (int tab);    // 0 trash, 1 log files, 2 folders
     void refreshFolders();           // the folder window, if open, after the library changed
+    void redistributeBadges();       // System: every pattern a new badge by the chosen rule (old assignment backed up)
 
     // --- renaming (MainComponentRename.cpp): right click in the pattern menu
     void askRenameEntry (const std::string& id);
@@ -201,7 +202,7 @@ private:
     // windows and widgets
     juce::TooltipWindow tooltipWindow { nullptr, 700 };   // shows the setTooltip texts, in every window of the app
     std::unique_ptr<WorkshopWindow> editorWindow;
-    std::unique_ptr<juce::DialogWindow> mixerWindow, audioWindow, trashWindow, logsWindow, foldersWindow;
+    std::unique_ptr<juce::DialogWindow> mixerWindow, audioWindow, trashWindow, logsWindow, foldersWindow, menuFoldersWindow;
     juce::TextButton playButton { "Start" }, tapButton { "Tap" }, audioButton { "System" },
                      editButton { "Bearbeiten" }, mixerButton { "Mixer" }, searchButton { "Suchen" }, deleteEntryButton { "Löschen"_u },
                      renameEntryButton { "Umbenennen" }, countInButton;

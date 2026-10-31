@@ -167,9 +167,18 @@ FolderNode FolderTree::resolve (Area area, const std::vector<Entry>& entries) co
     return root;
 }
 
+void FolderTree::setHidden (Area area, const juce::String& folder, bool hide)
+{
+    auto& list = hidden[(size_t) area];
+    list.removeString (folder, true);
+    if (hide)
+        list.add (folder);
+}
+
 juce::String FolderTree::load (const juce::File& file)
 {
     roots = {};
+    hidden = {};
     unreadable = false;
     if (! file.existsAsFile())
         return {};
@@ -184,6 +193,9 @@ juce::String FolderTree::load (const juce::File& file)
     {
         roots[(size_t) a] = fromVar (json[areaKeys[a]], 0);
         roots[(size_t) a].name = {};
+        if (auto* list = json["hidden"][areaKeys[a]].getArray())   // older files: none
+            for (auto& name : *list)
+                hidden[(size_t) a].add (name.toString());
     }
     return {};
 }
@@ -197,6 +209,15 @@ juce::String FolderTree::save (const juce::File& file) const
     root->setProperty ("formatVersion", 1);
     for (int a = 0; a < NumAreas; ++a)
         root->setProperty (areaKeys[a], toVar (roots[(size_t) a], true));
+    auto* hiddenObject = new juce::DynamicObject();
+    for (int a = 0; a < NumAreas; ++a)
+    {
+        juce::Array<juce::var> list;
+        for (const auto& name : hidden[(size_t) a])
+            list.add (name);
+        hiddenObject->setProperty (areaKeys[a], list);
+    }
+    root->setProperty ("hidden", juce::var (hiddenObject));
 
     juce::TemporaryFile temp (file, juce::TemporaryFile::useHiddenFile);   // hidden: a leftover after a crash is never loaded
     if (! file.getParentDirectory().createDirectory()

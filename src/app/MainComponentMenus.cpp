@@ -244,7 +244,10 @@ void MainComponent::openSearch()
     auto items = buildSearchItems (library, meters,
                                    [this] (const std::string& id) { selectPatternById (id); },
                                    [this] (int meterIndex) { selectMeter (meterIndex); },
-                                   [this] { selectPattern (-1); });
+                                   [this] { selectPattern (-1); },
+                                   [this] (const std::string& id) { previewPattern (library.indexOf (id)); },   // as in the menu
+                                   [this] (const std::string& id) { return audition == Audition::Menu && menuPreviewIndex == library.indexOf (id) && control.play; });   // the mark means "sounds"
+    quickSearch.onDismiss = [this] { cancelPreview(); };   // closed without a choice: back to what played before
     showHelp (false);
     quickSearch.open (std::move (items));
 }
@@ -321,7 +324,8 @@ void MainComponent::showAudioSettings()
                 badge (9, 9);   // c: a dot
                 text (", …): "_u);
                 g.setColour (theme::textMain);
-                g.drawFittedText (rest, r.toNearestInt(), juce::Justification::centredLeft, 1, 0.7f);
+                g.setFont (juce::FontOptions (15.0f));   // the numbers on two lines, so nothing is cut off
+                g.drawFittedText (rest, r.toNearestInt(), juce::Justification::centredLeft, 2, 0.8f);
             }
         };
 
@@ -331,12 +335,19 @@ void MainComponent::showAudioSettings()
             AudioSettingsPanel selector;
             BadgeLine badgeLine;
             juce::Label info, version;
-            juce::TextButton trash { "Papierkorb" }, logs { "Log-Dateien" }, structure { "Ordnerstruktur" };
+            juce::TextButton trash { "Papierkorb" }, logs { "Log-Dateien" }, structure { "Ordnerstruktur" }, menuFolders { "Menü-Ordner"_u };
+            juce::Label badgeRuleLabel { {}, "Verteilung:" };
+            juce::ComboBox badgeRule;
+            juce::TextButton redistribute { "Neu verteilen" };
             explicit SystemPanel (juce::AudioDeviceManager& dm) : selector (dm)
             {
                 addAndMakeVisible (selector);
-                addAndMakeVisible (trash); addAndMakeVisible (logs); addAndMakeVisible (structure);
+                addAndMakeVisible (trash); addAndMakeVisible (logs); addAndMakeVisible (structure); addAndMakeVisible (menuFolders);
                 addAndMakeVisible (badgeLine);
+                addAndMakeVisible (badgeRuleLabel); addAndMakeVisible (badgeRule); addAndMakeVisible (redistribute);
+                badgeRuleLabel.setFont (juce::FontOptions (15.0f));
+                badgeRule.addItem ("Erst eigene, dann Google", 1);
+                badgeRule.addItem ("Gemischt", 2);
                 addAndMakeVisible (info);
                 info.setFont (juce::FontOptions (14.0f));
                 info.setColour (juce::Label::textColourId, theme::textDim);
@@ -345,19 +356,25 @@ void MainComponent::showAudioSettings()
                 version.setFont (juce::FontOptions (14.0f));
                 version.setColour (juce::Label::textColourId, theme::textDim);
                 version.setText ("HZ-Drummer v" HZ_VERSION, juce::dontSendNotification);
-                setSize (560, ActiveGlow::height + AudioSettingsPanel::preferredHeight + 4 + 42 + 44 + 50 + 28);
+                setSize (560, ActiveGlow::height + AudioSettingsPanel::preferredHeight + 4 + 42 + 64 + 38 + 50 + 28);
             }
             void resized() override
             {
                 auto r = getLocalBounds();
                 version.setBounds (r.removeFromBottom (28).reduced (12, 4));
                 info.setBounds (r.removeFromBottom (50).reduced (12, 4));
-                badgeLine.setBounds (r.removeFromBottom (44).reduced (12, 4));
+                auto rule = r.removeFromBottom (38).reduced (12, 4);   // below the badge line: how new badges are given
+                badgeRuleLabel.setBounds (rule.removeFromLeft (90));
+                redistribute.setBounds (rule.removeFromRight (140)); rule.removeFromRight (8);
+                badgeRule.setBounds (rule);
+                badgeLine.setBounds (r.removeFromBottom (64).reduced (12, 4));
                 selector.setBounds (r.withTrimmedTop (ActiveGlow::height).withHeight (AudioSettingsPanel::preferredHeight));
                 auto actions = juce::Rectangle<int> (0, selector.getBottom() + 4, getWidth(), 42).reduced (12, 4);
-                structure.setBounds (actions.removeFromRight (160)); actions.removeFromRight (10);   // right-aligned
-                logs.setBounds (actions.removeFromRight (160)); actions.removeFromRight (10);
-                trash.setBounds (actions.removeFromRight (160));
+                const int w = (actions.getWidth() - 3 * 8) / 4;   // four buttons across
+                menuFolders.setBounds (actions.removeFromRight (w)); actions.removeFromRight (8);   // right-aligned
+                structure.setBounds (actions.removeFromRight (w)); actions.removeFromRight (8);
+                logs.setBounds (actions.removeFromRight (w)); actions.removeFromRight (8);
+                trash.setBounds (actions.removeFromRight (w));
             }
         };
         auto* panel = new SystemPanel (deviceManager);
@@ -365,12 +382,31 @@ void MainComponent::showAudioSettings()
         panel->trash.onClick = [safe] { if (safe != nullptr) safe->showDataTools (0); };
         panel->logs.onClick = [safe] { if (safe != nullptr) safe->showDataTools (1); };
         panel->structure.onClick = [safe] { if (safe != nullptr) safe->showDataTools (2); };
+        panel->menuFolders.onClick = [safe] { if (safe != nullptr) safe->showDataTools (3); };
 
         // badges: how much of the colour x mark space is taken, and whether any two patterns share one
-        const auto st = badges.stats (library.all());
-        panel->badgeLine.rest = juce::String (st.total - st.used) + " frei von " + juce::String (st.total)
-                                + (st.shared > 0 ? "   (" + juce::String (st.shared) + " Bausteine teilen sich eins!)" : juce::String());
+        auto badgeText = [safe]
+        {
+            const auto st = safe->badges.stats (safe->library.all());
+            return juce::String (st.total - st.used) + " frei von " + juce::String (st.total)
+                   + (st.shared > 0 ? "   (" + juce::String (st.shared) + " Bausteine teilen sich eins!)" : juce::String());
+        };
+        panel->badgeLine.rest = badgeText();
         panel->badgeLine.repaint();
+        panel->badgeRule.setSelectedId (badges.rule() == BadgeRegistry::Rule::Mixed ? 2 : 1, juce::dontSendNotification);
+        panel->badgeRule.onChange = [safe, panel]
+        {
+            if (safe != nullptr)
+                safe->badges.setRule (panel->badgeRule.getSelectedId() == 2 ? BadgeRegistry::Rule::Mixed : BadgeRegistry::Rule::OwnFirst);
+        };
+        panel->redistribute.onClick = [safe, panel, badgeText]
+        {
+            if (safe == nullptr)
+                return;
+            safe->redistributeBadges();
+            panel->badgeLine.rest = badgeText();
+            panel->badgeLine.repaint();
+        };
         juce::String text;
         text << "System: " << juce::SystemStats::getOperatingSystemName() << ", " << juce::SystemStats::getCpuModel()
              << ", " << juce::SystemStats::getNumCpus() << " Kerne, " << juce::SystemStats::getMemorySizeInMegabytes() << " MB\n";
@@ -391,9 +427,35 @@ void MainComponent::showAudioSettings()
     audioWindow->toFront (true);
 }
 
+void MainComponent::redistributeBadges()
+{
+    // the old assignment first into the cache folder (the last ten stay), then every pattern by the rule
+    const auto file = Library::songFolder().getSiblingFile ("abzeichen.json");
+    const auto backups = juce::File::getSpecialLocation (juce::File::userHomeDirectory).getChildFile (".cache/HZ-Drummer/abzeichen");
+    if (file.existsAsFile() && backups.createDirectory())
+    {
+        file.copyFileTo (backups.getChildFile ("abzeichen-" + juce::Time::getCurrentTime().formatted ("%Y%m%d-%H%M%S") + ".json"));
+        auto old = backups.findChildFiles (juce::File::findFiles, false, "abzeichen-*.json");
+        old.sort();
+        for (int i = 0; i < old.size() - 10; ++i)
+            old.getReference (i).deleteFile();
+    }
+    badges.redistribute (library.all(), (std::uint32_t) juce::Random::getSystemRandom().nextInt() | 1u);   // rolled anew each time
+
+    // everything that shows a badge: song strips (built with the library), Finden, sequence, Ablage
+    const auto selectedId = patternMode() ? library.get (currentPattern).id : std::string();
+    library.reload();
+    currentPattern = library.indexOf (selectedId);
+    sendCurrentPlan();
+    updateButtons();
+    if (editorWindow != nullptr)
+        editorWindow->getArranger().badgesChanged();
+    repaint();
+}
+
 void MainComponent::showDataTools (int tab)
 {
-    auto& window = tab == 0 ? trashWindow : tab == 1 ? logsWindow : foldersWindow;
+    auto& window = tab == 0 ? trashWindow : tab == 1 ? logsWindow : tab == 2 ? foldersWindow : menuFoldersWindow;
     if (window == nullptr)
     {
         juce::Component* panel = nullptr;
@@ -411,6 +473,7 @@ void MainComponent::showDataTools (int tab)
             });
         }
         else if (tab == 1) panel = new LogPanel();
+        else if (tab == 3) panel = new MenuFoldersPanel (library);
         else
         {
             auto* folders = new FolderPanel (library);
@@ -425,10 +488,10 @@ void MainComponent::showDataTools (int tab)
             };
             panel = folders;
         }
-        panel->setSize (tab == 1 ? 1000 : 820, tab == 0 ? 500 : 640);
+        panel->setSize (tab == 1 ? 1000 : tab == 3 ? 560 : 820, tab == 0 ? 500 : tab == 3 ? 600 : 640);
         juce::DialogWindow::LaunchOptions options;
         options.content.setOwned (new GlowFrame (panel));
-        options.dialogTitle = tab == 0 ? "Papierkorb" : tab == 1 ? "Log-Dateien" : "Ordnerstruktur";
+        options.dialogTitle = tab == 0 ? "Papierkorb" : tab == 1 ? "Log-Dateien" : tab == 3 ? "Menü-Ordner"_u : juce::String ("Ordnerstruktur");
         options.dialogBackgroundColour = theme::panel; options.useNativeTitleBar = true; options.resizable = true;
         window.reset (options.create());
     }
@@ -437,6 +500,7 @@ void MainComponent::showDataTools (int tab)
     if (auto* trash = dynamic_cast<TrashPanel*> (content)) trash->refresh();
     if (auto* logs = dynamic_cast<LogPanel*> (content)) logs->refresh();
     if (auto* folderPanel = dynamic_cast<FolderPanel*> (content)) folderPanel->refresh();
+    if (auto* menuPanel = dynamic_cast<MenuFoldersPanel*> (content)) menuPanel->refresh();
     window->setVisible (true); window->toFront (true);
 }
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "engine/Pattern.h"
+
 #include <juce_core/juce_core.h>
 #include <utility>
 #include <vector>
@@ -22,3 +24,5 @@ struct SearchQuery
     juce::String tempoChip() const;  // "Tempo 160–190" or ""
 };
 
+// The lanes a pattern uses, in the words one would type ("besen", "sidestick", "china", "flam"): search words
+juce::StringArray laneSearchWords (const hz::Pattern&);
