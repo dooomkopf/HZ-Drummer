@@ -11,7 +11,7 @@
 // The small menu behind the "Trainer" button: on/off, from, to, increment and repeats per increment, each a
 // small slider with its value on the right. The speed trainer starts at "Von", goes up by the increment after
 // that many passes and, once at "Bis", simply goes on at that tempo. "Von" always stays below "Bis": each of
-// the two stops one BPM short of the other. A pass is one round through the loop range, else through the
+// the two stops two BPM short of the other; both move in steps of two. A pass is one round through the loop range, else through the
 // pattern or arrangement.
 //
 // Above them, in a field of their own, the save slots: a click on a free one puts exactly the present setup there
@@ -53,7 +53,8 @@ public:
 private:
     class SlotRow;
 
-    void setup (juce::Slider&, juce::Label&, const juce::String& text, double lo, double hi, double value, const juce::String& suffix);
+    void setup (juce::Slider&, juce::Label&, const juce::String& text, double lo, double hi, double value,
+                const juce::String& suffix, double step = 1.0);
     void changed();
     void showValues (const Values&);   // without notifying
     void slotClicked (int slot);

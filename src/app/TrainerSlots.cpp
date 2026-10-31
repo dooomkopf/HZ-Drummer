@@ -1,5 +1,7 @@
 #include "app/TrainerSlots.h"
 
+#include <cmath>
+
 namespace trainerslots
 {
 juce::File file()
@@ -31,8 +33,9 @@ Slots load (const juce::File& f)
             s.loopFirst = s.loopLast = -1;
             s.loopOn = false;
         }
-        s.to = juce::jlimit (31.0, 320.0, (double) v.getProperty ("bis", 140.0));
-        s.from = juce::jlimit (30.0, s.to - 1.0, (double) v.getProperty ("von", 100.0));
+        const auto even = [] (double bpm) { return 2.0 * std::round (bpm / 2.0); };   // the trainer's grid of two
+        s.to = juce::jlimit (32.0, 320.0, even ((double) v.getProperty ("bis", 140.0)));
+        s.from = juce::jlimit (30.0, s.to - 2.0, even ((double) v.getProperty ("von", 100.0)));
         s.step = juce::jlimit (1.0, 40.0, (double) v.getProperty ("inkrement", 1.0));
         s.repeats = juce::jlimit (1, 5, (int) v.getProperty ("wiederholungen", 1));
     }

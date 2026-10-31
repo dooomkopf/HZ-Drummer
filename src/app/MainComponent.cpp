@@ -196,8 +196,9 @@ void MainComponent::loadSettings()
     currentMeter = juce::jmax (0, meters.fromKey (props.getValue ("meter", "4/4")));
     control.tempoTenths = (std::uint16_t) juce::jlimit (300, 3200, props.getIntValue ("tempoTenths", 1200));
     sound = (MetronomeSound) juce::jlimit (0, 3, props.getIntValue ("sound", (int) MetronomeSound::Kick));
-    trainer.to = juce::jlimit (31.0, 320.0, props.getDoubleValue ("trainerTo", 140.0));
-    trainer.from = juce::jlimit (30.0, trainer.to - 1.0, props.getDoubleValue ("trainerFrom", 100.0));   // always below "Bis"
+    const auto even = [] (double bpm) { return 2.0 * std::round (bpm / 2.0); };   // Von and Bis move in steps of two
+    trainer.to = juce::jlimit (32.0, 320.0, even (props.getDoubleValue ("trainerTo", 140.0)));
+    trainer.from = juce::jlimit (30.0, trainer.to - 2.0, even (props.getDoubleValue ("trainerFrom", 100.0)));   // always below "Bis"
     trainer.step = juce::jlimit (1.0, 40.0, props.getDoubleValue ("trainerIncrement", 1.0));
     trainer.repeats = juce::jlimit (1, 5, props.getIntValue ("trainerRepeatsPerIncrement", 1));
     trainerSlots = trainerslots::load (trainerslots::file());

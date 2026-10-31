@@ -141,20 +141,20 @@ TrainerPanel::TrainerPanel (const Values& v)
     active.setColour (juce::ToggleButton::tickColourId, theme::textMain);
     active.setToggleState (v.on, juce::dontSendNotification);
     active.onClick = [this] { changed(); };
-    setup (from, fromLabel, "Von", 30.0, 320.0, v.from, " BPM");
-    setup (to, toLabel, "Bis", 30.0, 320.0, v.to, " BPM");   // the same scale: "Von" sits left of "Bis"
+    setup (from, fromLabel, "Von", 30.0, 320.0, v.from, " BPM", 2.0);   // in steps of two: no landing on 199 or 201
+    setup (to, toLabel, "Bis", 30.0, 320.0, v.to, " BPM", 2.0);         // the same scale: "Von" sits left of "Bis"
     setup (step, stepLabel, "Inkrement", 1.0, 40.0, v.step, " BPM");
     setup (repeats, repeatsLabel, "Wdh. pro Inkrement", 1.0, 5.0, (double) v.repeats, "");
     from.onValueChange = [this]
     {
-        if (from.getValue() > to.getValue() - 1.0)
-            from.setValue (to.getValue() - 1.0, juce::dontSendNotification);
+        if (from.getValue() > to.getValue() - 2.0)
+            from.setValue (to.getValue() - 2.0, juce::dontSendNotification);
         changed();
     };
     to.onValueChange = [this]
     {
-        if (to.getValue() < from.getValue() + 1.0)
-            to.setValue (from.getValue() + 1.0, juce::dontSendNotification);
+        if (to.getValue() < from.getValue() + 2.0)
+            to.setValue (from.getValue() + 2.0, juce::dontSendNotification);
         changed();
     };
 
@@ -234,7 +234,8 @@ void TrainerPanel::resized()
     }
 }
 
-void TrainerPanel::setup (juce::Slider& s, juce::Label& l, const juce::String& text, double lo, double hi, double value, const juce::String& suffix)
+void TrainerPanel::setup (juce::Slider& s, juce::Label& l, const juce::String& text, double lo, double hi, double value,
+                          const juce::String& suffix, double step)
 {
     addAndMakeVisible (l);
     l.setText (text, juce::dontSendNotification);
@@ -242,7 +243,7 @@ void TrainerPanel::setup (juce::Slider& s, juce::Label& l, const juce::String& t
     addAndMakeVisible (s);
     s.setSliderStyle (juce::Slider::LinearHorizontal);
     s.setTextBoxStyle (juce::Slider::TextBoxRight, false, 76, 24);
-    s.setRange (lo, hi, 1.0);
+    s.setRange (lo, hi, step);
     s.setValue (value, juce::dontSendNotification);
     s.setTextValueSuffix (suffix);
     s.onValueChange = [this] { changed(); };

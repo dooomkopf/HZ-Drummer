@@ -233,7 +233,8 @@ soweit sie hier nicht abweichen; überholte Stellen stehen im vorletzten Abschni
    Ende gekürzt; beginnt er hinter dem Ende, verfällt er. [E 31.10., Code]
 6. **Speed-Trainer:** Knopf „Trainer (S)“ (so groß wie „Löschen“) öffnet ein kleines Menü: „Trainer an“, Von,
    Bis, Inkrement, Wdh. pro Inkrement (1 bis 5; gespeichert), je ein kleiner Schieberegler mit dem Wert rechts.
-   Von bleibt unter Bis (jeder Regler stoppt 1 BPM vor dem anderen, gleiche Skala). Voreinstellung
+   Von und Bis in Zweierschritten, Von bleibt unter Bis (jeder Regler stoppt 2 BPM vor dem anderen, gleiche
+   Skala). Voreinstellung
    Inkrement 1, Wdh. 1. An: Tempo auf „Von“, nach je n Durchläufen + Inkrement bis „Bis“, dort geht es so
    weiter. Durchlauf = Runde durch den Loop-Bereich, sonst durch das Ganze; gezählt werden nur Runden des
    Plans der Auswahl (kein Einzählen, kein Vorhören, nichts aus der Werkstatt), ein neuer Start beginnt
