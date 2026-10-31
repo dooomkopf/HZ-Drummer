@@ -269,8 +269,18 @@ soweit sie hier nicht abweichen; überholte Stellen stehen im vorletzten Abschni
    ganzer Baum gespeichert. Die Baustein- und Arrangement-Dateien bleiben dabei unverändert. [Code]
 3. Gleichnamige Ordner werden zusammengelegt, ohne Rücksicht auf Groß- und Kleinschreibung. Löschen geht nur
    bei leeren Ordnern. [Bed.]
+   **Sortieren** ordnet einmalig: Unterordner und Einträge je alphabetisch nach dem angezeigten Namen, ohne
+   Groß- und Kleinschreibung, Zahlen nach Wert, ä ö ü wie a o u, Zeichen vorn zählen nicht; mit „mit
+   Unterordnern“ rekursiv. Neue Einträge kommen weiter ans Ende, von Hand verschieben geht wie vorher. [Code]
 4. **Menü-Ordner** blendet Ordner der obersten Ebene nur im Baustein-Menü aus. Suche und Arranger kennen
-   weiterhin alles. Benennt man einen ausgeblendeten Ordner um, bleibt er ausgeblendet. Verschwindet ein Name
+   weiterhin alles. Die Liste dort steht alphabetisch, die Reihenfolge im Menü bleibt die der Ordnerstruktur.
+   **Konfigurationen:** zehn Plätze (`menue-ordner.json`). 1 Minimal (Bibliothek, Arrangement-Ordner
+   „Beispiele“) und 10 Maximal (alles) sind fest und werden nicht gespeichert; 8 „Nur Bausteine“ und 9 „Nur
+   Arrangements“ werden vorbelegt, solange es die Datei nicht gibt, und lassen sich leeren. Ein Platz hält je
+   Bereich „alle“ (beim Ablegen nichts ausgeblendet; spätere Ordner kommen mit) oder die Liste der sichtbaren
+   Ordner (spätere bleiben aus); Namen ohne Groß- und Kleinschreibung, verschwundene werden übergangen.
+   Abrufen setzt alle Haken in einem Schreibvorgang. Gelb umrandet ist der Platz, dessen Auswahl genau den
+   jetzigen Haken entspricht. [Code] Benennt man einen ausgeblendeten Ordner um, bleibt er ausgeblendet. Verschwindet ein Name
    von der obersten Ebene, vergisst die Liste ihn. [Bed., Code]
 5. Im Menü fällt vorn weg, was die Ordner schon sagen: „Carcass – CJQ – 01 Intro“ im Ordner Carcass › CJQ
    heißt „01 Intro“. [Code]

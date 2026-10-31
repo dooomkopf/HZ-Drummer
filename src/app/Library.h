@@ -6,6 +6,7 @@
 
 #include <juce_core/juce_core.h>
 
+#include <array>
 #include <functional>
 #include <map>
 #include <set>
@@ -59,6 +60,8 @@ public:
     // top-level folders the main menu leaves out (System → Menü-Ordner); saved at once
     bool folderHidden (FolderTree::Area area, const juce::String& name) const { return folderTree.isHidden (area, name); }
     juce::String setFolderHidden (FolderTree::Area, const juce::String& name, bool hidden);
+    // a slot of System → Menü-Ordner called up: every top-level folder hidden or shown at once, one write
+    juce::String setHiddenFolders (const std::array<juce::StringArray, FolderTree::NumAreas>& hide);
 
     static juce::File userPatternFolder();   // ~/.config/HZ-Drummer/patterns
     static juce::File songFolder();          // ~/.config/HZ-Drummer/songs

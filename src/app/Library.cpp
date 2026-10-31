@@ -260,6 +260,18 @@ juce::String Library::editFolders (FolderTree::Area area, const std::function<ju
     return {};
 }
 
+juce::String Library::setHiddenFolders (const std::array<juce::StringArray, FolderTree::NumAreas>& hide)
+{
+    auto changed = folderTree;
+    for (int a = 0; a < FolderTree::NumAreas; ++a)
+        for (const auto& f : folders ((FolderTree::Area) a).folders)
+            changed.setHidden ((FolderTree::Area) a, f.name, hide[(size_t) a].contains (f.name, true));
+    if (const auto error = changed.save (folderFile()); error.isNotEmpty())
+        return error;
+    folderTree = std::move (changed);
+    return {};
+}
+
 juce::String Library::setFolderHidden (FolderTree::Area area, const juce::String& name, bool hidden)
 {
     auto changed = folderTree;

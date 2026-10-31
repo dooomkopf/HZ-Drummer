@@ -50,6 +50,7 @@ private:
     void removeEntry();   // an own pattern or a song: to the trash, after asking
     bool deletableEntry (const std::string& id) const;
     void shift (int delta);
+    void sortSelected();   // the selected folder (an entry: its folder) alphabetically, after asking
     void updateButtons();
     Item* selected() const;
 
@@ -58,5 +59,6 @@ private:
     std::unique_ptr<Item> root;
     juce::Label hint;
     juce::TextButton newButton { "Neuer Ordner" }, renameButton { "Umbenennen" }, removeButton { "Löschen"_u },
-                     upButton { "Hoch" }, downButton { "Runter" };
+                     upButton { "Hoch" }, downButton { "Runter" }, sortButton { "Sortieren" };
+    juce::ToggleButton deepToggle { "mit Unterordnern" };   // "Sortieren" goes down into all subfolders
 };

@@ -1,9 +1,13 @@
 #pragma once
 #include "app/Library.h"
+#include "app/FolderSort.h"
+#include "app/MenuFolderSlotsPanel.h"
 #include "app/views/Theme.h"
 #include "app/Text.h"
 #include <juce_gui_basics/juce_gui_basics.h>
+#include <algorithm>
 #include <functional>
+#include <vector>
 
 class TrashPanel : public juce::Component, private juce::ListBoxModel
 {
@@ -149,7 +153,8 @@ private:
 };
 
 // System → Menü-Ordner: a tick per top-level folder says whether the Baustein menu of the main window shows it;
-// saved at once (ordner.json). The search (Strg+K) and the arranger still know every entry.
+// saved at once (ordner.json). The search (Strg+K) and the arranger still know every entry. Above the ticks the ten
+// slots that call up a whole set of them (MenuFolderSlotsPanel).
 class MenuFoldersPanel : public juce::Component
 {
 public:
@@ -168,6 +173,12 @@ public:
         ghostSeconds.getProperties().set ("pill", true);   // value box drawn by HZLook as a pill
         ghostSeconds.setTextBoxStyle (juce::Slider::TextBoxRight, false, 64, 24);
         ghostSeconds.onValueChange = [this] { if (onGhostChanged) onGhostChanged(); };
+        addAndMakeVisible (slotsTitle);
+        slotsTitle.setText ("Konfigurationen", juce::dontSendNotification);
+        slotsTitle.setFont (juce::FontOptions (15.0f, juce::Font::bold));
+        slotsTitle.setColour (juce::Label::textColourId, theme::textMain);
+        addAndMakeVisible (slotsPanel);
+        slotsPanel.onApplied = [this] { refresh(); };
         addAndMakeVisible (hint);
         hint.setText ("Haken weg: Der Ordner fehlt im Baustein-Menü des Hauptfensters. Suchen (Strg+K) und der Arranger finden seine Bausteine weiterhin."_u,
                       juce::dontSendNotification);
@@ -196,8 +207,14 @@ public:
             list.addAndMakeVisible (title);
             title->setBounds (0, y, width, 26);
             y += 28;
-            for (const auto& f : library.folders (area).folders)
+            const auto tree = library.folders (area);
+            std::vector<const FolderNode*> shown;   // alphabetical, so that one finds a folder; the menu keeps its own order
+            for (const auto& f : tree.folders)
+                shown.push_back (&f);
+            std::stable_sort (shown.begin(), shown.end(), [] (const FolderNode* a, const FolderNode* b) { return folders::sortsBefore (a->name, b->name); });
+            for (const auto* folder : shown)
             {
+                const auto& f = *folder;
                 auto* tick = new juce::ToggleButton (f.name + "   (" + juce::String (folders::countItems (f)) + ")");
                 rows.add (tick);
                 tick->setColour (juce::ToggleButton::textColourId, theme::textMain);
@@ -207,6 +224,7 @@ public:
                 {
                     if (const auto error = library.setFolderHidden (area, name, ! tick->getToggleState()); error.isNotEmpty())
                         juce::AlertWindow::showMessageBoxAsync (juce::MessageBoxIconType::WarningIcon, "Nicht gespeichert", error);
+                    slotsPanel.update();   // which slot matches the ticks now
                 };
                 list.addAndMakeVisible (tick);
                 tick->setBounds (12, y, width - 12, 26);
@@ -215,6 +233,7 @@ public:
             y += 12;
         }
         list.setSize (width + 12, y);
+        slotsPanel.update();
     }
 
     void resized() override
@@ -224,6 +243,9 @@ public:
         auto duration = r.removeFromTop (30).withTrimmedLeft (28);
         ghostLabel.setBounds (duration.removeFromLeft (60));
         ghostSeconds.setBounds (duration.removeFromLeft (260));
+        r.removeFromTop (12);
+        slotsTitle.setBounds (r.removeFromTop (24));
+        slotsPanel.setBounds (r.removeFromTop (5 * 32));
         r.removeFromTop (12);
         hint.setBounds (r.removeFromTop (44));
         r.removeFromTop (6);
@@ -238,6 +260,8 @@ public:
 
 private:
     Library& library;
+    juce::Label slotsTitle;
+    MenuFolderSlotsPanel slotsPanel { library };   // after library: it reads the folders when it is made
     juce::Label hint;
     juce::Viewport viewport;
     juce::Component list;

@@ -8,7 +8,9 @@
 - Loop-Bereich per Shift+Ziehen in der Takt-Leiste, Speed-Trainer mit zehn Speicherplätzen
 - Verlauf mit Alt+←/→, Spulen im Arranger am Positionsstrich
 - Blättern nach Ordnern mit Geister-Menü, Startbild, Tooltips abschaltbar
-- Abzeichen mit Material Symbols, Menü-Ordner ein- und ausblendbar
+- Abzeichen mit Material Symbols, Menü-Ordner ein- und ausblendbar (Liste alphabetisch, zehn Konfigurationen
+  zum Abrufen: Minimal, Maximal und eigene)
+- Ordnerstruktur: Knopf Sortieren (alphabetisch, wahlweise mit Unterordnern)
 - Band-Import nach Spielweise, MIDI, Guitar Pro 6/7/8 und MuseScore als Quelle, Import-Vorlagen unter `tools/import`
 - Player: jede Runde spielt genau ihre Schläge, nichts doppelt oder verloren bei Pause, Sprung und Tempowechsel
 

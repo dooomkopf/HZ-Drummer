@@ -116,7 +116,7 @@ Das Programm legt außerhalb seines Ordners nur diese Dateien an:
 
 | Ort | Inhalt |
 |---|---|
-| `~/.config/HZ-Drummer/` | Datenordner: `patterns/` (eigene Bausteine), `songs/` (Arrangements), `trash/` (Papierkorb), `ordner.json` (Ordnerstruktur), `abzeichen.json`, `ablage.json` und `arranger.json` (Arbeitsstand des Arrangers), `trainer.json` (Speicherplätze des Trainers) |
+| `~/.config/HZ-Drummer/` | Datenordner: `patterns/` (eigene Bausteine), `songs/` (Arrangements), `trash/` (Papierkorb), `ordner.json` (Ordnerstruktur), `abzeichen.json`, `ablage.json` und `arranger.json` (Arbeitsstand des Arrangers), `trainer.json` (Speicherplätze des Trainers), `menue-ordner.json` (Konfigurationen der Menü-Ordner) |
 | `~/.config/HZ-Drummer/HZ-Drummer.settings` | persönliche Einstellungen: Audio-Gerät, Tempo, Fensterlage, Favoriten, Trainer, Tooltips |
 | `~/.cache/HZ-Drummer/` | Protokolle `app.log` (auch Abstürze mit Aufrufstapel), `run.log` (Start), `import.log` (System › Quellen); `abzeichen/` (die letzten zehn Abzeichen-Verteilungen); `quellen/` (Downloads und Zwischenstände des Quellen-Imports) |
 | `~/.local/share/applications/hz-drummer.desktop` | Starter, nur wenn `tools/install-desktop.sh` lief |

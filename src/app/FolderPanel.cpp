@@ -2,11 +2,12 @@
 
 #include "app/Library.h"
 #include "app/views/InWindowDialog.h"
+#include "app/FolderSort.h"
 #include "app/views/Theme.h"
 
 namespace
 {
-    const juce::Colour folderColour { 0xffe8c547 };
+    const juce::Colour folderColour { 0xffd8c26e };   // a muted yellow: the folders should not shout
     const juce::Colour selectedColour { 0xff2f4f7a };
 
     FolderPath parentOf (FolderPath path)
@@ -128,7 +129,7 @@ private:
 FolderPanel::FolderPanel (Library& lib) : library (lib)
 {
     addAndMakeVisible (hint);
-    hint.setText ("Ziehen: Einträge und Ordner verschieben   ·   Hoch/Runter: Reihenfolge   ·   "
+    hint.setText ("Ziehen: Einträge und Ordner verschieben   ·   Hoch/Runter/Sortieren: Reihenfolge   ·   "
                   "Löschen: Bausteine und Arrangements in den Papierkorb, Ordner nur wenn leer"_u,
                   juce::dontSendNotification);
     hint.setColour (juce::Label::textColourId, juce::Colour (0xffe07a70));   // the light red of all help lines
@@ -142,8 +143,14 @@ FolderPanel::FolderPanel (Library& lib) : library (lib)
     tree.setColour (juce::TreeView::linesColourId, theme::textDim.withAlpha (0.4f));
     tree.setColour (juce::TreeView::dragAndDropIndicatorColourId, theme::progress);
 
-    for (auto* b : { &newButton, &renameButton, &removeButton, &upButton, &downButton })
+    for (auto* b : { &newButton, &renameButton, &removeButton, &upButton, &downButton, &sortButton })
         addAndMakeVisible (*b);
+    addAndMakeVisible (deepToggle);
+    deepToggle.setColour (juce::ToggleButton::textColourId, theme::textMain);
+    deepToggle.setColour (juce::ToggleButton::tickColourId, theme::textMain);
+    sortButton.setTooltip ("Den gewählten Ordner alphabetisch: erst die Ordner, dann die Einträge"_u);
+    deepToggle.setTooltip ("Sortieren nimmt alle Unterordner mit");
+    sortButton.onClick = [this] { sortSelected(); };
     newButton.setTooltip ("Neuer Ordner im gewählten Ordner");
     newButton.onClick = [this] { addFolder(); };
     renameButton.onClick = [this] { renameFolder(); };
@@ -179,7 +186,9 @@ void FolderPanel::resized()
     renameButton.setBounds (buttons.removeFromLeft (130)); buttons.removeFromLeft (8);
     removeButton.setBounds (buttons.removeFromLeft (110)); buttons.removeFromLeft (24);
     upButton.setBounds (buttons.removeFromLeft (90));      buttons.removeFromLeft (8);
-    downButton.setBounds (buttons.removeFromLeft (90));
+    downButton.setBounds (buttons.removeFromLeft (90));     buttons.removeFromLeft (24);
+    sortButton.setBounds (buttons.removeFromLeft (110));    buttons.removeFromLeft (8);
+    deepToggle.setBounds (buttons.removeFromLeft (180));
     r.removeFromBottom (10);
     tree.setBounds (r);
 }
@@ -284,6 +293,7 @@ void FolderPanel::updateButtons()
                 }
     upButton.setEnabled (index > 0);
     downButton.setEnabled (index >= 0 && index < siblings - 1);
+    sortButton.setEnabled (item != nullptr && kind != Item::Kind::Root);
 }
 
 //==============================================================================
@@ -404,6 +414,37 @@ void FolderPanel::removeEntry()
                 juce::AlertWindow::showMessageBoxAsync (juce::MessageBoxIconType::WarningIcon, "Löschen nicht möglich"_u, error, "OK", safe.getComponent());
             if (safe != nullptr)
                 safe->refresh();
+        }));
+}
+
+void FolderPanel::sortSelected()
+{
+    const auto* item = selected();
+    if (item == nullptr || item->kind == Item::Kind::Root)
+        return;
+    const auto place = item->place;   // an entry: the folder it is in
+    const bool deep = deepToggle.getToggleState();
+    const auto name = ! place.path.isEmpty() ? place.path[place.path.size() - 1]
+                    : place.area == FolderTree::Songs ? "Arrangements (Songs)"_u
+                    : place.area == FolderTree::Patterns ? juce::String ("Bausteine (Pattern)") : juce::String ("Bibliothek-Bausteine");
+    // asked here, in this window, as for deleting: the order by hand in it is gone afterwards
+    juce::AlertWindow::showOkCancelBox (juce::MessageBoxIconType::QuestionIcon, "Sortieren",
+        "\"" + name + "\"" + (deep ? " mit allen Unterordnern" : "") + " alphabetisch sortieren: erst die Ordner, dann die Einträge?\n\n"_u
+            + "Die Reihenfolge von Hand geht dabei verloren.",
+        "Sortieren", "Abbrechen", this,
+        juce::ModalCallbackFunction::create ([safe = juce::Component::SafePointer<FolderPanel> (this), place, deep] (int r)
+        {
+            if (safe == nullptr || r != 1)
+                return;
+            auto* panel = safe.getComponent();
+            panel->apply (place.area, [panel, place, deep] (FolderNode& root)
+            {
+                return folders::sortFolder (root, place.path, deep, [panel] (const std::string& id, const FolderPath& folder)
+                {
+                    const int i = panel->library.indexOf (id);   // as fill() shows it
+                    return i >= 0 ? folders::shortName (juce::String (panel->library.get (i).name), folder) : juce::String (id);
+                });
+            }, place);
         }));
 }
 

@@ -566,7 +566,7 @@ void MainComponent::showDataTools (int tab)
             };
             panel = folders;
         }
-        panel->setSize (tab == 1 ? 1000 : tab == 3 ? 560 : 820, tab == 0 ? 500 : tab == 3 ? 600 : 640);
+        panel->setSize (tab == 1 ? 1000 : tab == 2 ? 980 : tab == 3 ? 560 : 820, tab == 0 ? 500 : tab == 3 ? 800 : 640);
         juce::DialogWindow::LaunchOptions options;
         options.content.setOwned (new GlowFrame (panel));
         options.dialogTitle = tab == 0 ? "Papierkorb" : tab == 1 ? "Log-Dateien" : tab == 3 ? "Menü-Ordner"_u : juce::String ("Ordnerstruktur");

@@ -2,8 +2,11 @@
 // Ordner anlegen/umbenennen/löschen, Verschieben, Reihenfolge, Datei lesen und schreiben
 #include "app/FolderTree.h"
 #include "app/BrowseOrder.h"
+#include "app/FolderSort.h"
+#include "app/MenuFolderSlots.h"
 
 #include <cstdio>
+#include <map>
 
 extern int folderTestFailures;
 int folderTestFailures = 0;
@@ -264,8 +267,77 @@ static void testBrowseOrder()
     CHECK (nextBrowseFolder (order, (int) order.size(), -1) == 5);
 }
 
+// Sortieren: erst Ordner, dann Einträge, je alphabetisch; Zahlen nach Wert, Umlaute wie Grundbuchstabe,
+// Zeichen vorn zählen nicht; ohne "mit Unterordnern" bleiben die Unterordner, wie sie sind
+static void testSortFolder()
+{
+    FolderNode root;
+    for (auto* n : { "Teil 10", "b", "Teil 2", "\xc3\x84rger", "A" })
+        root.folders.push_back ({ juce::String::fromUTF8 (n), {}, {} });
+    root.folders[1].items = { "z", "y" };   // in "b"
+    root.items = { "one", "justice", "Battery", "battery" };
+    const std::map<std::string, juce::String> names { { "one", "One" }, { "justice", "...And Justice for All" }, { "Battery", "Battery" },
+                                                      { "battery", "battery" }, { "z", "Zebra" }, { "y", "Yak" } };
+    const auto label = [&names] (const std::string& id, const FolderPath&) { return names.at (id); };
+
+    CHECK (folders::sortFolder (root, {}, false, label).isEmpty());
+    juce::StringArray order;
+    for (auto& f : root.folders)
+        order.add (f.name);
+    CHECK (order.joinIntoString ("|") == juce::String::fromUTF8 ("A|\xc3\x84rger|b|Teil 2|Teil 10"));
+    CHECK ((root.items == std::vector<std::string> { "justice", "Battery", "battery", "one" }));
+    CHECK ((root.folders[2].items == std::vector<std::string> { "z", "y" }));   // ohne Unterordner: unverändert
+    CHECK (folders::sortFolder (root, {}, true, label).isEmpty());
+    CHECK ((root.folders[2].items == std::vector<std::string> { "y", "z" }));
+    CHECK (folders::sortFolder (root, path ({ "fehlt" }), false, label).isNotEmpty());
+}
+
+// Menü-Ordner-Plätze: ohne Datei 8 und 9 vorbelegt, 1 und 10 fest; "alle" nimmt später importierte Ordner mit,
+// eine Liste nicht; Speichern und Laden geben dasselbe zurück, ein geleerter vorbelegter Platz bleibt leer
+static void testMenuFolderSlots()
+{
+    const auto file = tempFile ("menue-ordner.json");
+    file.deleteFile();
+    auto slots = menufolderslots::load (file);
+    CHECK (slots[7].name == "Nur Bausteine" && slots[8].name == "Nur Arrangements");
+    CHECK (slots[0].name == "Minimal" && slots[9].name == "Maximal" && slots[1].isFree());
+
+    AreaNames folders;
+    folders[FolderTree::Songs] = juce::StringArray ({ "Beispiele", "Metallica" });
+    folders[FolderTree::Patterns] = juce::StringArray ({ "Metallica", "Death" });
+    folders[FolderTree::Bundled] = juce::StringArray ({ "Thrash", "Jazz / Fusion" });
+    auto hide = menufolderslots::hiddenBy (slots[0], folders);   // Minimal
+    CHECK (hide[FolderTree::Songs] == juce::StringArray ({ "Metallica" }) && hide[FolderTree::Patterns].size() == 2
+           && hide[FolderTree::Bundled].isEmpty());
+    hide = menufolderslots::hiddenBy (slots[7], folders);   // Nur Bausteine
+    CHECK (hide[FolderTree::Songs].size() == 2 && hide[FolderTree::Patterns].isEmpty() && hide[FolderTree::Bundled].isEmpty());
+    CHECK (menufolderslots::hiddenBy (slots[9], folders)[FolderTree::Songs].isEmpty());   // Maximal
+
+    AreaNames hidden;
+    hidden[FolderTree::Songs] = juce::StringArray ({ "Beispiele" });
+    hidden[FolderTree::Bundled] = juce::StringArray ({ "Thrash", "Jazz / Fusion" });
+    const auto metal = menufolderslots::capture ("Metallica", folders, hidden);
+    CHECK (! metal.all[FolderTree::Songs] && metal.shown[FolderTree::Songs] == juce::StringArray ({ "Metallica" }));
+    CHECK (metal.all[FolderTree::Patterns] && ! metal.all[FolderTree::Bundled] && metal.shown[FolderTree::Bundled].isEmpty());
+    folders[FolderTree::Songs].add ("Death");      // später importiert
+    folders[FolderTree::Patterns].add ("Carcass");
+    hide = menufolderslots::hiddenBy (metal, folders);
+    CHECK (hide[FolderTree::Songs].contains ("Death") && ! hide[FolderTree::Songs].contains ("Metallica") && hide[FolderTree::Patterns].isEmpty());
+
+    slots[2] = metal;
+    slots[7] = {};   // vorbelegt, aber löschbar
+    CHECK (menufolderslots::save (slots, file));
+    const auto back = menufolderslots::load (file);
+    CHECK (back[2].name == "Metallica" && back[2].shown[FolderTree::Songs] == juce::StringArray ({ "Metallica" })
+           && back[2].all[FolderTree::Patterns] && ! back[2].all[FolderTree::Bundled]);
+    CHECK (back[7].isFree() && back[8].name == "Nur Arrangements" && back[0].name == "Minimal" && back[9].name == "Maximal");
+    file.deleteFile();
+}
+
 void runFolderTests()
 {
+    testSortFolder();
+    testMenuFolderSlots();
     testBrowseOrder();
     testDefaultPlaces();
     testStoredPlaces();
