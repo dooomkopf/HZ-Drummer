@@ -13,7 +13,7 @@ import sys
 from fractions import Fraction as F
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))   # midiscan.py
-from midiscan import read_smf, MAP_GMD  # noqa: E402
+from midiscan import MidiError, read_smf, MAP_GMD  # noqa: E402
 
 ROOT, OUT, STYLE, BAND = sys.argv[1:5]
 STYLES = STYLE.split(",")
@@ -198,15 +198,24 @@ def pattern_json(pid, name, tags, bpm, meter, bar_len, b0, n, hits, grids, origi
 os.makedirs(os.path.join(OUT, "patterns"), exist_ok=True)
 os.makedirs(os.path.join(OUT, "songs"), exist_ok=True)
 rows = [r for r in csv.DictReader(open(os.path.join(ROOT, "info.csv"), encoding="utf-8"))
-        if any(r["style"] == st or r["style"].startswith(st + "/") for st in STYLES) and r["beat_type"] == "beat"]
+        if any((r["style"] or "") == st or (r["style"] or "").startswith(st + "/") for st in STYLES) and r["beat_type"] == "beat"]
 recordings = []
 for r in rows:
-    notes, ms_per_q = read_notes(os.path.join(ROOT, r["midi_filename"]))
-    num, den = (int(x) for x in r["time_signature"].split("-"))
-    bar_len = F(num * 4, den)
-    swing = estimate_swing(notes)
+    try:   # a broken file or an odd line in info.csv: this recording only
+        notes, ms_per_q = read_notes(os.path.join(ROOT, r["midi_filename"]))
+        num, den = (int(x) for x in r["time_signature"].split("-"))
+        if not 1 <= num <= 64 or den not in (1, 2, 4, 8, 16, 32):
+            raise ValueError(f"Taktart {num}/{den} kann HZ-Drummer nicht darstellen")
+        bar_len = F(num * 4, den)
+        bpm = max(30, min(320, int(r["bpm"])))   # the tempo HZ-Drummer can play
+        swing = estimate_swing(notes)
+        hits, grids = snap_all(notes, bar_len, ms_per_q, swing)
+    except (MidiError, OSError, KeyError, ValueError, ZeroDivisionError, AttributeError, TypeError) as e:
+        why = ("Datei fehlt" if isinstance(e, FileNotFoundError) else
+               "Zeile in info.csv unvollständig" if isinstance(e, (KeyError, AttributeError, TypeError)) else e)
+        print(f"Übersprungen: {r.get('midi_filename') or r.get('id')} ({why})")
+        continue
     swing_stats[("16tel" if swing[0] == F(1, 4) else "8tel", swing[1])] += 1
-    hits, grids = snap_all(notes, bar_len, ms_per_q, swing)
     counts = collections.Counter(int(h[0] // bar_len) for h in hits)
     full = [b for b, c in counts.items() if c >= 2]
     if not full:
@@ -222,7 +231,7 @@ for r in rows:
         sub = SUBSTYLES.get(sub, sub.replace("-", " ").capitalize()) if sub or STYLES != ["jazz"] else "Jazz allgemein"
     drummer, session, nr = r["drummer"].replace("drummer", "d"), r["session"].split("/")[-1].replace("session", "s").replace("eval_", "e"), r["id"].split("/")[-1]
     recordings.append({"row": r, "hits": hits, "grids": grids, "bar_len": bar_len, "meter": f"{num}/{den}", "first": first, "last": last,
-                       "keys": keys, "bpm": int(r["bpm"]), "swing": swing, "sub": sub,
+                       "keys": keys, "bpm": bpm, "swing": swing, "sub": sub,
                        "take": f"{drummer}-{session}-{nr}", "variety": len(set(keys.values())), "main": main})
 
 # Komplexität: Schläge je Ausschnitt plus 8 je verschiedenem Takt; mit --nur-komplex nur das obere Drittel
@@ -268,6 +277,8 @@ for x in recordings:
             if len(chosen) == (6 if x["seconds"] > 300.0 else MAX_EXCERPTS):
                 break
         chosen.sort()
+        # an excerpt without a hit: no Baustein (in a complete recording it stays, a pause)
+        chosen = [w for w in chosen if any(w[0] <= int(h[0] // bar_len) < w[0] + w[1] for h in x["hits"])]
     parts = []
     for b0, n in chosen:
         a, b = b0 - first + 1, b0 - first + n

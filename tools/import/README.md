@@ -40,6 +40,11 @@ python3 -I tools/gpdrums/import_band.py ~/tabs/Atheist Atheist /var/tmp/hz-impor
 python3 -I tools/gpdrums/install_band.py /var/tmp/hz-import/atheist Atheist
 ```
 
+Was HZ-Drummer nicht halten kann, passt `gp2json.py` an und meldet es am Ende: Doppelte Schläge
+und Schläge hinter dem Ende überfüllter Takte fallen weg, das Tempo bleibt zwischen 30 und 320,
+und ein Song über 512 Takte oder 8192 Schläge wird in mehrere Arrangements `<id>-teil1`,
+`<id>-teil2` … geteilt. Abschnitte ohne Schläge bleiben als Pause im Song.
+
 Für Bausteine ohne Arrangement gibt es [`install_patterns.py`](install_patterns.py). Beide
 Einspiel-Skripte brechen ab, solange HZ-Drummer läuft: Das Programm würde seinen Stand sonst
 darüber schreiben. Der Datenordner ist `~/.config/HZ-Drummer`, bei `install_band.py` auch über

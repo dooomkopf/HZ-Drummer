@@ -77,18 +77,30 @@ def frac(x):
     return str(x.numerator) if x.denominator == 1 else f"{x.numerator}/{x.denominator}"
 
 
+def why(e):
+    """Warum eine Datei nicht lesbar ist, kurz und deutsch."""
+    if isinstance(e, ET.ParseError):
+        return "kein gültiges XML"
+    if isinstance(e, OSError):
+        return "Datei fehlt" if isinstance(e, FileNotFoundError) else f"nicht lesbar ({e.strerror})"
+    if isinstance(e, ValueError) and not str(e).startswith(("could not convert", "invalid literal")):
+        return str(e)   # one of ours
+    return f"Aufbau unbekannt ({type(e).__name__})"
+
+
 def seed_of(pid):
     return int(hashlib.md5(pid.encode()).hexdigest()[:8], 16)
 
 
 def read_song(path):
     root = ET.parse(path).getroot()
-    bpm = float(root.findtext("bpm") or 120)
+    bpm = min(320.0, max(30.0, float(root.findtext("bpm") or 120)))   # the tempo HZ-Drummer can play
     instruments = {i.findtext("id"): i.findtext("name") or "" for i in root.iter("instrument") if i.findtext("id") is not None}
     patterns = collections.OrderedDict()
     for p in root.find("patternList"):
         hits = {}   # (Position in Ticks, Stimme) -> [Lautstärke, Versatz in ms, Flam]
         notes = []
+        size = int(p.findtext("size") or 192)
         for n in p.iter("note"):
             name = instruments.get(n.findtext("instrument"), "?")
             voice = voice_of(name)
@@ -103,16 +115,19 @@ def read_song(path):
             lag = 0.0
             if pos % 4:
                 snapped = round(pos / 12) * 12
-                lag = round((pos - snapped) / TPQ * 60000.0 / bpm, 1)
+                lag = max(-100.0, min(100.0, round((pos - snapped) / TPQ * 60000.0 / bpm, 1)))
                 notes_log.append(f"{os.path.basename(path)} / {p.findtext('name')}: {voice} {pos - snapped:+d} Ticks -> {lag:+.1f} ms")
                 pos = snapped
+            if not 0 <= pos < size:
+                notes_log.append(f"{os.path.basename(path)} / {p.findtext('name')}: {voice} bei Tick {pos}, hinter dem Ende ({size}), weggelassen")
+                continue
             key = (pos, voice)
             if key in hits:
                 hits[key][0] = max(vel, hits[key][0])   # doppelte Note: die lautere zählt ...
                 hits[key][2] = hits[key][2] or lag != 0.0   # ... und ein Versatz dazu macht sie zum Flam
             else:
                 hits[key] = [vel, lag, False]
-        patterns[p.findtext("name")] = (int(p.findtext("size") or 192), hits)
+        patterns[p.findtext("name")] = (size, hits)
     seq = root.find("patternSequence")
     columns = [[x.text for x in g.iter("patternID") if x.text] for g in (seq if seq is not None else [])]
     return bpm, patterns, columns
@@ -127,8 +142,8 @@ def bar_of(size, hits, triplet_style, waltz):
     else:
         per_quarter = TPQ
         quarters = F(size, TPQ)
-        if quarters.denominator != 1:
-            raise ValueError(f"Pattern-Länge {size} Ticks ist kein ganzer Viertel-Takt")
+        if quarters.denominator != 1 or not 0 < quarters <= 64:
+            raise ValueError(f"Pattern-Länge {size} Ticks ist kein Takt von 1 bis 64 Vierteln")
         meter = f"{quarters.numerator}/4"
     length = F(size, per_quarter)
     events = sorted((F(pos, per_quarter), voice, vel, lag, flam) for (pos, voice), (vel, lag, flam) in hits.items())
@@ -167,11 +182,13 @@ def pattern_json(pid, name, tags, tempo, bars, origin):
 
 
 written = {}
+empty = []
 
 
 def write_pattern(p):
     if p["id"] in written:
-        raise ValueError("doppelte Kennung " + p["id"])
+        print("Übersprungen: doppelte Kennung " + p["id"])
+        return
     written[p["id"]] = p
     with open(os.path.join(OUT, "patterns", p["id"] + ".json"), "w", encoding="utf-8") as f:
         json.dump(p, f, ensure_ascii=False, indent=2)
@@ -184,43 +201,52 @@ os.makedirs(os.path.join(OUT, "songs"), exist_ok=True)
 BARDET = os.path.join(SRC, "Songs", "260_Drum_Machine_Patterns_from_RP_Bardet")
 credit = "R.P. Bardet: 260 Drum Machine Patterns, Hydrogen-Fassung von Albert Phelipot (CC-BY-SA)"
 stats = collections.Counter()
-for fname in sorted(os.listdir(BARDET)):
+for fname in sorted(os.listdir(BARDET)) if os.path.isdir(BARDET) else []:
     if not fname.endswith(".h2song"):
         continue
-    style = fname[:-7].replace("_", " ")
-    tempo, patterns, _ = read_song(os.path.join(BARDET, fname))
-    # 144 Ticks sind bei Bardet 12 Triolen-Schritte (Shuffle, Swing, Jazz, Reggae 7-9), nur der Walzer ist 3/4
-    triplet_style = style != "Waltz"
-    bars = collections.OrderedDict()
-    sizes = {}
-    for pname, (size, hits) in patterns.items():
-        bars[pname] = bar_of(size, hits, triplet_style, style == "Waltz")
-        sizes[pname] = size
-    base_tags = [style.lower(), "bardet", "drum-machine", "band:R.P. Bardet"]
-    for i, (pname, bar) in enumerate(bars.items(), 1):
-        pid = f"user.bardet-{slug(style)}-{i:02d}"
-        write_pattern(pattern_json(pid, f"R.P. Bardet – {style} – {pname}", base_tags + [f"song:{style}"], tempo, [bar],
-                                   ["hydrogen-import", credit, f"{fname} / {pname}"]))
-        stats["einzeln"] += 1
-    # 4 Takte: dreimal das Muster, dann ein Break mit derselben Taktart und demselben Feel (Triolen zu Triolen),
-    # die Breaks reihum
-    grooves = [n for n in bars if not n.lower().startswith("break")]
-    breaks = [n for n in bars if n.lower().startswith("break")]
-    used = collections.Counter()
-    k = 0
-    for g in grooves:
-        kind = (sizes[g], bars[g][0])
-        fitting = [b for b in breaks if (sizes[b], bars[b][0]) == kind]
-        if not fitting:
+    todo = []   # written only when the whole file could be read
+    try:
+        style = fname[:-7].replace("_", " ")
+        tempo, patterns, _ = read_song(os.path.join(BARDET, fname))
+        # 144 Ticks sind bei Bardet 12 Triolen-Schritte (Shuffle, Swing, Jazz, Reggae 7-9), nur der Walzer ist 3/4
+        triplet_style = style != "Waltz"
+        bars = collections.OrderedDict()
+        sizes = {}
+        for pname, (size, hits) in patterns.items():
+            bars[pname] = bar_of(size, hits, triplet_style, style == "Waltz")
+            sizes[pname] = size
+        base_tags = [style.lower(), "bardet", "drum-machine", "band:R.P. Bardet"]
+        for i, (pname, bar) in enumerate(bars.items(), 1):
+            pid = f"user.bardet-{slug(style)}-{i:02d}"
+            todo.append(("einzeln", pattern_json(pid, f"R.P. Bardet – {style} – {pname}", base_tags + [f"song:{style}"], tempo, [bar],
+                                                 ["hydrogen-import", credit, f"{fname} / {pname}"])))
+        # 4 Takte: dreimal das Muster, dann ein Break mit derselben Taktart und demselben Feel (Triolen zu Triolen),
+        # die Breaks reihum
+        grooves = [n for n in bars if not n.lower().startswith("break")]
+        breaks = [n for n in bars if n.lower().startswith("break")]
+        used = collections.Counter()
+        k = 0
+        for g in grooves:
+            kind = (sizes[g], bars[g][0])
+            fitting = [b for b in breaks if (sizes[b], bars[b][0]) == kind]
+            if not fitting:
+                continue
+            b = fitting[used[kind] % len(fitting)]
+            used[kind] += 1
+            k += 1
+            pid = f"user.bardet-{slug(style)}-4t-{k:02d}"
+            todo.append(("4 Takte", pattern_json(pid, f"R.P. Bardet – {style} 4 Takte – {g} + {b}", base_tags + [f"song:{style} 4 Takte"],
+                                                 tempo, [bars[g], bars[g], bars[g], bars[b]],
+                                                 ["hydrogen-import", credit, f"{fname}: 3x {g} + {b}"])))
+    except (OSError, ET.ParseError, ValueError, KeyError, TypeError, AttributeError, ZeroDivisionError) as e:   # a broken or odd file
+        print(f"Übersprungen: {fname} ({why(e)})")
+        continue
+    for what, pattern in todo:
+        if not any(layer["events"] for layer in pattern["layers"]):
+            empty.append(pattern["id"])   # not one hit on a known drum: no Baustein
             continue
-        b = fitting[used[kind] % len(fitting)]
-        used[kind] += 1
-        k += 1
-        pid = f"user.bardet-{slug(style)}-4t-{k:02d}"
-        write_pattern(pattern_json(pid, f"R.P. Bardet – {style} 4 Takte – {g} + {b}", base_tags + [f"song:{style} 4 Takte"], tempo,
-                                   [bars[g], bars[g], bars[g], bars[b]],
-                                   ["hydrogen-import", credit, f"{fname}: 3x {g} + {b}"]))
-        stats["4 Takte"] += 1
+        write_pattern(pattern)
+        stats[what] += pattern["id"] in written
 
 # ---------------------------------------------------------------- Band-Songs
 SONGS = [("ACDC/Back_in_Black/Back_in_Black.h2song", "AC/DC", "Back in Black", "rock"),
@@ -229,36 +255,46 @@ SONGS = [("ACDC/Back_in_Black/Back_in_Black.h2song", "AC/DC", "Back in Black", "
          ("ZZTop/LaGrange/LaGrange.h2song", "ZZ Top", "La Grange", "rock")]
 song_ids = []
 for rel, band, song, genre in SONGS:
-    tempo, patterns, columns = read_song(os.path.join(SRC, "Songs", rel))
-    while columns and not columns[0]:
-        columns.pop(0)
-    while columns and not columns[-1]:
-        columns.pop()
-    if any(not c for c in columns):
-        raise ValueError(f"{song}: leere Spalte mitten im Ablauf")
-    contents = list(collections.OrderedDict.fromkeys(tuple(c) for c in columns))
-    ids = {}
-    for i, content in enumerate(contents, 1):
-        merged, size = {}, None
-        for pname in content:
-            psize, hits = patterns[pname]
-            if size is not None and psize != size:
-                raise ValueError(f"{song}: übereinanderliegende Patterns verschieden lang")
-            size = psize
-            for key, (vel, lag, flam) in hits.items():
-                if key in merged:
-                    old = merged[key]
-                    merged[key] = [max(vel, old[0]), old[1] or lag, old[2] or flam]
-                else:
-                    merged[key] = [vel, lag, flam]
-        label = " + ".join(content)
-        pid = f"user.{slug(band)}-{slug(song)}-{i:02d}"
-        ids[content] = (pid, label)
-        write_pattern(pattern_json(pid, f"{band} – {song} – {label}",
-                                   [genre, "song", "abschnitt", f"band:{band}", f"song:{song}", "hydrogen"], tempo,
-                                   [bar_of(size, merged, False, False)],
-                                   ["hydrogen-import", f"Hydrogen Song-and-pattern-repository: {rel}", label]))
-        stats["Band-Takte"] += 1
+    todo = []   # written only when the whole song could be read
+    try:
+        tempo, patterns, columns = read_song(os.path.join(SRC, "Songs", rel))
+        while columns and not columns[0]:
+            columns.pop(0)
+        while columns and not columns[-1]:
+            columns.pop()
+        if any(not c for c in columns):
+            raise ValueError(f"{song}: leere Spalte mitten im Ablauf")
+        contents = list(collections.OrderedDict.fromkeys(tuple(c) for c in columns))
+        ids = {}
+        for i, content in enumerate(contents, 1):
+            merged, size = {}, None
+            for pname in content:
+                psize, hits = patterns[pname]
+                if size is not None and psize != size:
+                    raise ValueError(f"{song}: übereinanderliegende Patterns verschieden lang")
+                size = psize
+                for key, (vel, lag, flam) in hits.items():
+                    if key in merged:
+                        old = merged[key]
+                        merged[key] = [max(vel, old[0]), old[1] or lag, old[2] or flam]
+                    else:
+                        merged[key] = [vel, lag, flam]
+            label = " + ".join(content)
+            pid = f"user.{slug(band)}-{slug(song)}-{i:02d}"
+            ids[content] = (pid, label)
+            todo.append(pattern_json(pid, f"{band} – {song} – {label}",
+                                     [genre, "song", "abschnitt", f"band:{band}", f"song:{song}", "hydrogen"], tempo,
+                                     [bar_of(size, merged, False, False)],
+                                     ["hydrogen-import", f"Hydrogen Song-and-pattern-repository: {rel}", label]))
+    except (OSError, ET.ParseError, ValueError, KeyError, TypeError, AttributeError, ZeroDivisionError) as e:   # a broken or odd file
+        print(f"Übersprungen: {rel} ({why(e)})")
+        continue
+    if not any(layer["events"] for pattern in todo for layer in pattern["layers"]):
+        print(f"Kein Arrangement für {band} – {song}: keine Schläge")
+        continue
+    for pattern in todo:   # a column without a known drum stays: a pause in the song
+        write_pattern(pattern)
+        stats["Band-Takte"] += pattern["id"] in written
     parts = []
     for content in columns:
         pid, label = ids[tuple(content)]
@@ -266,6 +302,11 @@ for rel, band, song, genre in SONGS:
             parts[-1]["repeats"] += 1
         else:
             parts.append({"pattern": pid, "label": label, "repeats": 1})
+    bars = sum(len(written[q["pattern"]]["bars"]) * q["repeats"] for q in parts)
+    hits = sum(len(layer["events"]) * q["repeats"] for q in parts for layer in written[q["pattern"]]["layers"])
+    if bars > 512 or hits > 8192:
+        print(f"Kein Arrangement für {band} – {song}: {bars} Takte, {hits} Schläge, zu lang")
+        continue
     sid = f"{slug(band)}-{slug(song)}"
     song_ids.append((band, "song." + sid))
     with open(os.path.join(OUT, "songs", sid + ".json"), "w", encoding="utf-8") as f:
@@ -283,6 +324,8 @@ print("Zuordnung der Instrumente:")
 for (name, voice), n in sorted(mapping.items(), key=lambda x: -x[1]):
     print(f"  {name:28} -> {voice:12} {n:5}")
 print("Nicht zugeordnet:", dict(unmapped) or "nichts")
+if empty:
+    print("Ohne Schlag auf einer bekannten Trommel, nicht geschrieben:", ", ".join(empty))
 for line in notes_log:
     print("Hinweis:", line)
 print("Song-Ordner:", song_ids)

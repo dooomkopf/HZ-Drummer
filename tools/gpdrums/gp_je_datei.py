@@ -9,8 +9,10 @@ Ruft je Datei den Leser GpDrums156.java (TuxGuitar 1.5.6, $TUXGUITAR, sonst /opt
 und wertet dessen TRACK/BAR/MARKER/HIT-Zeilen aus. Liest nur, schreibt nichts in die Quellen.
 """
 import os
+import shutil
 import subprocess
 import sys
+import tempfile
 from collections import Counter, defaultdict
 from fractions import Fraction
 
@@ -29,8 +31,23 @@ VOICE = {   # wie tools/gpdrums/gp2json.py
 
 
 def run(path):
-    p = subprocess.run(["java", "-cp", CP, READER, path], capture_output=True, text=True, timeout=180)
+    with tempfile.TemporaryDirectory() as tmp:   # Java opens a non-ASCII name only in a UTF-8 locale: a copy with a plain name
+        if not path.isascii():
+            path = shutil.copy(path, os.path.join(tmp, "datei" + os.path.splitext(path)[1].lower()))
+        try:
+            p = subprocess.run(["java", "-cp", CP, READER, path], capture_output=True, text=True, errors="replace", timeout=180)
+        except subprocess.TimeoutExpired:
+            return "", "Zeitüberschreitung beim Lesen"
     return p.stdout, p.stderr
+
+
+def readable(name):
+    """Ein Dateiname als Text: Bytes, die kein UTF-8 sind (ein alter Latin-1-Name), als Latin-1 gelesen."""
+    raw = name.encode("utf-8", "surrogateescape")
+    try:
+        return raw.decode("utf-8")
+    except UnicodeDecodeError:
+        return raw.decode("latin-1")
 
 
 def parse(out):
@@ -56,9 +73,11 @@ def parse(out):
 def summarize(path):
     out, err = run(path)
     tracks, bars, markers = parse(out)
-    name = os.path.basename(path)
+    name = readable(os.path.basename(path))
     if not tracks:
-        return "%s | FEHLER %s" % (name, (err.strip().splitlines() or ["keine Ausgabe"])[-1][:80])
+        why = next((l.strip() for l in err.splitlines() if "Exception" in l or "Error" in l), err.strip() or "keine Ausgabe")
+        cls, _, message = why.replace('Exception in thread "main" ', "").partition(": ")
+        return "%s | FEHLER %s" % (name, (cls.rsplit(".", 1)[-1] + (": " + message if message else ""))[:120])
     perc = [t for t in tracks if t[1]]
     if bars is None:
         return "%s | %d Spuren, KEINE Schlagzeugspur" % (name, len(tracks))
@@ -99,7 +118,7 @@ def show_bar(path, n):
     rows = defaultdict(list)
     for off, note, vel, ghost, acc in sorted(b["hits"]):
         rows[VOICE.get(note, "?%d" % note)].append("%s(v%.2f%s%s)" % (Fraction(off, TPQ), vel / 127.0, " ghost" if ghost else "", " akz" if acc else ""))
-    print("Datei: %s" % os.path.basename(path))
+    print("Datei: %s" % readable(os.path.basename(path)))
     print("Takt %d: %d/%d, Tempo %d, Marker %r" % (n, b["num"], b["den"], b["tempo"], markers.get(n, "")))
     for v in sorted(rows):
         print("  %-12s %s" % (v, "  ".join(rows[v])))
@@ -122,7 +141,7 @@ def main():
         try:
             print(summarize(p), flush=True)
         except Exception as e:  # defekte Datei: melden, weitermachen
-            print("%s | FEHLER %s" % (os.path.basename(p), e), flush=True)
+            print("%s | FEHLER %s" % (readable(os.path.basename(p)), e), flush=True)
 
 
 if __name__ == "__main__":

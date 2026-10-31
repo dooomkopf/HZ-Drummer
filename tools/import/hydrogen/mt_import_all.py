@@ -41,6 +41,15 @@ def slug(s):
     return re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")
 
 
+def why(e):
+    """Warum eine Datei nicht lesbar ist, kurz und deutsch."""
+    if isinstance(e, ET.ParseError):
+        return "kein gültiges XML"
+    if isinstance(e, OSError):
+        return "Datei fehlt" if isinstance(e, FileNotFoundError) else f"nicht lesbar ({e.strerror})"
+    return f"Aufbau unbekannt ({type(e).__name__})"
+
+
 def fit_bar(bar, bar_ticks, tempo):
     """Das Raster eines Takts. Passen die Schläge in keines der Menü-Raster gemeinsam (eine 32tel vor einem
     Triolen-Lauf), gilt das Raster, in das die meisten passen; die übrigen kommen auf dessen nächsten Platz,
@@ -55,7 +64,7 @@ def fit_bar(bar, bar_ticks, tempo):
     for (p, v), (vel, lag, flam) in sorted(bar.items(), key=lambda kv: (kv[0][0] % step != 0, kv[0][0])):
         if p % step:
             snapped = min(round(p / step) * step, bar_ticks - step)
-            lag = round(lag + (p - snapped) / TPQ * 60000.0 / tempo, 1)
+            lag = max(-100.0, min(100.0, round(lag + (p - snapped) / TPQ * 60000.0 / tempo, 1)))
             stats["aufs Takt-Raster mit Versatz"] += 1
             p = snapped
         if (p, v) in out:
@@ -84,7 +93,7 @@ def bars_of(pattern, bar_ticks, tempo):
             if voice == "tom4" and abs(pos - snapped) == 1:
                 stats["Stand-Tom aufs Raster (Fehler der Quelle)"] += 1   # nur sie liegt so oft einen Tick daneben
             else:
-                lag = round((pos - snapped) / TPQ * 60000.0 / tempo, 1)
+                lag = max(-100.0, min(100.0, round((pos - snapped) / TPQ * 60000.0 / tempo, 1)))
                 stats["auf die 16tel mit Versatz"] += 1
             pos = snapped
         key = (pos % bar_ticks, voice)
@@ -131,49 +140,62 @@ known = set()
 for path in glob.glob(os.path.join(LIBRARY, "*.json")) + glob.glob(os.path.join(OWN, "*.json")):
     if os.path.basename(path).startswith("user.mtpower-"):
         continue
-    d = json.load(open(path, encoding="utf-8"))
-    start = F(0)
-    for b in d["bars"]:
-        num, den = (int(x) for x in re.match(r"(\d+)/(\d+)", b["meter"]).groups())
-        length = F(num * 4, den)
-        hits = frozenset((F(e["pos"]) - start, e["voice"]) for l in d["layers"] for e in l["events"]
-                         if e["voice"] in ("kick", "snare") and start <= F(e["pos"]) < start + length)
-        known.add((f"{num}/{den}", hits))
-        start += length
+    try:   # a damaged or foreign file among the own Bausteine only lacks in this comparison
+        d = json.load(open(path, encoding="utf-8"))
+        start = F(0)
+        for b in d["bars"]:
+            num, den = (int(x) for x in re.match(r"(\d+)/(\d+)", b["meter"]).groups())
+            length = F(num * 4, den)
+            hits = frozenset((F(e["pos"]) - start, e["voice"]) for l in d["layers"] for e in l["events"]
+                             if e["voice"] in ("kick", "snare") and start <= F(e["pos"]) < start + length)
+            known.add((f"{num}/{den}", hits))
+            start += length
+    except (OSError, ValueError, KeyError, TypeError, AttributeError, ZeroDivisionError):
+        stats["vorhandene Bausteine nicht lesbar (für den Vergleich übergangen)"] += 1
 
 os.makedirs(os.path.join(OUT, "patterns"), exist_ok=True)
 skipped_simple = []
 for fname, band, group in FAMILIES:
-    root = ET.parse(os.path.join(SONGS, fname + ".h2song")).getroot()
-    tempo = float(root.findtext("bpm") or 115)
-    patterns = list(root.find("patternList"))
-    for groove in (p for p in patterns if int(p.findtext("size")) in (1536, 1152)):
-        name = groove.findtext("name")
-        g = name.split()[0]
-        bar_ticks = int(groove.findtext("size")) // 8
-        meter = "4/4" if bar_ticks == 192 else "6/8"
-        gbars = bars_of(groove, bar_ticks, tempo)
-        gtype = re.sub(r"^G\d+ .*?\d+ \d+ ?", "", name).strip() or "Groove"
-        gtype = "Shuffle" if gtype.upper() == "SHUFFLE" else gtype
-        figure = collections.Counter(core(b) for b in gbars).most_common(1)[0][0]
-        if gtype == "Simple" and (meter, figure) in known:
-            skipped_simple.append(f"{band} {group} {g}")
-            stats["Simple, schon vorhanden"] += 1
+    todo = []   # written only when the whole file could be read
+    try:
+        root = ET.parse(os.path.join(SONGS, fname + ".h2song")).getroot()
+        tempo = min(320.0, max(30.0, float(root.findtext("bpm") or 115)))   # the tempo HZ-Drummer can play
+        patterns = list(root.find("patternList"))
+        for groove in (p for p in patterns if int(p.findtext("size")) in (1536, 1152)):
+            name = groove.findtext("name")
+            g = name.split()[0]
+            bar_ticks = int(groove.findtext("size")) // 8
+            meter = "4/4" if bar_ticks == 192 else "6/8"
+            gbars = bars_of(groove, bar_ticks, tempo)
+            gtype = re.sub(r"^G\d+ .*?\d+ \d+ ?", "", name).strip() or "Groove"
+            gtype = "Shuffle" if gtype.upper() == "SHUFFLE" else gtype
+            figure = collections.Counter(core(b) for b in gbars).most_common(1)[0][0]
+            if gtype == "Simple" and (meter, figure) in known:
+                skipped_simple.append(f"{band} {group} {g}")
+                stats["Simple, schon vorhanden"] += 1
+                continue
+            fills = [p for p in patterns if re.match(rf"^{re.escape(g)} F\d+ ", p.findtext("name") or "")
+                     and int(p.findtext("size")) == bar_ticks]
+            tags = ["metal", "rock", "mt-power", f"band:{band}", f"song:{group}"]
+            base = f"user.mtpower-{slug(band.replace('MT Power ', ''))}-{slug(group)}-{g.lower()}"
+            versions = [(base, f"{band} – {group} – {g} {gtype}", gbars, name)]
+            if fills:
+                best = max(fills, key=lambda p: fill_score(bars_of(p, bar_ticks, tempo)[0]))
+                versions.append((base + "-fill", f"{band} – {group} – {g} {gtype} mit Fill",
+                                 gbars[:7] + bars_of(best, bar_ticks, tempo), name + " + " + best.findtext("name")))
+            for pid, title, bars, note in versions:
+                todo.append(pattern_json(pid, title, tags, tempo, meter, bar_ticks, bars, ["hydrogen-import", CREDIT, note]))
+    except (OSError, ET.ParseError, ValueError, KeyError, TypeError, AttributeError, IndexError) as e:   # broken or odd
+        print(f"Übersprungen: {fname}.h2song ({why(e)})")
+        continue
+    for pattern in todo:
+        if not any(layer["events"] for layer in pattern["layers"]):
+            stats["ohne Schlag, nicht geschrieben"] += 1
             continue
-        fills = [p for p in patterns if re.match(rf"^{g} F\d+ ", p.findtext("name")) and int(p.findtext("size")) == bar_ticks]
-        tags = ["metal", "rock", "mt-power", f"band:{band}", f"song:{group}"]
-        base = f"user.mtpower-{slug(band.replace('MT Power ', ''))}-{slug(group)}-{g.lower()}"
-        versions = [(base, f"{band} – {group} – {g} {gtype}", gbars, name)]
-        if fills:
-            best = max(fills, key=lambda p: fill_score(bars_of(p, bar_ticks, tempo)[0]))
-            versions.append((base + "-fill", f"{band} – {group} – {g} {gtype} mit Fill",
-                             gbars[:7] + bars_of(best, bar_ticks, tempo), name + " + " + best.findtext("name")))
-        for pid, title, bars, note in versions:
-            with open(os.path.join(OUT, "patterns", pid + ".json"), "w", encoding="utf-8") as f:
-                json.dump(pattern_json(pid, title, tags, tempo, meter, bar_ticks, bars, ["hydrogen-import", CREDIT, note]),
-                          f, ensure_ascii=False, indent=2)
-            stats[f"{band} / {group}"] += 1
-            stats["Bausteine"] += 1
+        with open(os.path.join(OUT, "patterns", pattern["id"] + ".json"), "w", encoding="utf-8") as f:
+            json.dump(pattern, f, ensure_ascii=False, indent=2)
+        stats[f"{band} / {group}"] += 1
+        stats["Bausteine"] += 1
 
 for k, v in sorted(stats.items()):
     print(f"{k:40} {v}")

@@ -93,10 +93,14 @@ def read_smf(path):
         data = data[k:]
     if data[:4] != b"MThd":
         raise MidiError("kein MThd")
+    if len(data) < 14:
+        raise MidiError("Kopf unvollständig")
     hlen = struct.unpack(">I", data[4:8])[0]
     fmt, ntrk, div = struct.unpack(">HHH", data[8:14])
     if div & 0x8000:
         raise MidiError("SMPTE-Zeitbasis nicht unterstützt")
+    if div == 0:
+        raise MidiError("Zeitbasis 0")
     i = 8 + hlen
     tracks = []
     while i + 8 <= len(data):
@@ -110,6 +114,15 @@ def read_smf(path):
 
 
 def _parse_track(d):
+    try:
+        return _parse_events(d)
+    except IndexError:
+        raise MidiError("Spur endet mitten in einem Ereignis") from None
+
+
+def _parse_events(d):
+    # Running status survives meta and sysex events: wrong by the standard, but some files rely on it, and a
+    # correct file always has a status byte there, so it is read the same.
     ev = []
     i, tick, status = 0, 0, None
     while i < len(d):
@@ -123,11 +136,12 @@ def _parse_track(d):
             ln, i = _varlen(d, i + 2)
             payload = d[i:i + ln]
             i += ln
-            status = None
             if mtype == 0x51 and ln == 3:
-                ev.append((tick, "tempo", (payload[0] << 16) | (payload[1] << 8) | payload[2]))
-            elif mtype == 0x58 and ln >= 2:
-                ev.append((tick, "timesig", (payload[0], 2 ** payload[1])))
+                us = (payload[0] << 16) | (payload[1] << 8) | payload[2]
+                ev.append((tick, "tempo", us) if us > 0 else (tick, "ignored", "Tempo 0"))   # nothing playable
+            elif mtype == 0x58 and ln >= 2:   # 0/x or beyond 1/64: ignored
+                ev.append((tick, "timesig", (payload[0], 2 ** payload[1])) if payload[0] > 0 and payload[1] <= 6
+                          else (tick, "ignored", f"Taktart {payload[0]}/2^{payload[1]}"))
             elif mtype in (0x01, 0x03, 0x06):
                 ev.append((tick, {1: "text", 3: "name", 6: "marker"}[mtype],
                            payload.decode("latin-1", "replace")))
@@ -138,7 +152,6 @@ def _parse_track(d):
         if b in (0xF0, 0xF7):
             ln, i = _varlen(d, i + 1)
             i += ln
-            status = None
             continue
         if b & 0x80:
             status = b
@@ -166,10 +179,11 @@ def _parse_track(d):
 
 def analyse(path):
     smf = read_smf(path)
-    notes, tempos, sigs, names, ccs = [], [], [], [], Counter()
-    end = 0
+    notes, tempos, sigs, names, ccs, markers, ignored = [], [], [], [], Counter(), [], Counter()
+    end = offset = 0
     for tr in smf["tracks"]:
         for tick, kind, val in tr:
+            tick += offset
             end = max(end, tick)
             if kind == "on":
                 notes.append((tick,) + val)
@@ -181,6 +195,12 @@ def analyse(path):
                 names.append(val)
             elif kind == "cc":
                 ccs[val[1]] += 1
+            elif kind == "marker":
+                markers.append((tick, val))
+            elif kind == "ignored":
+                ignored[val] += 1
+        if smf["format"] == 2:   # independent patterns: one after the other
+            offset = end
     notes.sort()
     tempos.sort()
     sigs.sort()
@@ -197,7 +217,7 @@ def analyse(path):
     if not tempos or tempos[0][0] > 0:
         tempos.insert(0, (0, 500000))
     return {"ppq": smf["ppq"], "format": smf["format"], "notes": notes, "tempos": tempos,
-            "sigs": sigs, "names": names, "ccs": ccs, "end": end}
+            "sigs": sigs, "names": names, "ccs": ccs, "end": end, "markers": markers, "ignored": ignored}
 
 
 def bars_of(a, upto_tick):
@@ -210,7 +230,14 @@ def bars_of(a, upto_tick):
         blen = Fraction(ppq * 4 * num, den)
         t = Fraction(t0)
         while (t_end is None and t <= upto_tick) or (t_end is not None and t < t_end):
-            out.append((t, blen, num, den))
+            bar = (t, blen, num, den)
+            if t_end is not None and t + blen > t_end:   # the next meter starts inside this bar: it ends there
+                beats, d = (t_end - t) * den / (ppq * 4), den   # in beats of this meter, finer if needed (2/4, 6/16)
+                while beats.denominator != 1 and d < 32:
+                    beats, d = beats * 2, d * 2
+                beats = max(1, round(beats))   # off the 32nd grid: to the nearest 32nd
+                bar = (t, Fraction(beats * ppq * 4, d), beats, d)
+            out.append(bar)
             t += blen
         if t_end is None:
             break

@@ -18,6 +18,11 @@ Wiederholungen werden ausgerollt wie beim Abspielen in TuxGuitar: |: ... :| mit 
 Enden (1., 2. ...) nur im passenden Durchgang. Gleiche Abschnitte werden ein Baustein; folgen sie
 direkt aufeinander, stehen sie im Song als Wiederholung.
 
+Fremde Dateien: Was HZ-Drummer nicht halten kann, wird angepasst und am Ende gemeldet. Schläge hinter dem
+Ende eines überfüllten Takts und doppelte Schläge (gleiche Trommel, gleiche Stelle) fallen weg, Takte über
+64 Schläge werden geteilt, das Tempo bleibt zwischen 30 und 320. Abschnitte ohne Schläge bleiben als Pause
+im Song. Ein Song über 512 Takte oder 8192 Schläge wird in Teile geteilt (<id>-teil1, ...).
+
 Erzeugt:
   <zielordner>/<id-präfix>-NN-<name>.json   ein Pattern je verschiedenem Abschnitt
   <zielordner>/../songs/<id-präfix>.json    der ganze Song als Struktur (Abschnitte nacheinander)
@@ -33,11 +38,14 @@ import json
 import os
 import re
 import sys
-from collections import OrderedDict
+import unicodedata
+from collections import Counter, OrderedDict
 from fractions import Fraction
-from math import gcd
+from math import gcd, isfinite
 
 TPQ = 960   # Ticks pro Viertel
+MAX_BARS, MAX_HITS = 512, 8192   # what one Baustein, and one arrangement, may hold in HZ-Drummer
+dropped = Counter()              # what was left out or changed, for the report at the end
 
 VOICE = {
     35: "kick", 36: "kick", 38: "snare", 40: "snare", 39: "snare", 37: "snare.side",
@@ -55,24 +63,33 @@ def parse(path):
     bars = OrderedDict()
     markers = {}
     unknown = {}
-    for line in open(path, encoding="utf-8"):
+    for line in open(path, encoding="utf-8", errors="replace"):
         p = line.split()
         if not p:
             continue
-        if p[0] == "BAR":
-            bars[int(p[1])] = dict(nr=int(p[1]), length=int(p[3]), num=int(p[4]), den=int(p[5]), tempo=int(p[6]), hits=[],
-                                   open=len(p) > 7 and p[7] == "1", close=int(p[8]) if len(p) > 8 else 0,
-                                   alt=int(p[9]) if len(p) > 9 else 0)
-        elif p[0] == "MARKER":
-            markers[int(p[1])] = " ".join(p[2:])
-        elif p[0] == "HIT":
-            nr, off, note, vel, ghost, acc = (int(x) for x in p[1:7])
-            lag = max(-100.0, min(100.0, float(p[7]))) if len(p) > 7 else 0.0
-            if note in VOICE:
-                bars[nr]["hits"].append(dict(off=off, voice=VOICE[note], vel=vel, ghost=ghost, acc=acc, lag=lag))
-            else:
-                unknown[note] = unknown.get(note, 0) + 1
+        try:
+            if p[0] == "BAR":
+                bars[int(p[1])] = dict(nr=int(p[1]), length=int(p[3]), num=int(p[4]), den=int(p[5]), tempo=int(p[6]), hits=[],
+                                       open=len(p) > 7 and p[7] == "1", close=int(p[8]) if len(p) > 8 else 0,
+                                       alt=int(p[9]) if len(p) > 9 else 0)
+            elif p[0] == "MARKER":
+                markers[int(p[1])] = no_controls(" ".join(p[2:]))
+            elif p[0] == "HIT":
+                nr, off, note, vel, ghost, acc = (int(x) for x in p[1:7])
+                lag = float(p[7]) if len(p) > 7 else 0.0
+                lag = max(-100.0, min(100.0, lag)) if isfinite(lag) else 0.0
+                if note in VOICE:
+                    bars[nr]["hits"].append(dict(off=off, voice=VOICE[note], vel=vel, ghost=ghost, acc=acc, lag=lag))
+                else:
+                    unknown[note] = unknown.get(note, 0) + 1
+        except (ValueError, IndexError, KeyError):
+            dropped["unlesbare Zeilen übersprungen"] += 1   # a damaged line, or a hit without its bar
     return bars, markers, unknown
+
+
+def no_controls(s):
+    """Text without control characters: a NUL or ESC in a name makes the file unreadable for HZ-Drummer."""
+    return "".join(ch for ch in s if unicodedata.category(ch) != "Cc")
 
 
 def unroll(bars):
@@ -81,6 +98,7 @@ def unroll(bars):
     order = list(bars)
     out = []
     index, start, last, number, alternative = 0, 0, -1, 0, 0
+    done = False   # the repeat is played out: a further close without a new open is ignored, as in TuxGuitar
     guard = 0
     while index < len(order) and guard < 100000:
         guard += 1
@@ -89,6 +107,7 @@ def unroll(bars):
             start = 0
         if bar["open"]:
             start = index
+            done = False
             if index > last:   # zum ersten Mal hier: Zähler zurück
                 number, alternative = 0, 0
         else:
@@ -101,13 +120,14 @@ def unroll(bars):
                 continue
         last = max(last, index)
         out.append(order[index])
-        if number < bar["close"]:
+        if number < bar["close"] and not done:
             number += 1
             index = start
             alternative = 0
         else:
             if bar["close"] > 0:
                 number = 0
+                done = True
             index += 1
             alternative = 0 if bar["close"] > 0 or not bar["alt"] else alternative
     return out
@@ -197,14 +217,20 @@ def style_sections(song, marked):
                 name = style_name(style, size)
                 out.append([pos, f"{marker} – {name}" if marker else name])
                 pos += size
-    # a section of a single bar (a marker on one bar) joins its neighbour: the one before, else the one after
+    # a section of a single bar (a marker on one bar) joins its neighbour: the one before, else the one after;
+    # a neighbour of 8 bars is halved first, so no Baustein gets more than 8
     k = 0
     while k < len(out) and len(out) > 1:
         end = out[k + 1][0] - 1 if k + 1 < len(out) else len(song)
         if end == out[k][0]:
             if k > 0:
+                if out[k][0] - out[k - 1][0] >= 8:
+                    out.insert(k, [out[k - 1][0] + 4, out[k - 1][1]])
+                    k += 1
                 del out[k]
                 continue
+            if (out[2][0] if len(out) > 2 else len(song) + 1) - out[1][0] >= 8:
+                out.insert(2, [out[1][0] + 4, out[1][1]])
             out[1][0] = out[0][0]
             del out[0]
             continue
@@ -288,7 +314,15 @@ def make_pattern(pid, name, tags, tempo, bars, seed):
     pos = 0
     eid = 1
     for b in bars:
-        for h in sorted(b["hits"], key=lambda h: (h["off"], h["voice"])):
+        seen = set()
+        for h in sorted(b["hits"], key=lambda h: (h["off"], h["voice"], -h["v"])):
+            if not 0 <= h["off"] < b["length"]:
+                dropped["Schläge hinter dem Ende eines überfüllten Takts weggelassen"] += 1
+                continue
+            if (h["off"], h["voice"]) in seen:
+                dropped["doppelte Schläge (gleiche Trommel, gleiche Stelle) zusammengelegt"] += 1
+                continue   # the louder one stays
+            seen.add((h["off"], h["voice"]))
             ev = {"id": eid, "voice": h["voice"], "pos": frac(pos + h["off"]), "vel": h["v"]}
             if abs(h.get("lag", 0.0)) >= 0.5:
                 ev["lag"] = round(h["lag"], 1)   # ms later (-: earlier) than its place, as played
@@ -311,6 +345,41 @@ def slug(s):
     return re.sub(r"[^a-z0-9]+", "-", s.lower().replace("ä", "ae").replace("ö", "oe").replace("ü", "ue").replace("ß", "ss")).strip("-")
 
 
+def fit_meter(bar):
+    """The bar as HZ-Drummer can hold it (1 to 64 beats of 1/1 to 1/32): itself, or cut into 4/4 pieces and a rest
+    (149/4, 6/64), or nothing when its length cannot be written (3/64, zero)."""
+    if 1 <= bar["num"] <= 64 and bar["den"] in (1, 2, 4, 8, 16, 32) and bar["length"] > 0:
+        return [bar]
+    pieces = []
+    for start in range(0, max(0, bar["length"]), TPQ * 4):
+        size = min(TPQ * 4, bar["length"] - start)
+        den = next((d for d in (4, 8, 16, 32) if size * d % (TPQ * 4) == 0), None)
+        if den is None:
+            continue
+        hits = [dict(h, off=h["off"] - start) for h in bar["hits"] if start <= h["off"] < start + size]
+        pieces.append(dict(bar, num=size * den // (TPQ * 4), den=den, length=size, hits=hits))
+    dropped[f"Taktart {bar['num']}/{bar['den']} nicht darstellbar, " + ("neu eingeteilt (4/4 und Rest)" if pieces else "Takt weggelassen")] += 1
+    return pieces
+
+
+def split_song(parts, size):
+    """The song's parts in arrangements of at most MAX_BARS bars and MAX_HITS hits; size: pattern id -> (bars, hits)."""
+    groups, cur, bars, hits = [], [], 0, 0
+    for q in parts:
+        b, e = size[q["pattern"]]
+        left = q["repeats"]
+        while left:
+            fit = min(left, (MAX_BARS - bars) // b, (MAX_HITS - hits) // e if e else left)   # a pause has no hits
+            if fit == 0 and cur:
+                groups.append(cur)
+                cur, bars, hits = [], 0, 0
+                continue
+            fit = max(fit, 1)
+            cur.append(dict(q, repeats=fit))
+            bars, hits, left = bars + fit * b, hits + fit * e, left - fit
+    return groups + [cur] if cur else groups
+
+
 def main():
     args = [a for a in sys.argv[1:]]
     tags = ["song", "abschnitt"]
@@ -323,39 +392,73 @@ def main():
         args.remove("--spielweise")
     src, outdir, title, prefix = args[:4]
     section_arg = args[4] if len(args) > 4 else ""
+    # undecodable bytes in a file name (argv) as text
+    readable = lambda t: no_controls(t.encode("utf-8", "surrogateescape").decode("utf-8", "replace"))   # noqa: E731
+    title, tags = readable(title), [readable(t) for t in tags]
 
     bars, markers, unknown = parse(src)
     played = unroll(bars)
-    while played and not bars[played[0]]["hits"]:
-        played.pop(0)
-    while played and not bars[played[-1]]["hits"]:
-        played.pop()
-    song = [bars[n] for n in played]
+    with_hits = [k for k, n in enumerate(played) if bars[n]["hits"]]
+    played = played[with_hits[0]:with_hits[-1] + 1] if with_hits else []   # without empty bars at start and end
 
-    has_dynamics = len({h["vel"] for b in bars.values() for h in b["hits"]}) > 1
-    for b in bars.values():   # once per written bar: repeated bars share it
+    has_dynamics = len({h["vel"] for b in bars.values() for h in b["hits"] if h["vel"] > 0}) > 1
+    fitted = {}   # bar number -> the bar as HZ-Drummer can hold it (a bar too long for it comes in pieces)
+    for n, b in bars.items():   # once per written bar: repeated bars share it
         if has_dynamics:
             for h in b["hits"]:
-                h["v"] = round(h["vel"] / 127, 3) if not h["ghost"] else 0.3
-        else:
-            dynamics(b)
+                vel = min(h["vel"], 127) if h["vel"] > 0 else 95   # a broken value (-1 in some files): forte
+                h["v"] = round(vel / 127, 3) if not h["ghost"] else 0.3
+        fitted[n] = fit_meter(b)
+        if not has_dynamics:
+            for piece in fitted[n]:
+                dynamics(piece)
 
-    tempo = round(sum(b["tempo"] for b in song) / len(song))
+    song, starts = [], []   # starts: where each played bar begins in song
+    for n in played:
+        starts.append(len(song))
+        song += fitted[n]
+    if not song:
+        sys.exit(f"{title}: keine Schläge, die HZ-Drummer einer Trommel zuordnen kann, nichts geschrieben"
+                 + (f" (nicht zugeordnete MIDI-Noten: {unknown})" if unknown else ""))
+
+    tempi = [b["tempo"] for b in song if b["tempo"] > 0]
+    tempo = round(sum(tempi) / len(tempi)) if tempi else 120
+    if not 30 <= tempo <= 320:
+        dropped[f"Tempo {tempo} auf {min(320, max(30, tempo))} begrenzt"] += 1
+        tempo = min(320, max(30, tempo))
 
     # Abschnitte über die gespielte Reihenfolge (1-basiert): Angabe > Marker der Datei > 8-Takt-Teile
     sections = []
     if section_arg:
         for item in section_arg.split(","):
             n, name = item.split(":", 1)
-            sections.append((int(n), name.strip()))
+            k = int(n)   # counts played bars; a bar that came in pieces (149/4) is several bars in song
+            if 1 <= k <= len(starts):
+                k = starts[k - 1] + 1
+            elif k > len(starts):
+                k += len(song) - len(starts)   # beyond the end stays beyond it
+            sections.append((k, name.strip()))
     elif markers:
-        sections = [(i + 1, markers[n]) for i, n in enumerate(played) if n in markers]
+        sections = [(starts[i] + 1, markers[n]) for i, n in enumerate(played) if n in markers]
         if not sections or sections[0][0] != 1:
             sections.insert(0, (1, "Anfang"))
     elif not by_style:
         sections = [(i + 1, f"Teil {i // 8 + 1}") for i in range(0, len(song), 8)]
     if by_style:   # within the markers (or the whole song): by playing style
         sections = style_sections(song, sections if sections else [(1, "")])
+    capped = []   # a section too big for one Baustein (one marker over a whole long song): in parts of 8 bars or less
+    for k, (start, name) in enumerate(sections):
+        end = sections[k + 1][0] - 1 if k + 1 < len(sections) else len(song)
+        if end - start + 1 > MAX_BARS or sum(len(b["hits"]) for b in song[start - 1:end]) > MAX_HITS:
+            while start <= end:
+                last = min(start + 7, end)
+                while last > start and sum(len(b["hits"]) for b in song[start - 1:last]) > MAX_HITS:
+                    last -= 1
+                capped.append((start, name))
+                start = last + 1
+        else:
+            capped.append((start, name))
+    sections = capped
 
     os.makedirs(outdir, exist_ok=True)
     seed = abs(hash(prefix)) % 100000 + 1
@@ -363,6 +466,8 @@ def main():
     written = []
     song_parts = []
     pattern_of = {}   # content -> pattern id: equal sections become one pattern
+    size = {}         # pattern id -> (bars, hits); a section without hits is a pause in the song
+    pending = []      # written once it is clear that there is something to hear
     for k, (start, name) in enumerate(sections):
         end = sections[k + 1][0] - 1 if k + 1 < len(sections) else len(song)
         part = song[start - 1:end]
@@ -373,32 +478,49 @@ def main():
         if pid is None:
             number = len(pattern_of) + 1
             pid = f"{prefix}-{number:02d}-{slug(name)}"
+            if len(pid.encode()) > 250:   # a file name has at most 255 bytes: shorter, the number stays
+                pid = f"{prefix[:200].rstrip('-')}-{number:02d}-{slug(name)}"[:250].rstrip("-")
             pattern_of[key] = pid
             pat = make_pattern(pid, f"{title} – {number:02d} {name} (T{start}-{end})", tags, tempo, part, seed + number)
-            path = os.path.join(outdir, f"{pid}.json")
-            json.dump(pat, open(path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-            written.append((path, len(part)))
-        if song_parts and song_parts[-1]["pattern"] == pid:
+            pending.append((os.path.join(outdir, f"{pid}.json"), pat, len(part)))
+            size[pid] = (len(part), sum(len(layer["events"]) for layer in pat["layers"]))
+        if song_parts and song_parts[-1]["pattern"] == pid and song_parts[-1]["repeats"] < 64:
             song_parts[-1]["repeats"] += 1   # directly again: a repeat in the song
         else:
             song_parts.append({"pattern": pid, "label": name, "repeats": 1})
+    if not any(hits for _, hits in size.values()):
+        sys.exit(f"{title}: keine Schläge, die in einen Takt passen, nichts geschrieben")
+    for path, pat, n in pending:
+        json.dump(pat, open(path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+        written.append((path, n))
 
-    # der ganze Song als Struktur: Abschnitte nacheinander (für den Song-Arranger)
+    # der ganze Song als Struktur: Abschnitte nacheinander (für den Song-Arranger); zu lang für ein Arrangement: in Teilen
     songs_dir = os.path.join(os.path.dirname(os.path.abspath(outdir)), "songs")
     os.makedirs(songs_dir, exist_ok=True)
     song_id = prefix.split(".", 1)[-1]
-    song_json = {"formatVersion": 1, "id": song_id, "name": f"{title} (Song)", "tempo": tempo, "parts": song_parts}
-    path = os.path.join(songs_dir, f"{song_id}.json")
-    json.dump(song_json, open(path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    groups = split_song(song_parts, size)
+    if len(song_id.encode()) > (250 if len(groups) == 1 else 240):   # a file name has at most 255 bytes
+        song_id = song_id[:200].rstrip("-")
+    for g, group in enumerate(groups, 1):
+        sid, name = (song_id, f"{title} (Song)") if len(groups) == 1 else (f"{song_id}-teil{g}", f"{title} (Song, Teil {g} von {len(groups)})")
+        song_json = {"formatVersion": 1, "id": sid, "name": name, "tempo": tempo, "parts": group}
+        path = os.path.join(songs_dir, f"{sid}.json")
+        json.dump(song_json, open(path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 
-    print(f"{len(bars)} Takte notiert, {len(song)} gespielt, {len(sections)} Abschnitte, {len(pattern_of)} Bausteine, "
+    print(f"{len(bars)} Takte notiert, {len(song)} gespielt, {len(sections)} Abschnitte, {len(size)} Bausteine, "
           f"{len(song_parts)} Blöcke im Song; Tempo {tempo}, "
           f"{'Dynamik aus der Vorlage' if has_dynamics else 'Dynamik nach Spielregeln'}")
     for p, n in written:
         print(f"  {os.path.basename(p)}  ({n} Takte)")
-    print(f"  songs/{song_id}.json: " + ", ".join(f"{q['label']}" + (f" x{q['repeats']}" if q['repeats'] > 1 else "") for q in song_parts))
+    for g, group in enumerate(groups, 1):
+        sid = song_id if len(groups) == 1 else f"{song_id}-teil{g}"
+        print(f"  songs/{sid}.json: " + ", ".join(f"{q['label']}" + (f" x{q['repeats']}" if q['repeats'] > 1 else "") for q in group))
     if unknown:
         print("Nicht zugeordnete MIDI-Noten (weggelassen):", unknown)
+    if len(groups) > 1:
+        print(f"Song zu lang für ein Arrangement (höchstens {MAX_BARS} Takte, {MAX_HITS} Schläge): {len(groups)} Teile")
+    for what, n in dropped.items():
+        print(what if n == 1 else f"{what}: {n}")
 
 
 if __name__ == "__main__":

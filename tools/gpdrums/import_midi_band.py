@@ -23,8 +23,17 @@ TO_TEXT = HERE / "mid2gpdrums.py"
 CONVERTER = HERE / "gp2json.py"
 
 
+def readable(name):
+    """Ein Dateiname als Text: Bytes, die kein UTF-8 sind (ein alter Latin-1-Name), als Latin-1 gelesen."""
+    raw = name.encode("utf-8", "surrogateescape")
+    try:
+        return raw.decode("utf-8")
+    except UnicodeDecodeError:
+        return raw.decode("latin-1")
+
+
 def title_of(path):
-    return re.sub(r"\.\d+$", "", path.stem).strip()
+    return re.sub(r"\.\d+$", "", readable(path.stem)).strip()
 
 
 def slug(s):
@@ -36,6 +45,8 @@ def main():
     by_style = "--spielweise" in args
     if by_style:
         args.remove("--spielweise")
+    if "--dateien" not in args:
+        sys.exit(__doc__)
     k = args.index("--dateien")
     names = [n.strip() for n in args[k + 1].split(";") if n.strip()]
     del args[k:k + 2]
@@ -44,24 +55,37 @@ def main():
     decoded.mkdir(parents=True, exist_ok=True)
 
     rows = ["song\tdatei"]
+    used = set()
     for name in names:
         f = src / name
         title = title_of(f)
-        text = subprocess.run([sys.executable, "-I", str(TO_TEXT), str(f)], capture_output=True, text=True, timeout=300)
-        if text.returncode != 0 or text.stdout.startswith("NODRUMS"):
-            print(f"=== {title}: keine Schlagzeugspur oder nicht lesbar, übersprungen ({f.name})")
+        try:
+            text = subprocess.run([sys.executable, "-I", str(TO_TEXT), str(f)], capture_output=True, text=True, errors="replace",
+                                  timeout=300)
+        except subprocess.TimeoutExpired:
+            text = None
+        if text is None or text.returncode != 0 or text.stdout.startswith("NODRUMS"):
+            why = ("Zeitüberschreitung beim Lesen" if text is None else "keine Schlagzeugspur (Kanal 10)" if text.returncode == 0
+                   else (text.stderr.strip().splitlines() or ["nicht lesbar"])[-1].removeprefix(f.name + ": "))
+            print(f"=== {title}: übersprungen, {why} ({readable(f.name)})")
             continue
         txt = decoded / (f.stem + ".txt")
         txt.write_text(text.stdout, encoding="utf-8")
-        rows.append(f"{title}\t{f.name}")
-        print(f"=== {title}  ({f.name})")
+        rows.append(f"{title}\t{readable(f.name)}")
+        prefix = base = f"user.{slug(band)}-{slug(title)}"
+        n = 2
+        while prefix in used:   # a second file with the same short name: its Bausteine would overwrite the first
+            prefix, n = f"{base}-{n}", n + 1
+        used.add(prefix)
+        print(f"=== {title}  ({readable(f.name)})" + (f", Kennung {prefix} (Kurzname schon vergeben)" if prefix != base else ""))
         result = subprocess.run([sys.executable, "-I", str(CONVERTER), str(txt), str(staging / "patterns"),
-                                 f"{band} – {title}", f"user.{slug(band)}-{slug(title)}",
+                                 f"{band} – {title}", prefix,
                                  "--tags", f"band:{band},song:{title}"] + (["--spielweise"] if by_style else []),
-                                capture_output=True, text=True)
-        print("\n".join(l for l in result.stdout.splitlines() if not l.startswith("  user.")))
+                                capture_output=True, text=True, errors="replace")
+        if lines := [l for l in result.stdout.splitlines() if not l.startswith("  user.")]:
+            print("\n".join(lines))
         if result.returncode != 0:
-            print(result.stderr)
+            print(result.stderr.strip())
     (staging / "auswahl.tsv").write_text("\n".join(rows) + "\n", encoding="utf-8")
 
 
