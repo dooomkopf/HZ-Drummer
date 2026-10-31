@@ -1,6 +1,6 @@
 # HZ-Drummer
 
-Drum-Machine zum Üben und Mitspielen, für Gitarre, Bass und Schlagzeug, gebaut für Metal: realistische Samples, Patterns in allen Taktarten bis hin zu Polyrhythmen, eine Bibliothek von D-Beat bis Tech-Death, ein Raster-Editor für eigene Grooves und ein Arranger, der aus Bausteinen ganze Songabläufe macht. C++ mit JUCE, entwickelt und getestet unter Ubuntu 22.04.
+Drum-Machine zum Üben und Mitspielen, für Gitarre, Bass und Schlagzeug oder Blockflöte, mit Fokus auf Metal: realistische Samples, Patterns in allen Taktarten bis hin zu Polyrhythmen, eine Bibliothek von D-Beat bis Tech-Death, ein Raster-Editor für eigene Grooves und ein Arranger, der aus Bausteinen ganze Songabläufe macht. C++ mit JUCE, entwickelt und getestet unter Ubuntu 22.04.
 
 **Auf einen Blick**
 
