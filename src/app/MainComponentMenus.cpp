@@ -53,6 +53,9 @@ void MainComponent::setupKeys()
     a.meterMenu         = [this] { showMeterMenu(); };
     a.editor            = [this] { openEditor(); };
     a.mixer             = [this] { toggleMixer(); };
+    a.loop              = [this] { if (! workshopOpen()) toggleLoop(); };   // like their buttons: not while the workshop is open
+    a.history           = [this] (int dir) { moveHistory (dir); };
+    a.trainer           = [this] { if (! workshopOpen()) setTrainerOn (! trainer.on); };
     a.search            = [this] { openSearch(); };
     a.help              = [this] { showHelp (true); };
     keyBindings = makeKeyBindings (a);
@@ -298,6 +301,11 @@ void MainComponent::showMixer()
         mixerWindow.reset (o.create());
         mixerKeys.onKey = [this] (const juce::KeyPress& k)
         {
+            if (k.getKeyCode() == juce::KeyPress::spaceKey && ! k.getModifiers().isAnyModifierKeyDown())
+            {
+                togglePlay();   // Start / Pause, as in the main window
+                return true;
+            }
             if (k.getModifiers().isCommandDown() || juce::CharacterFunctions::toLowerCase (k.getTextCharacter()) != 'm')
                 return false;
             toggleMixer();
@@ -363,8 +371,12 @@ void MainComponent::showAudioSettings()
             juce::Label badgeRuleLabel { {}, "Verteilung:" };
             juce::ComboBox badgeRule;
             juce::TextButton redistribute { "Neu verteilen" };
+            juce::ToggleButton tooltips { "Tooltips" };
             explicit SystemPanel (juce::AudioDeviceManager& dm) : selector (dm)
             {
+                addAndMakeVisible (tooltips);
+                tooltips.setColour (juce::ToggleButton::textColourId, theme::textMain);
+                tooltips.setColour (juce::ToggleButton::tickColourId, theme::textMain);
                 addAndMakeVisible (selector);
                 addAndMakeVisible (trash); addAndMakeVisible (logs); addAndMakeVisible (structure); addAndMakeVisible (menuFolders);
                 addAndMakeVisible (badgeLine);
@@ -380,11 +392,15 @@ void MainComponent::showAudioSettings()
                 version.setFont (juce::FontOptions (14.0f));
                 version.setColour (juce::Label::textColourId, theme::textDim);
                 version.setText ("HZ-Drummer v" HZ_VERSION, juce::dontSendNotification);
-                setSize (560, ActiveGlow::height + AudioSettingsPanel::preferredHeight + 4 + 42 + 64 + 38 + 50 + 28);
+                setSize (560, ActiveGlow::height + AudioSettingsPanel::preferredHeight + 4 + 42 + 64 + 38 + 50 + 28 + 28);
             }
             void resized() override
             {
                 auto r = getLocalBounds();
+                auto last = r.removeFromBottom (28).reduced (12, 2);   // under everything, flush right
+                tooltips.setSize (10, last.getHeight());
+                tooltips.changeWidthToFitText();
+                tooltips.setBounds (last.removeFromRight (tooltips.getWidth()));
                 version.setBounds (r.removeFromBottom (28).reduced (12, 4));
                 info.setBounds (r.removeFromBottom (50).reduced (12, 4));
                 auto rule = r.removeFromBottom (38).reduced (12, 4);   // below the badge line: how new badges are given
@@ -407,6 +423,14 @@ void MainComponent::showAudioSettings()
         panel->logs.onClick = [safe] { if (safe != nullptr) safe->showDataTools (1); };
         panel->structure.onClick = [safe] { if (safe != nullptr) safe->showDataTools (2); };
         panel->menuFolders.onClick = [safe] { if (safe != nullptr) safe->showDataTools (3); };
+        panel->tooltips.setToggleState (tooltipsEnabled, juce::dontSendNotification);
+        panel->tooltips.onClick = [safe, panel]
+        {
+            if (safe == nullptr)
+                return;
+            safe->setTooltipsEnabled (panel->tooltips.getToggleState());
+            safe->saveSettings();
+        };
 
         // badges: how much of the colour x mark space is taken, and whether any two patterns share one
         auto badgeText = [safe]

@@ -21,6 +21,8 @@
 #include "app/views/StatusPanels.h"
 #include "app/views/Watermark.h"
 #include "app/views/GhostMenu.h"
+#include "app/TrainerSlots.h"
+#include "app/views/TrainerPanel.h"
 #include "app/BrowseOrder.h"
 
 #include <juce_audio_utils/juce_audio_utils.h>
@@ -84,6 +86,7 @@ public:
     void arrangerPlay (const Song&, int fromPart) override;
     void arrangerUpdate (const Song&) override;
     void arrangerSeekToPart (int part) override;
+    void arrangerSeekToBar (int bar) override     { seekToBar (bar); }   // the plan shown is the arrangement
     void arrangerStop() override;
     bool arrangerAuditionActive() const override { return audition == Audition::Arranger && control.play; }
     bool arrangerPlayActive() const override     { return arranging.has_value() && control.play; }
@@ -114,6 +117,45 @@ private:
     void browseMeters (int dir, bool favoritesOnly);  // the metronome: the meters, stops at the ends
     std::vector<BrowseFolder> browseOrder() const;
     void showGhost (const GhostMenu::Content&);
+
+    // Verlauf (Alt + arrow): the entries chosen so far, back and forward as in a browser; empty after a restart
+    struct HistoryEntry { std::string patternId; int meter = -1; };   // a pattern, or the metronome in a meter
+    std::vector<HistoryEntry> history;
+    int historyAt = -1;
+    bool historyMoving = false;        // a step through the history is not recorded again
+    void recordHistory();
+    void moveHistory (int dir);
+
+    // Loop (a range of whole bars, picked with Shift + drag in the bar strip) and speed trainer
+    void setLoopRange (int firstBar, int lastBar);
+    void clearLoop();
+    void toggleLoop();
+    void sendLoop();                   // the range to the engine: only while on and the plan it belongs to plays
+    void showLoop();                   // the range in the strip and the Loop button
+    bool workshopOpen() const          { return editorWindow != nullptr || editing.has_value() || arranging.has_value(); }
+    void showLoopAndTrainer();         // both belong to the main player: hidden and suspended while the workshop is open
+    bool workshopWasOpen = false;
+    bool stripShowsSelection() const;  // the strip shows the selection's own plan (not a count-in, preview or workshop)
+    bool stripShowsSelectionPlan() const;   // ... and its latest plan, so that its bars are the ones sent
+    void showTrainer();
+    void setTrainerOn (bool on);
+    void trainerCount (const AudioEngine::DisplayEvent&);   // every pulse heard: count the passes
+    void trainerTick();                // after new pulses: raise the tempo for every due increment
+    int loopFirst = -1, loopLast = -1; // bars of the plan below
+    bool loopOn = false;
+    std::string loopPatternId;         // the plan (pattern or song) the range belongs to
+    int selectionTag = -1;             // the plan of the selection (sendCurrentPlan outside workshop and arranger)
+    TrainerPanel::Values trainer;      // settings remembered; 'on' is not
+    trainerslots::Slots trainerSlots;  // the trainer's save slots (trainer.json), see MainComponentTrainer.cpp
+    int activeTrainerSlot = -1;        // loaded or stored last, until another selection
+    void wireTrainerSlots (TrainerPanel&);
+    TrainerPanel::SlotView trainerSlotView (int slot) const;
+    TrainerPanel::SlotView storeTrainerSlot (int slot);                 // the present setup into the slot
+    std::optional<TrainerPanel::Values> loadTrainerSlot (int slot);     // the slot's setup back
+    double trainerTempo = 0.0;
+    int trainerPasses = 0, trainerLastLoop = -1;
+    std::uint16_t trainerGeneration = 0;   // the run (start) whose passes are counted
+    bool trainerSettingTempo = false;  // a tempo change of the trainer's own (any other ends it)
     void toggleFavorite();
     void sendCurrentPlan();
     void updateButtons();
@@ -210,7 +252,9 @@ private:
     PlaybackView view;
 
     // windows and widgets
-    juce::TooltipWindow tooltipWindow { nullptr, 700 };   // shows the setTooltip texts, in every window of the app
+    std::unique_ptr<juce::TooltipWindow> tooltipWindow;   // shows the setTooltip texts in every window of the app; none while off
+    bool tooltipsEnabled = true;                           // System: "Tooltips"
+    void setTooltipsEnabled (bool on);
     // M inside the mixer window closes it again (declared before the windows, so it outlives them)
     struct WindowKey : juce::KeyListener
     {
@@ -221,7 +265,8 @@ private:
     std::unique_ptr<juce::DialogWindow> mixerWindow, audioWindow, trashWindow, logsWindow, foldersWindow, menuFoldersWindow;
     juce::TextButton playButton { "Start" }, tapButton { "Tap" }, audioButton { "System" },
                      editButton { "Bearbeiten" }, mixerButton { "Mixer" }, searchButton { "Suchen" }, deleteEntryButton { "Löschen"_u },
-                     renameEntryButton { "Umbenennen" }, countInButton;
+                     renameEntryButton { "Umbenennen" }, countInButton,
+                     loopButton { "Loop (L)" }, trainerButton { "Trainer (S)" };   // left of "Umbenennen", as big as "Löschen"
     StarButton patternButton, meterButton;
     juce::Slider tempoSlider;
     juce::ComboBox soundBox;

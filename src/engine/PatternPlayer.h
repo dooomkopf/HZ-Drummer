@@ -54,6 +54,14 @@ public:
     // Jump to a position (quarters from the start of the current plan); the next hit there plays next.
     // If stopped, the next start() begins at this position.
     void seek (double quarters);
+
+    // A loop range in the current plan (quarters, normally on bar lines): at its end playback jumps back to
+    // its start, counted as a pass. Hits that belong to the range stay inside it (an early hit on its first
+    // beat is played at the start, as at the plan start). end <= start: no range. The caller clears or
+    // replaces it when another plan is selected.
+    void setLoopRange (double startQuarters, double endQuarters) { rangeStart = startQuarters; rangeEnd = endQuarters; }
+    void clearLoopRange()                                        { rangeStart = rangeEnd = -1.0; }
+
     bool isPlaying() const { return playing; }
     const PatternPlan* getCurrentPlan() const { return current; }
 
@@ -71,8 +79,8 @@ public:
 private:
     void retire (const PatternPlan*);
     void applyPending();
-    void collect (std::int64_t from, std::int64_t to, std::int64_t loopEnd, bool planEnd, std::int64_t blockStart,
-                  double samplesPerQuarter, PlayEvent* events, int maxEvents, int& numEvents,
+    void collect (std::int64_t from, std::int64_t to, std::int64_t loopEnd, double endQ,
+                  std::int64_t blockStart, double samplesPerQuarter, PlayEvent* events, int maxEvents, int& numEvents,
                   PulseEvent* pulses, int maxPulses, int& numPulses);
     std::int64_t sampleAt (double q, double samplesPerQuarter) const;
     double humanizedPos (const PlanEvent&) const;
@@ -103,6 +111,23 @@ private:
                              // every hit is triggered exactly once.
     int loop = 0;
     double startAt = 0.0;    // position for the next start() (set by seek while stopped)
+    double rangeStart = -1.0, rangeEnd = -1.0;   // the loop range as requested (setLoopRange)
+    double loopFrom = 0.0, loopTo = 0.0;         // ... clamped to the current plan; loopTo <= loopFrom: none
+    bool rangePass = false;                      // this pass began with a jump back to the range start ...
+    double rangePassFrom = 0.0;                  // ... here: hits written before it stay out of this pass
+    void updateLoopRange();
+    // The floor of the running pass: no hit sounds before floorSample, and hits whose (humanized) place lies
+    // before floorQ are not played at all: they were handed out already (before a tempo change or a pause) or
+    // lie before the start of the pass or of a seek. At such a start, early hits written at or after it are
+    // played on it (floorKeepsWritten), as at the plan start; a first hit that rounds to half a sample before
+    // it as well. So no hit is lost or doubled where the sample grid shifts.
+    std::int64_t floorSample = 0;
+    double floorQ = 0.0;
+    bool floorKeepsWritten = true;
+    double pauseFloor = 0.0;          // stop(): the floor to go on with (what had been handed out up to the pause)
+    bool pauseKeepsWritten = false;
+    bool resuming = false;            // the next start() continues the paused pass (no seek, no new plan in between):
+                                      // its pass count, humanize tempo and range state stay, so nothing moves
 };
 
 // Deterministic random value in [-1, 1] from seed, event, pass and channel

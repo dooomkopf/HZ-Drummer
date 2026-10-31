@@ -2,6 +2,9 @@
 
 #include "engine_test_util.h"
 
+#include <functional>
+#include <tuple>
+
 static void testPlanSwingAndFlam()
 {
     auto r = parseTabs ("name: Swing\ngrid: 1/8\nswing: 1/8 0.667\nhh | x x x x x x x x |\nsn | . . f . . . . . |\n");
@@ -577,6 +580,391 @@ static void testPauseResume()
     CHECK (ne == 1 && ev[0].sampleOffset == 0);
 }
 
+// Loop-Bereich: am Ende des Bereichs zurück an seinen Anfang, als Durchlauf gezählt; ein früher Schlag auf dem
+// ersten Schlag des Bereichs erklingt nach jedem Rücksprung (am Bereichsanfang), nichts doppelt
+static void testLoopRange()
+{
+    auto r = parseTabs ("name: Vier Takte\nmeter: 4/4\ngrid: 1/4\nbd | x . . . | x . . . | x . . . | x . . . |\n");
+    CHECK (r.error.empty());
+    if (r.patterns.empty()) return;
+    auto p = r.patterns[0];
+    p.humanize = 0.0f;
+    Voice kick;
+    for (auto& l : p.layers)
+        for (auto& e : l.events)
+            kick = e.voice;
+    CHECK (setEventLag (p, kick, Rational (4), -20.0f));   // Takt 2, früher: liegt vor dem Bereichsanfang
+    auto plan = buildPlan (p);
+
+    PatternPlayer pp;
+    pp.prepare (48000.0);
+    pp.setTempo (120.0);   // Viertel = 24000 Samples, Takt = 96000
+    pp.setNextPlan (&plan);
+    pp.setLoopRange (4.0, 12.0);   // Takte 2 und 3
+    pp.start();
+    std::vector<PulseEvent> pulses;
+    std::vector<long long> abs;
+    auto ev = playAll (pp, 7 * 96000, 512, &pulses, &abs);
+
+    std::vector<int> bars, loops;
+    for (auto& pu : pulses)
+        if (pu.pulse == 0)
+        {
+            bars.push_back (pu.bar);
+            loops.push_back (pu.loop);
+        }
+    CHECK ((bars == std::vector<int> { 0, 1, 2, 1, 2, 1, 2 }));
+    CHECK ((loops == std::vector<int> { 0, 0, 0, 1, 1, 2, 2 }));   // jeder Rücksprung ist ein Durchlauf
+
+    std::vector<long long> kicks;
+    for (size_t i = 0; i < ev.size(); ++i)
+        if (ev[i].voice.instrument == Instrument::Kick)
+            kicks.push_back (abs[i]);
+    // Takt 1, Takt 2 (20 ms = 960 Samples früher), Takt 3, dann nach jedem Rücksprung Takt 2 am Bereichsanfang und Takt 3
+    CHECK ((kicks == std::vector<long long> { 0, 96000 - 960, 192000, 288000, 384000, 480000, 576000 }));
+
+    // ohne Bereich wieder der ganze Baustein: über das frühere Bereichsende hinaus bis zum Anfang
+    pp.clearLoopRange();
+    pulses.clear();
+    playAll (pp, 4 * 96000, 512, &pulses);
+    bars.clear();
+    for (auto& pu : pulses)
+        if (pu.pulse == 0)
+            bars.push_back (pu.bar);
+    CHECK ((bars == std::vector<int> { 1, 2, 3, 0 }));
+}
+
+// 16 Sechzehntel je Takt, x an den genannten Stellen (Takt * 16 + Sechzehntel), f = Flam
+static std::string sixteenths (int bars, std::vector<int> hits, std::vector<int> flams = {})
+{
+    std::string line;
+    for (int i = 0; i < bars * 16; ++i)
+    {
+        if (i % 16 == 0)
+            line += "| ";
+        const bool hit = std::find (hits.begin(), hits.end(), i) != hits.end();
+        const bool flam = std::find (flams.begin(), flams.end(), i) != flams.end();
+        line += flam ? "f " : hit ? "x " : ". ";
+    }
+    return line + "|";
+}
+
+static Voice voiceOf (const Pattern& p, Instrument instrument)
+{
+    for (auto& l : p.layers)
+        for (auto& e : l.events)
+            if (e.voice.instrument == instrument)
+                return e.voice;
+    return {};
+}
+
+// Loop-Bereich, später Schlag am Bereichsende: Er bleibt im Bereich (letztes Sample vor dem Rücksprung) und
+// erklingt in jeder Runde, auch wenn die Sample-Rundung ihn genau aufs Bereichsende legen würde
+static void testLoopRangeLateEnd()
+{
+    auto r = parseTabs ("name: Spät\nmeter: 4/4\ngrid: 1/16\nbd " + sixteenths (4, { 0, 16, 32, 48 })
+                        + "\nsn " + sixteenths (4, { 47 }) + "\n");
+    CHECK (r.error.empty());
+    if (r.patterns.empty()) return;
+    auto p = r.patterns[0];
+    p.humanize = 0.0f;
+    CHECK (setEventLag (p, voiceOf (p, Instrument::Snare), Rational (47, 4), 100.0f));   // 11,75 + 0,4 Viertel
+    auto plan = buildPlan (p);
+
+    PatternPlayer pp;
+    pp.prepare (48000.0);
+    pp.setTempo (240.0);   // Viertel = 12000 Samples, Takt = 48000, 100 ms = 0,4 Viertel
+    pp.setNextPlan (&plan);
+    pp.setLoopRange (4.0, 12.0);   // Takte 2 und 3
+    pp.start();
+    std::vector<long long> abs;
+    auto ev = playAll (pp, 3 * 48000 + 3 * 96000, 512, nullptr, &abs);
+    std::vector<long long> snares;
+    for (size_t i = 0; i < ev.size(); ++i)
+        if (ev[i].voice.instrument == Instrument::Snare)
+            snares.push_back (abs[i]);
+    CHECK ((snares == std::vector<long long> { 143999, 239999, 335999, 431999 }));
+}
+
+// Loop-Bereich mit halben Samples (7/16 bei 44,1 kHz und 120 BPM: Takt = 38587,5 Samples): Schlag und Puls auf
+// dem ersten Schlag des Bereichs erklingen nach jedem Rücksprung, auch wenn die Runde auf einem halben Sample beginnt
+static void testLoopRangeHalfSample()
+{
+    auto r = parseTabs ("name: Sieben\nmeter: 7/16\ngrid: 1/16\nbd | x . . . . . . | x . . . . . . |\n");
+    CHECK (r.error.empty());
+    if (r.patterns.empty()) return;
+    auto p = r.patterns[0];
+    p.humanize = 0.0f;
+    auto plan = buildPlan (p);
+
+    PatternPlayer pp;
+    pp.prepare (44100.0);
+    pp.setTempo (120.0);   // Viertel = 22050 Samples
+    pp.setNextPlan (&plan);
+    pp.setLoopRange (1.75, 3.5);   // Takt 2
+    pp.start();
+    std::vector<PulseEvent> pulses;
+    std::vector<long long> abs;
+    auto ev = playAll (pp, 77175 + 6 * 38587 + 3, 441, &pulses, &abs);   // Anlauf (2 Takte) und 6 Runden
+    std::vector<long long> downbeats;
+    for (auto& pu : pulses)
+        if (pu.pulse == 0)
+            downbeats.push_back (pu.sampleOffset);
+    CHECK (ev.size() == 8);
+    CHECK (downbeats.size() == 8);
+    for (size_t i = 0; i < ev.size() && i < downbeats.size(); ++i)
+        CHECK (abs[i] == downbeats[i]);
+    for (size_t i = 0; i < ev.size(); ++i)   // jede Runde 38587 oder 38588 Samples lang, ohne Drift
+        CHECK (std::abs ((double) abs[i] - (i < 2 ? (double) i * 38587.5 : 77175.0 + (double) (i - 2) * 38587.5)) <= 0.5);
+}
+
+// Loop-Bereich und Schläge, die nicht zu ihm gehören: Der Flam-Vorschlag auf dem ersten Schlag des Takts nach dem
+// Bereich erklingt nicht vor jedem Rücksprung, ein spät versetzter Schlag vor dem Bereich nicht nach jedem
+// (beim ersten Anlauf erklingt er, wie geschrieben)
+static void testLoopRangeForeignHits()
+{
+    auto r = parseTabs ("name: Fremd\nmeter: 4/4\ngrid: 1/16\nbd " + sixteenths (4, { 0, 16, 32 }, { 48 })
+                        + "\nsn " + sixteenths (4, { 15 }) + "\n");
+    CHECK (r.error.empty());
+    if (r.patterns.empty()) return;
+    auto p = r.patterns[0];
+    p.humanize = 0.0f;
+    CHECK (setEventLag (p, voiceOf (p, Instrument::Snare), Rational (15, 4), 100.0f));   // 3,75 + 0,4 = 4,15: im Bereich
+    auto plan = buildPlan (p);
+
+    PatternPlayer pp;
+    pp.prepare (48000.0);
+    pp.setTempo (240.0);   // Viertel = 12000 Samples, Takt = 48000; Flam-Vorschlag 25 ms = 0,1 Viertel früher
+    pp.setNextPlan (&plan);
+    pp.setLoopRange (4.0, 12.0);   // Takte 2 und 3
+    pp.start();
+    std::vector<long long> abs;
+    auto ev = playAll (pp, 3 * 48000 + 3 * 96000, 512, nullptr, &abs);
+    std::vector<long long> kicks, snares;
+    for (size_t i = 0; i < ev.size(); ++i)
+        (ev[i].voice.instrument == Instrument::Kick ? kicks : snares).push_back (abs[i]);
+    CHECK ((kicks == std::vector<long long> { 0, 48000, 96000, 144000, 192000, 240000, 288000, 336000, 384000 }));
+    CHECK ((snares == std::vector<long long> { 49800 }));
+}
+
+// Loop-Bereich setzen, während die Wiedergabe außerhalb steht: Sprung an den Bereichsanfang. Ein früher Schlag auf
+// dessen erstem Schlag erklingt auf dem Sprungziel (wie am Planbeginn), statt ganz zu fehlen
+static void testLoopRangeSeekIn()
+{
+    auto r = parseTabs ("name: Vier Takte\nmeter: 4/4\ngrid: 1/4\nbd | x . . . | x . . . | x . . . | x . . . |\n");
+    CHECK (r.error.empty());
+    if (r.patterns.empty()) return;
+    auto p = r.patterns[0];
+    p.humanize = 0.0f;
+    CHECK (setEventLag (p, voiceOf (p, Instrument::Kick), Rational (4), -20.0f));   // Takt 2, 20 ms früher
+    auto plan = buildPlan (p);
+
+    PatternPlayer pp;
+    pp.prepare (48000.0);
+    pp.setTempo (120.0);   // Viertel = 24000 Samples, Takt = 96000
+    pp.setNextPlan (&plan);
+    pp.start();
+    playAll (pp, 3 * 96000 + 48000, 512);   // mitten in Takt 4: außerhalb des Bereichs
+    pp.setLoopRange (4.0, 12.0);            // Takte 2 und 3, dazu der Sprung an den Anfang (wie die Oberfläche)
+    pp.seek (4.0);
+    std::vector<long long> abs;
+    playAll (pp, 2 * 96000, 512, nullptr, &abs);
+    CHECK ((abs == std::vector<long long> { 0, 96000 }));   // Takt 2 auf dem Sprungziel, dann Takt 3
+}
+
+// Ein wartender Planwechsel genau am Bereichsende (gleiche Stelle, nur ein anderer Plan wartet): Der späte Schlag
+// am Ende des Bereichs erklingt noch vor dem Wechsel, der Flam-Vorschlag des Takts danach nicht
+static void testLoopRangePendingSwitch()
+{
+    auto r = parseTabs ("name: Spät\nmeter: 4/4\ngrid: 1/16\nbd " + sixteenths (4, { 0, 16, 32 }, { 48 })
+                        + "\nsn " + sixteenths (4, { 47 }) + "\n");
+    auto r2 = parseTabs ("name: Neu\nmeter: 4/4\ngrid: 1/4\nhh | x x x x |\n");
+    CHECK (r.error.empty() && r2.error.empty());
+    if (r.patterns.empty() || r2.patterns.empty()) return;
+    auto p = r.patterns[0];
+    p.humanize = 0.0f;
+    CHECK (setEventLag (p, voiceOf (p, Instrument::Snare), Rational (47, 4), 100.0f));   // 11,75 + 0,4 Viertel
+    auto plan = buildPlan (p);
+    auto p2 = r2.patterns[0];
+    p2.humanize = 0.0f;
+    auto plan2 = buildPlan (p2);
+
+    PatternPlayer pp;
+    pp.prepare (48000.0);
+    pp.setTempo (240.0);   // Viertel = 12000 Samples, Takt = 48000
+    pp.setNextPlan (&plan);
+    pp.setLoopRange (4.0, 12.0);
+    pp.start();
+    playAll (pp, 2 * 48000 + 24000, 512);   // mitten in Takt 3, dem letzten des Bereichs
+    pp.setNextPlan (&plan2);                // wartet aufs Taktende = Bereichsende
+    std::vector<long long> abs;
+    auto ev = playAll (pp, 24000 + 12000, 512, nullptr, &abs);
+    std::vector<long long> oldPlan, newPlan;
+    for (size_t i = 0; i < ev.size(); ++i)
+        (ev[i].voice.instrument == Instrument::HiHat ? newPlan : oldPlan).push_back (abs[i]);
+    CHECK ((oldPlan == std::vector<long long> { 23999 }));   // nur die späte Snare, kein Vorschlag des Kicks von Takt 4
+    CHECK ((newPlan == std::vector<long long> { 24000 }));
+}
+
+// Tempowechsel mitten in der Runde: kein Puls fehlt oder kommt doppelt, auch wenn ein fälliger Puls genau an der
+// Blockgrenze liegt (44,1 kHz, 512er-Blöcke, Bereich über den ganzen Takt)
+static void testTempoChangeAtBlockEdge()
+{
+    auto r = parseTabs ("name: Viertel\nmeter: 4/4\ngrid: 1/4\nbd | x x x x |\n");
+    CHECK (r.error.empty());
+    if (r.patterns.empty()) return;
+    auto p = r.patterns[0];
+    p.humanize = 0.0f;
+    auto plan = buildPlan (p);
+
+    for (auto [bpm1, at, bpm2] : { std::tuple { 68.0, 38912, 30.0 }, std::tuple { 32.0, 165376, 320.0 } })
+    {
+        PatternPlayer pp;
+        pp.prepare (44100.0);
+        pp.setTempo (bpm1);
+        pp.setNextPlan (&plan);
+        pp.setLoopRange (0.0, 4.0);
+        pp.start();
+        std::vector<PulseEvent> pulses;
+        auto ev = playAll (pp, at, 512, &pulses);
+        pp.setTempo (bpm2);
+        std::vector<PulseEvent> more;
+        auto ev2 = playAll (pp, 6 * 88200, 512, &more);
+        pulses.insert (pulses.end(), more.begin(), more.end());
+        bool steady = true;
+        for (size_t i = 1; i < pulses.size(); ++i)
+            steady = steady && pulses[i].pulse == (pulses[i - 1].pulse + 1) % 4;
+        CHECK (steady);
+        CHECK (ev.size() + ev2.size() == pulses.size());   // ein Kick je Viertel
+    }
+}
+
+// n Zellen je Takt, x an den genannten Stellen (Takt * n + Zelle)
+static std::string cells (int bars, int perBar, std::vector<int> hits)
+{
+    std::string line;
+    for (int i = 0; i < bars * perBar; ++i)
+        line += (i % perBar == 0 ? "| " : "") + std::string (std::find (hits.begin(), hits.end(), i) != hits.end() ? "x " : ". ");
+    return line + "|";
+}
+
+// beide Listen gleich lang und jeder Schlag höchstens ein Sample daneben (Rundung an der Pausenstelle)
+static bool sameHits (std::vector<long long> a, std::vector<long long> b)
+{
+    std::sort (a.begin(), a.end());
+    std::sort (b.begin(), b.end());
+    if (a.size() != b.size())
+        return false;
+    for (size_t i = 0; i < a.size(); ++i)
+        if (std::abs (a[i] - b[i]) > 1)
+            return false;
+    return true;
+}
+
+// Pause/Weiter ändert nichts: dieselben Schläge an denselben Stellen wie ohne Pause, auch mit Humanize, nach einem
+// Tempowechsel (feste Versätze bleiben, wo sie waren) und genau am Rücksprung eines Loop-Bereichs
+static void testPauseKeepsPass()
+{
+    // pauseAt: Sample der Pause; before (pp, done) läuft vor jedem Block (Tempowechsel u. ä.)
+    auto run = [] (const PatternPlan& plan, double bpm, int total, int pauseAt, std::function<void (PatternPlayer&, int)> before)
+    {
+        PatternPlayer pp;
+        pp.prepare (48000.0);
+        pp.setTempo (bpm);
+        pp.setNextPlan (&plan);
+        if (before) before (pp, -1);
+        pp.start();
+        std::vector<long long> abs;
+        PlayEvent ev[256];
+        PulseEvent pu[256];
+        for (int done = 0; done < total; done += 500)
+        {
+            if (before) before (pp, done);
+            if (done == pauseAt)
+            {
+                pp.stop();
+                pp.start();
+            }
+            int ne = 0, np = 0;
+            pp.process (500, ev, 256, ne, pu, 256, np);
+            for (int i = 0; i < ne; ++i)
+                abs.push_back (done + ev[i].sampleOffset);
+        }
+        return abs;
+    };
+
+    // Humanize: Pause mitten im zweiten Durchlauf
+    {
+        auto r = parseTabs ("name: Locker\nmeter: 4/4\ngrid: 1/8\nhh | x x x x x x x x |\nsn | . . x . . . x . |\nbd | x . . . x . . . |\n");
+        CHECK (r.error.empty());
+        if (r.patterns.empty()) return;
+        auto p = r.patterns[0];
+        p.humanize = 1.0f;
+        auto plan = buildPlan (p);
+        CHECK (sameHits (run (plan, 120.0, 3 * 96000, 120000, {}), run (plan, 120.0, 3 * 96000, -1, {})));
+    }
+
+    // Tempowechsel bei q = 1 (120 -> 240 BPM), Pause bei q = 2; Schläge mit +-40 ms dicht an der Pausenstelle
+    {
+        auto r = parseTabs ("name: Versatz\nmeter: 4/4\ngrid: 1/32\nsn " + cells (1, 32, { 15, 17 }) + "\n");
+        CHECK (r.error.empty());
+        if (r.patterns.empty()) return;
+        auto p = r.patterns[0];
+        p.humanize = 0.0f;
+        const auto sn = voiceOf (p, Instrument::Snare);
+        CHECK (setEventLag (p, sn, Rational (15, 8), 40.0f));    // 1,875 + 40 ms
+        CHECK (setEventLag (p, sn, Rational (17, 8), -40.0f));   // 2,125 - 40 ms
+        auto plan = buildPlan (p);
+        auto faster = [] (PatternPlayer& pp, int done) { if (done == 24000) pp.setTempo (240.0); };
+        CHECK (sameHits (run (plan, 120.0, 72000, 36000, faster), run (plan, 120.0, 72000, -1, faster)));
+    }
+
+    // Loop-Bereich [4,12), früher Schlag auf dem Bereichsanfang, Pause genau am ersten Rücksprung
+    {
+        auto r = parseTabs ("name: Vier Takte\nmeter: 4/4\ngrid: 1/4\nbd | x . . . | x . . . | x . . . | x . . . |\n");
+        CHECK (r.error.empty());
+        if (r.patterns.empty()) return;
+        auto p = r.patterns[0];
+        p.humanize = 0.0f;
+        CHECK (setEventLag (p, voiceOf (p, Instrument::Kick), Rational (4), -20.0f));
+        auto plan = buildPlan (p);
+        auto range = [] (PatternPlayer& pp, int done) { if (done < 0) pp.setLoopRange (4.0, 12.0); };
+        const auto paused = run (plan, 120.0, 5 * 96000, 3 * 96000, range);
+        CHECK (sameHits (paused, run (plan, 120.0, 5 * 96000, -1, range)));
+        CHECK (std::find (paused.begin(), paused.end(), 3 * 96000) != paused.end());   // Takt 2 nach dem Rücksprung
+    }
+}
+
+// Loop aus, kurz nachdem er an den Bereichsanfang zurückgesprungen ist: Diese Runde begann am Bereichsanfang, ein
+// spät versetzter Schlag aus dem Takt davor bleibt draußen (er erklang ja schon vor dem Rücksprung)
+static void testLoopOffAfterJump()
+{
+    auto r = parseTabs ("name: Fremd\nmeter: 4/4\ngrid: 1/16\nbd " + sixteenths (4, { 0, 16, 32, 48 })
+                        + "\nsn " + sixteenths (4, { 15 }) + "\n");
+    CHECK (r.error.empty());
+    if (r.patterns.empty()) return;
+    auto p = r.patterns[0];
+    p.humanize = 0.0f;
+    CHECK (setEventLag (p, voiceOf (p, Instrument::Snare), Rational (15, 4), 100.0f));   // 3,75 + 0,4 = 4,15
+    auto plan = buildPlan (p);
+
+    PatternPlayer pp;
+    pp.prepare (48000.0);
+    pp.setTempo (240.0);   // Viertel = 12000 Samples, Takt = 48000
+    pp.setNextPlan (&plan);
+    pp.setLoopRange (4.0, 12.0);
+    pp.start();
+    std::vector<long long> abs;
+    auto ev = playAll (pp, 3 * 48000 + 600, 600, nullptr, &abs);   // Anlauf, Rücksprung bei 144000, dann q = 4,05
+    pp.clearLoopRange();
+    std::vector<long long> abs2;
+    auto ev2 = playAll (pp, 48000, 600, nullptr, &abs2);
+    int snares = 0;
+    for (auto& e : ev2)
+        snares += e.voice.instrument == Instrument::Snare ? 1 : 0;
+    CHECK (snares == 0);
+}
+
 void runPlayerTests()
 {
     testPlanSwingAndFlam();
@@ -596,4 +984,13 @@ void runPlayerTests()
     testMoveLane();
     testSeek();
     testPauseResume();
+    testLoopRange();
+    testLoopRangeLateEnd();
+    testLoopRangeHalfSample();
+    testLoopRangeForeignHits();
+    testLoopRangeSeekIn();
+    testLoopRangePendingSwitch();
+    testTempoChangeAtBlockEdge();
+    testPauseKeepsPass();
+    testLoopOffAfterJump();
 }

@@ -1,4 +1,5 @@
 #include "app/views/HZLook.h"
+#include "app/views/Theme.h"
 
 #include "app/views/InWindowDialog.h"
 
@@ -16,6 +17,7 @@ HZLook::HZLook()
     setColour (juce::TextButton::buttonOnColourId, buttonOn);
     setColour (juce::TextButton::textColourOffId, textColour);
     setColour (juce::TextButton::textColourOnId, textColour);
+    setColour (juce::TooltipWindow::textColourId, juce::Colour (0xffe07a70));   // reddish, as the help lines
 }
 
 void HZLook::drawButtonBackground (juce::Graphics& g, juce::Button& button, const juce::Colour& backgroundColour,
@@ -34,6 +36,9 @@ void HZLook::drawButtonBackground (juce::Graphics& g, juce::Button& button, cons
     }
 
     auto fill = backgroundColour;
+    const bool glow = button.getProperties()["glow"];   // the workshop is open (MainComponent draws the halo)
+    if (glow)
+        fill = fill.interpolatedWith (theme::workshopGlow, 0.5f);
     if (! button.isEnabled())
         fill = fill.withMultipliedAlpha (0.45f);
     else if (down)
@@ -45,6 +50,11 @@ void HZLook::drawButtonBackground (juce::Graphics& g, juce::Button& button, cons
     g.setGradientFill (juce::ColourGradient (fill.brighter (0.08f), bounds.getX(), bounds.getY(),
                                              fill.darker (0.08f), bounds.getX(), bounds.getBottom(), false));
     g.fillPath (pill);
+    if (glow)
+    {
+        g.setColour (theme::workshopGlow.brighter (0.35f));
+        g.strokePath (pill, juce::PathStrokeType (2.0f));
+    }
 
     const auto& props = button.getProperties();
     if (props["metronome"] || props["transport"] || props["tap"] || props["mixer"] || props["system"])

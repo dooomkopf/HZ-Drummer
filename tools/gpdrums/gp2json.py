@@ -2,13 +2,19 @@
 """Übersetzt die Ausgabe von GpDrums.java in HZ-Drummer-Patterns (JSON) – mit Dynamik.
 
 Aufruf:
-  gp2json.py <gpdrums-ausgabe.txt> <zielordner> <titel> <id-präfix> [abschnitte]
+  gp2json.py <gpdrums-ausgabe.txt> <zielordner> <titel> <id-präfix> [abschnitte] [--tags a,b,...]
 
-  abschnitte: "1:Intro,25:Strophe,41:Strophe 2,..."  (Taktnummern im Song, d.h. nach Weglassen
-              leerer Anfangstakte; ohne Angabe: Marker aus der Guitar-Pro-Datei, sonst 8-Takt-Teile)
+  abschnitte: "1:Intro,25:Strophe,41:Strophe 2,..."  (Taktnummern im gespielten Song, d.h. nach dem
+              Ausrollen der Wiederholungen und ohne leere Anfangstakte; ohne Angabe: Marker aus der
+              Guitar-Pro-Datei, sonst 8-Takt-Teile)
+  --tags:     zusätzliche Tags, z.B. "band:Gorguts,song:Obscura" (Ordner im Baustein-Menü)
+
+Wiederholungen werden ausgerollt wie beim Abspielen in TuxGuitar: |: ... :| mit Anzahl, alternative
+Enden (1., 2. ...) nur im passenden Durchgang. Gleiche Abschnitte werden ein Baustein; folgen sie
+direkt aufeinander, stehen sie im Song als Wiederholung.
 
 Erzeugt:
-  <zielordner>/<id-präfix>-NN-<name>.json   ein Pattern je Abschnitt
+  <zielordner>/<id-präfix>-NN-<name>.json   ein Pattern je verschiedenem Abschnitt
   <zielordner>/../songs/<id-präfix>.json    der ganze Song als Struktur (Abschnitte nacheinander)
 
 Dynamik (nur wenn die Vorlage keine eigenen Lautstärken hat):
@@ -49,7 +55,9 @@ def parse(path):
         if not p:
             continue
         if p[0] == "BAR":
-            bars[int(p[1])] = dict(length=int(p[3]), num=int(p[4]), den=int(p[5]), tempo=int(p[6]), hits=[])
+            bars[int(p[1])] = dict(nr=int(p[1]), length=int(p[3]), num=int(p[4]), den=int(p[5]), tempo=int(p[6]), hits=[],
+                                   open=len(p) > 7 and p[7] == "1", close=int(p[8]) if len(p) > 8 else 0,
+                                   alt=int(p[9]) if len(p) > 9 else 0)
         elif p[0] == "MARKER":
             markers[int(p[1])] = " ".join(p[2:])
         elif p[0] == "HIT":
@@ -59,6 +67,48 @@ def parse(path):
             else:
                 unknown[note] = unknown.get(note, 0) + 1
     return bars, markers, unknown
+
+
+def unroll(bars):
+    """Die Takte in Spielreihenfolge (Liste von Taktnummern), wie TuxGuitars MidiRepeatController:
+    'close' = Anzahl der Wiederholungen, 'alt' = Bitmaske der Durchgänge eines alternativen Endes."""
+    order = list(bars)
+    out = []
+    index, start, last, number, alternative = 0, 0, -1, 0, 0
+    guard = 0
+    while index < len(order) and guard < 100000:
+        guard += 1
+        bar = bars[order[index]]
+        if index == 0:
+            start = 0
+        if bar["open"]:
+            start = index
+            if index > last:   # zum ersten Mal hier: Zähler zurück
+                number, alternative = 0, 0
+        else:
+            if alternative == 0:
+                alternative = bar["alt"]
+            if alternative > 0 and not (alternative & (1 << number)):
+                if bar["close"] > 0:
+                    alternative = 0
+                index += 1     # alternatives Ende eines anderen Durchgangs: überspringen
+                continue
+        last = max(last, index)
+        out.append(order[index])
+        if number < bar["close"]:
+            number += 1
+            index = start
+            alternative = 0
+        else:
+            if bar["close"] > 0:
+                number = 0
+            index += 1
+            alternative = 0 if bar["close"] > 0 or not bar["alt"] else alternative
+    return out
+
+
+def content_key(part):
+    return tuple((b["num"], b["den"], b["length"], tuple(sorted((h["off"], h["voice"], h["v"]) for h in b["hits"]))) for b in part)
 
 
 def beat_ticks(bar):
@@ -159,20 +209,25 @@ def slug(s):
 
 
 def main():
-    src, outdir, title, prefix = sys.argv[1:5]
-    section_arg = sys.argv[5] if len(sys.argv) > 5 else ""
+    args = [a for a in sys.argv[1:]]
+    tags = ["song", "abschnitt"]
+    if "--tags" in args:
+        k = args.index("--tags")
+        tags += [t.strip() for t in args[k + 1].split(",") if t.strip()]
+        del args[k:k + 2]
+    src, outdir, title, prefix = args[:4]
+    section_arg = args[4] if len(args) > 4 else ""
 
     bars, markers, unknown = parse(src)
-    nrs = list(bars)
-    while nrs and not bars[nrs[0]]["hits"]:
-        nrs.pop(0)
-    while nrs and not bars[nrs[-1]]["hits"]:
-        nrs.pop()
-    first = nrs[0]
-    song = [bars[n] for n in nrs]
+    played = unroll(bars)
+    while played and not bars[played[0]]["hits"]:
+        played.pop(0)
+    while played and not bars[played[-1]]["hits"]:
+        played.pop()
+    song = [bars[n] for n in played]
 
-    has_dynamics = len({h["vel"] for b in song for h in b["hits"]}) > 1
-    for b in song:
+    has_dynamics = len({h["vel"] for b in bars.values() for h in b["hits"]}) > 1
+    for b in bars.values():   # once per written bar: repeated bars share it
         if has_dynamics:
             for h in b["hits"]:
                 h["v"] = round(h["vel"] / 127, 3) if not h["ghost"] else 0.3
@@ -181,14 +236,16 @@ def main():
 
     tempo = round(sum(b["tempo"] for b in song) / len(song))
 
-    # Abschnitte: Angabe > Marker der Datei > 8-Takt-Teile (Taktnummern im Song, 1-basiert)
+    # Abschnitte über die gespielte Reihenfolge (1-basiert): Angabe > Marker der Datei > 8-Takt-Teile
     sections = []
     if section_arg:
         for item in section_arg.split(","):
             n, name = item.split(":", 1)
             sections.append((int(n), name.strip()))
     elif markers:
-        sections = [(n - first + 1, name) for n, name in sorted(markers.items()) if n >= first]
+        sections = [(i + 1, markers[n]) for i, n in enumerate(played) if n in markers]
+        if not sections or sections[0][0] != 1:
+            sections.insert(0, (1, "Anfang"))
     else:
         sections = [(i + 1, f"Teil {i // 8 + 1}") for i in range(0, len(song), 8)]
 
@@ -197,31 +254,41 @@ def main():
 
     written = []
     song_parts = []
+    pattern_of = {}   # content -> pattern id: equal sections become one pattern
     for k, (start, name) in enumerate(sections):
         end = sections[k + 1][0] - 1 if k + 1 < len(sections) else len(song)
         part = song[start - 1:end]
         if not part:
             continue
-        pid = f"{prefix}-{k + 1:02d}-{slug(name)}"
-        pat = make_pattern(pid, f"{title} – {k + 1:02d} {name} (T{start}-{end})", ["song", "abschnitt"], tempo, part, seed + k)
-        path = os.path.join(outdir, f"{pid}.json")
-        json.dump(pat, open(path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-        written.append((path, len(part)))
-        song_parts.append({"pattern": pid, "label": name, "repeats": 1})
+        key = content_key(part)
+        pid = pattern_of.get(key)
+        if pid is None:
+            number = len(pattern_of) + 1
+            pid = f"{prefix}-{number:02d}-{slug(name)}"
+            pattern_of[key] = pid
+            pat = make_pattern(pid, f"{title} – {number:02d} {name} (T{start}-{end})", tags, tempo, part, seed + number)
+            path = os.path.join(outdir, f"{pid}.json")
+            json.dump(pat, open(path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+            written.append((path, len(part)))
+        if song_parts and song_parts[-1]["pattern"] == pid:
+            song_parts[-1]["repeats"] += 1   # directly again: a repeat in the song
+        else:
+            song_parts.append({"pattern": pid, "label": name, "repeats": 1})
 
     # der ganze Song als Struktur: Abschnitte nacheinander (für den Song-Arranger)
     songs_dir = os.path.join(os.path.dirname(os.path.abspath(outdir)), "songs")
     os.makedirs(songs_dir, exist_ok=True)
     song_id = prefix.split(".", 1)[-1]
-    song = {"formatVersion": 1, "id": song_id, "name": f"{title} (Song)", "tempo": tempo, "parts": song_parts}
+    song_json = {"formatVersion": 1, "id": song_id, "name": f"{title} (Song)", "tempo": tempo, "parts": song_parts}
     path = os.path.join(songs_dir, f"{song_id}.json")
-    json.dump(song, open(path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-    written.append((path, len(song)))
+    json.dump(song_json, open(path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 
-    print(f"{len(song)} Takte (Vorlage {nrs[0]}–{nrs[-1]}), Tempo {tempo}, "
+    print(f"{len(bars)} Takte notiert, {len(song)} gespielt, {len(sections)} Abschnitte, {len(pattern_of)} Bausteine, "
+          f"{len(song_parts)} Blöcke im Song; Tempo {tempo}, "
           f"{'Dynamik aus der Vorlage' if has_dynamics else 'Dynamik nach Spielregeln'}")
     for p, n in written:
         print(f"  {os.path.basename(p)}  ({n} Takte)")
+    print(f"  songs/{song_id}.json: " + ", ".join(f"{q['label']}" + (f" x{q['repeats']}" if q['repeats'] > 1 else "") for q in song_parts))
     if unknown:
         print("Nicht zugeordnete MIDI-Noten (weggelassen):", unknown)
 

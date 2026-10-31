@@ -7,6 +7,7 @@
 #include "app/PreviewMenuItem.h"
 #include "app/SearchQuery.h"
 #include "app/SearchIndex.h"
+#include "app/TrainerSlots.h"
 #include "engine/PatternEdit.h"
 #include "engine/TabParser.h"
 
@@ -330,6 +331,42 @@ static void testFittingGrid()
     CHECK (fittingGrid (triplets, 0, true) == hz::Rational (1, 48));   // sixteenth swing: "e" and "a"
 }
 
+// Trainer-Speicherplätze: speichern und wieder laden, freie Plätze bleiben frei, kaputte Werte werden begrenzt,
+// eine kaputte oder fehlende Datei gibt lauter freie Plätze
+static void testTrainerSlots()
+{
+    const auto file = juce::File::createTempFile (".json");
+    trainerslots::Slots slots;
+    slots[0].name = "Seven T. 5-8, 100\u2192140";
+    slots[0].patternId = "user.necrophagist-seven-03-riff-b";
+    slots[0].loopFirst = 4;
+    slots[0].loopLast = 7;
+    slots[0].loopOn = true;
+    slots[0].from = 100.0;
+    slots[0].to = 140.0;
+    slots[0].step = 2.0;
+    slots[0].repeats = 3;
+    slots[3].name = "Metronom 7/8";
+    slots[3].meterKey = "7/8";
+    CHECK (trainerslots::save (slots, file));
+    const auto back = trainerslots::load (file);
+    CHECK (back[0].name == slots[0].name && back[0].patternId == slots[0].patternId);
+    CHECK (back[0].loopFirst == 4 && back[0].loopLast == 7 && back[0].loopOn);
+    CHECK (back[0].from == 100.0 && back[0].to == 140.0 && back[0].step == 2.0 && back[0].repeats == 3);
+    CHECK (back[3].meterKey == "7/8" && back[3].patternId.empty() && back[3].loopFirst < 0);
+    CHECK (back[1].isFree() && back[7].isFree());
+
+    file.replaceWithText (R"({"plaetze": [{"name": "Zu wild", "baustein": "x", "von": 500, "bis": 20, "wiederholungen": 9, "loopVon": 5, "loopBis": 2}]})");
+    const auto wild = trainerslots::load (file);
+    CHECK (wild[0].from < wild[0].to && wild[0].to <= 320.0 && wild[0].repeats == 5 && wild[0].loopFirst < 0);
+
+    file.replaceWithText ("kein JSON");
+    const auto broken = trainerslots::load (file);
+    CHECK (broken[0].isFree());
+    file.deleteFile();
+    CHECK (trainerslots::load (file)[0].isFree());
+}
+
 int main (int argc, char* argv[])
 {
     const auto tabDir = juce::File::getCurrentWorkingDirectory().getChildFile (argc > 1 ? argv[1] : "library-src");
@@ -343,6 +380,7 @@ int main (int argc, char* argv[])
     testSwingFindsPlace();
     testSteppedLag();
     testFittingGrid();
+    testTrainerSlots();
     runSongTests();
     runFolderTests();
 

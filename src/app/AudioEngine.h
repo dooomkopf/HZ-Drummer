@@ -11,6 +11,7 @@
 #include <array>
 #include <atomic>
 #include <cstdint>
+#include <cstring>
 #include <memory>
 #include <vector>
 
@@ -56,6 +57,9 @@ public:
     const hz::DrumKit* kitInUse() const           { return kitInUseByAudio.load(); }
     double deviceSampleRate() const               { return deviceRate.load(); }
     void seek (double quarters)                   { seekTarget = quarters; ++seekSerial; }   // in the playing plan
+    // the loop range in the playing plan (quarters, on bar lines); both ends travel in one atomic word
+    void setLoopRange (double startQuarters, double endQuarters) { loopRange = packRange ((float) startQuarters, (float) endQuarters); }
+    void clearLoopRange()                         { loopRange = packRange (-1.0f, -1.0f); }
     // one hit right now, outside any pattern (a click on a lane name in the raster); the newest request wins
     // (message thread only)
     void previewVoice (hz::Voice v, float velocity)
@@ -85,6 +89,15 @@ private:
     std::atomic<const hz::DrumKit*> kitInUseByAudio { nullptr };
     std::atomic<double> deviceRate { 0.0 };
     std::atomic<double> seekTarget { 0.0 };
+    static std::uint64_t packRange (float start, float end)
+    {
+        std::uint32_t a, b;
+        std::memcpy (&a, &start, 4);
+        std::memcpy (&b, &end, 4);
+        return ((std::uint64_t) a << 32) | b;
+    }
+    std::atomic<std::uint64_t> loopRange { packRange (-1.0f, -1.0f) };
+    std::uint64_t appliedLoopRange = packRange (-1.0f, -1.0f);   // [Audio]
     std::atomic<std::uint32_t> seekSerial { 0 };   // incremented per request; the audio thread compares
     std::atomic<std::uint64_t> previewRequest { 0 };   // request number << 32 | voice and velocity of previewVoice
     std::uint32_t previewCount = 0;                     // message thread

@@ -131,6 +131,18 @@ void AudioEngine::process (float* left, float* right, int numSamples)
         player.seek (seekTarget.load());
         appliedSeek = serial;
     }
+    if (const auto range = loopRange.load(); range != appliedLoopRange)
+    {
+        appliedLoopRange = range;
+        float start, end;
+        const auto a = (std::uint32_t) (range >> 32), b = (std::uint32_t) range;
+        std::memcpy (&start, &a, 4);
+        std::memcpy (&end, &b, 4);
+        if (start >= 0.0f && end > start)
+            player.setLoopRange (start, end);
+        else
+            player.clearLoopRange();
+    }
     if (const auto request = previewRequest.load(); (std::uint32_t) (request >> 32) != appliedPreview)
     {
         // a preview hit (lane name clicked): at the start of this block, whatever the transport does

@@ -23,6 +23,7 @@ public:
     virtual void arrangerPlay (const Song&, int fromPart) = 0;   // play the sequence from a part
     virtual void arrangerUpdate (const Song&) = 0;               // the sequence changed while it plays: keep position
     virtual void arrangerSeekToPart (int part) = 0;              // jump to the start of a part (playing or paused)
+    virtual void arrangerSeekToBar (int bar) = 0;                // jump to a bar of the sequence (playing or paused)
     virtual void arrangerStop() = 0;                             // stop, back to the main selection
     virtual bool arrangerAuditionActive() const = 0;             // an audition is sounding right now
     virtual bool arrangerPlayActive() const = 0;                 // the sequence is playing

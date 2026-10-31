@@ -7,7 +7,14 @@ namespace
 
     auto code (int c, bool shift)
     {
-        return [c, shift] (const KP& k) { return k.getKeyCode() == c && k.getModifiers().isShiftDown() == shift && ! k.getModifiers().isCommandDown(); };
+        return [c, shift] (const KP& k) { return k.getKeyCode() == c && k.getModifiers().isShiftDown() == shift && ! k.getModifiers().isCommandDown()
+                                                 && ! k.getModifiers().isAltDown(); };
+    }
+
+    auto altCode (int c)
+    {
+        return [c] (const KP& k) { return k.getKeyCode() == c && k.getModifiers().isAltDown() && ! k.getModifiers().isCommandDown()
+                                          && ! k.getModifiers().isShiftDown(); };
     }
 
     auto commandCode (int c)
@@ -45,6 +52,9 @@ std::vector<KeyBinding> makeKeyBindings (const KeyActions& a)
         { "",                     "",                                                code (KP::rightKey, false), [a] { a.stepCurrent (1, false); } },
         { "Shift + links/rechts", "durch die Favoriten (Bausteine bzw. Taktarten)",  code (KP::leftKey, true),   [a] { a.stepCurrent (-1, true); } },
         { "",                     "",                                                code (KP::rightKey, true),  [a] { a.stepCurrent (1, true); } },
+        { "Alt + links/rechts",   "zurück/vor durch die zuletzt gewählten Einträge, wie im Browser"_u,
+                                                                                     altCode (KP::leftKey),      [a] { a.history (-1); } },
+        { "",                     "",                                                altCode (KP::rightKey),     [a] { a.history (1); } },
         { "Strg + links/rechts",  "Ordner wechseln, wie im Baustein-Menü"_u,          commandCode (KP::leftKey),  [a] { a.stepStyle (-1); } },
         { "",                     "",                                                commandCode (KP::rightKey), [a] { a.stepStyle (1); } },
         { "N / B",                "Arrangement: nächster / voriger Teil (oder in die Ablaufleiste klicken)"_u,
@@ -52,7 +62,8 @@ std::vector<KeyBinding> makeKeyBindings (const KeyActions& a)
         { "",                     "",                                                character ('b'),            [a] { a.seekPart (-1); } },
         { "P",                    "Baustein-Menü öffnen"_u,                           character ('p'),            a.patternMenu },
         { "M",                    "Mixer an/aus, auch in der Werkstatt"_u,             character ('m'),            a.mixer },
-        { "",                     "",                                                character ('l'),            a.mixer },   // the former key
+        { "L",                    "Loop an/aus: Bereich ganzer Takte mit Shift + Ziehen in der Takt-Leiste"_u, character ('l'), a.loop },
+        { "S",                    "Speed-Trainer an/aus (Knopf \"Trainer\": von, bis, Inkrement, Wdh.)"_u, character ('s'), a.trainer },
         { "E",                    "Werkstatt: Editor (Baustein) bzw. Arranger (Arrangement); in der Werkstatt schließt E sie wieder, wenn im Editor nichts ungespeichert ist"_u,
                                                                                      character ('e'),            a.editor },
         { "Strg+F oder *",        "Favorit an/aus (Baustein bzw. Taktart)",           commandLetterOr ('F', '*'), a.toggleFavorite },

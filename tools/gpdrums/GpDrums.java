@@ -5,7 +5,7 @@
 //
 // Ausgabe:
 //   TRACK <nr> <percussion 0/1> <name>
-//   BAR <nr> <start> <länge> <zähler> <nenner> <tempo> <wiederholung-auf 0/1> <wiederholung-zu anzahl>
+//   BAR <nr> <start> <länge> <zähler> <nenner> <tempo> <wiederholung-auf 0/1> <wiederholung-zu anzahl> <alternative enden, bitmaske>
 //   MARKER <takt> <titel>
 //   HIT <takt> <offset-ticks> <midi-note> <velocity> <ghost 0/1> <akzent 0/1>
 // Ticks: 960 pro Viertel.
@@ -47,7 +47,7 @@ public class GpDrums
             TGTimeSignature ts = h.getTimeSignature();
             System.out.println ("BAR " + h.getNumber() + " " + h.getStart() + " " + h.getLength() + " "
                                 + ts.getNumerator() + " " + ts.getDenominator().getValue() + " " + h.getTempo().getValue()
-                                + " " + (h.isRepeatOpen() ? 1 : 0) + " " + h.getRepeatClose());
+                                + " " + (h.isRepeatOpen() ? 1 : 0) + " " + h.getRepeatClose() + " " + h.getRepeatAlternative());
             if (h.hasMarker())
                 System.out.println ("MARKER " + h.getNumber() + " " + h.getMarker().getTitle().trim());
 

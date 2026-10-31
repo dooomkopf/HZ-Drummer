@@ -32,7 +32,7 @@ void WorkshopWindow::TabLook::drawTabButton (juce::TabBarButton& button, juce::G
 }
 
 WorkshopWindow::WorkshopWindow (EditorHost& h, ArrangerHost& ah, juce::PropertiesFile& p)
-    : juce::DocumentWindow ("Werkstatt", windowBackground, juce::DocumentWindow::allButtons),
+    : juce::DocumentWindow ("Werkstatt", windowBackground, juce::DocumentWindow::allButtons, false),
       host (h), props (p)
 {
     setUsingNativeTitleBar (true);
@@ -119,6 +119,10 @@ WorkshopWindow::WorkshopWindow (EditorHost& h, ArrangerHost& ah, juce::Propertie
     setResizable (true, true);
     setResizeLimits (900, 590, 4000, 3000);
 
+    // onto the desktop only now, still hidden: on Linux, switching a window that is already there to the
+    // native title bar or to resizable shows it at once, small and empty in the top left corner (as Main.cpp).
+    // The saved place is restored with the frame known, then the window appears where it belongs.
+    addToDesktop();
     const auto state = props.getValue ("editorWindow");
     if (state.isEmpty() || ! restoreWindowStateFromString (state))
         centreWithSize (1200, 750);

@@ -21,6 +21,7 @@ namespace theme
     const juce::Colour weakBeat     { 0xff5c8fd6 };
     const juce::Colour unlit        { 0xff2c2c33 };
     const juce::Colour progress     { 0xff48a0ff };
+    const juce::Colour workshopGlow { 0xffb23cff };   // neon lilac: the workshop is open (glow around "Bearbeiten")
 
     inline juce::Colour accentColour (hz::Meter::Accent a)
     {

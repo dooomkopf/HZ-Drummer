@@ -74,7 +74,7 @@ Danach liegt das fertige Kit unter `kits/aasimonster/`, das Programm findet es b
 | `library-src/` | Mitgelieferte Patterns als Drum-Tabs (Quelle, lesbar) |
 | `library/` | Daraus übersetzte JSON-Bibliothek (wird vom Programm geladen) |
 | `community/` | Pattern-Sätze von Mitwirkenden, siehe [CONTRIBUTING.md](CONTRIBUTING.md) |
-| `tools/` | `patternc` (Tabs → JSON), `kitprep` (DrumGizmo-Kit → Stereo), `gpdrums` (Guitar-Pro-Schlagzeugspur → Patterns), Starter, Prüfskript für Community-Sätze |
+| `tools/` | `patternc` (Tabs → JSON), `kitprep` (DrumGizmo-Kit → Stereo), `gpdrums` (Guitar-Pro-Schlagzeugspur → Patterns), `import` (Vorlagen für MIDI, Hydrogen und gedruckte Pattern-Bücher → Patterns, siehe [tools/import/README.md](tools/import/README.md)), Starter, Prüfskript für Community-Sätze |
 | `tests/` | `engine_tests` (Timing, Taktarten, Parser, Player, Bearbeitung), `app_tests` (Dateiformate, Suche, Arranger-Modell) |
 | `docs/` | Bedienung, Konzept, Formate, Entscheidungen |
 

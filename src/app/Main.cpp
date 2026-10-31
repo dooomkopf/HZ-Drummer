@@ -85,14 +85,18 @@ private:
             g.setColour (juce::Colour (0xff8a8a92).withMultipliedAlpha (fade));
             g.setFont (juce::FontOptions (h * 0.045f));
             g.drawText ("Initializing", getLocalBounds().removeFromTop ((int) (h * 0.17f)), juce::Justification::centred);
-            // "Drummer" heavier than the font's bold: the letters as outlines, filled and thickened by a stroke
-            const juce::Font drummerFont (juce::FontOptions (h * 0.18f, juce::Font::bold));
+            // "Drummer" heavier than the font's bold: the letters as outlines, half again as tall as the font
+            // makes them (the width stays), grown upwards from the baseline into the H, filled and thickened
+            // by a stroke that leaves the inner lines (the bar of the e) open
+            const juce::Font drummerFont (juce::FontOptions (h * 0.234f, juce::Font::bold));
             const auto line = getLocalBounds().removeFromBottom ((int) (h * 0.24f)).toFloat();
             juce::GlyphArrangement glyphs;
             glyphs.addFittedText (drummerFont, "Drummer", line.getX(), line.getY(), line.getWidth(), line.getHeight(),
                                   juce::Justification::centred, 1);
             juce::Path letters;
             glyphs.createPath (letters);
+            const auto box = letters.getBounds();
+            letters.applyTransform (juce::AffineTransform::scale (1.0f, 1.5f, box.getCentreX(), box.getBottom()));
             g.setColour (juce::Colour (0xffb8b8be).withMultipliedAlpha (fade));
             g.fillPath (letters);
             g.strokePath (letters, juce::PathStrokeType (drummerFont.getHeight() * 0.065f, juce::PathStrokeType::curved,

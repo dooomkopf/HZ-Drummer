@@ -148,7 +148,9 @@ soweit sie hier nicht abweichen; überholte Stellen stehen im vorletzten Abschni
    gespeichert. Übernehmen in den Ablauf lässt die Karte stehen. Geleert wird nur ausdrücklich, und das ist
    rückgängig machbar. Jede Karte hat eine eigene Kennung, Bearbeiten trifft nur sie. [E 29.10., Code]
 3. **Ablauf:** Blöcke sind Kopien mit Quellen-ID. Hauptbedienung ist Ziehen mit der Maus, die Knöpfe der
-   Detailzeile gibt es zusätzlich. [E 29.10.]
+   Detailzeile gibt es zusätzlich. [E 29.10.] Spulen: Der weiße Positionsstrich hat oben einen Griff (nur
+   wenn der Transport das Arrangement hält, spielend oder pausiert); Ziehen rastet auf Takte, Loslassen
+   springt dorthin. Klick und Ziehen auf Blöcken bleiben unverändert. [E 31.10.]
 4. **Lokale Umbenennung** ändert nur den Block, der Baustein behält seinen Namen. [Bed.]
 5. **Takte:** Ein Block kann einen Taktbereich spielen, einsbasiert und einschließlich angezeigt. Ungültige
    Bereiche werden beim Laden gemeldet. [E 29.10.]
@@ -188,7 +190,8 @@ soweit sie hier nicht abweichen; überholte Stellen stehen im vorletzten Abschni
    Shift die Favoriten, im Metronom die Taktarten. Neongrün mit leichtem Schleier, keine Klicks, kein Fokus;
    nach der eingestellten Dauer blendet es in 0,25 s aus. Unter System › Menü-Ordner ganz oben: „Grüne
    Einblend-Menüs aktiv“ (Standard an) und „Dauer“ 0,5 bis 5 s (Standard 1 s), in den Einstellungen gemerkt.
-   [E 31.10.]
+   [E 31.10.] **Tooltips:** System, ganz unten rechtsbündig, „Tooltips“ an/aus für alle Fenster
+   (Standard an, gemerkt); Text im Rot der Hilfezeilen (0xffe07a70). [E 31.10.]
 3. **Einzählen** mit drei Stellungen: aus, START nur beim Start von vorn, AN vor jedem Start, auch nach einer
    Pause. Der Klick-Takt hat die Taktart des Starttakts. Gilt nur für den Hauptplayer. [Bed.]
 4. **Tasten:** M schaltet den Mixer an und aus, im Hauptfenster, in der ganzen Werkstatt und im Mixer
@@ -196,7 +199,58 @@ soweit sie hier nicht abweichen; überholte Stellen stehen im vorletzten Abschni
    schließt sie wieder, solange im Editor nichts ungespeichert ist, sonst passiert nichts. Das Taktart-Menü
    öffnet man per Klick. In der Werkstatt wirken nur Leertaste, Tempo hoch und runter, T, M und E; ← →
    wechseln dort nicht den Baustein. [E 31.10., Code]
-5. **Vorhören** gibt es im Baustein-Menü mit P, in der Suche mit ▶ und im Finden mit Klick. Esc stellt
+5. **Loop:** Bereich ganzer Takte per Shift + Ziehen in der Takt-Leiste, die es dafür auch bei Bausteinen
+   mit mehreren Takten gibt (ein Block, keine Song-Teile); auch über Blöcke eines Arrangements hinweg.
+   Shift + Ziehen nahe einer Grenze (14 px) verschiebt nur diese; innerhalb des Bereichs passiert nichts,
+   erst außerhalb entsteht ein neuer Bereich.
+   Knopf „Loop (L)“ (links neben „Umbenennen“, so groß wie „Löschen“, nur bei Takt-Leiste) und Taste L schalten um; der Bereich
+   bleibt, ist aber nur bei aktivem Loop gelb markiert; Doppelklick darauf löscht ihn. Am Bereichsende
+   springt die Wiedergabe sample-genau zum Anfang (im Player, nicht über die Oberfläche) und zählt das als
+   Durchlauf. Ein früher Schlag auf dem ersten Schlag des Bereichs wird nur nach einem Rücksprung auf den
+   Anfang geklemmt, ein später am Ende immer (auch gegen die Sample-Rundung: höchstens aufs letzte Sample
+   vor dem Rücksprung). Welche Schläge zur Runde gehören, entscheidet ihr geschriebener Platz: keine, die am
+   oder hinter dem Rundenende stehen (Planende, Bereichsende oder das Taktende, an dem ein wartender Plan
+   übernimmt; also auch kein Flam-Vorschlag oder früher Schlag des Takts danach), nach einem Rücksprung
+   keine aus den Takten davor (auch kein spät versetzter). Ein später Schlag vor einem Rundenende erklingt
+   spätestens auf dessen letztem Sample, auch vor einem Planwechsel. Am Anfang einer Runde, nach einem
+   Sprung und beim Start erklingen frühe Schläge, die dort oder dahinter stehen, auf dem Anfang (wie am
+   Planbeginn), ebenso ein erster Schlag, der ein halbes Sample davor rundet. Ein Tempowechsel mitten in
+   der Runde und Pause/Weiter lassen keinen Schlag aus und spielen keinen doppelt; Weiter setzt die Runde
+   fort (gleiche Humanisierung, gleiche Versätze, gleicher Bereichszustand). Wird der Loop in einer Runde
+   ausgeschaltet, die am Bereichsanfang begann, bleiben Schläge aus den Takten davor bis zur nächsten Runde
+   draußen. Liegt die Position beim Setzen oder Einschalten außerhalb, geht es am Bereichsanfang los. Der Bereich gehört zur gewählten Auswahl (deren
+   zuletzt gesendetem Plan) und verfällt bei einer anderen; Einzählen und Vorhören setzen ihn nur aus.
+   Solange die Werkstatt offen ist (oder etwas aus ihr spielt), sind Loop- und Trainer-Knopf ausgeblendet,
+   die Tasten L und S wirkungslos, Loop und Trainer ruhen und gehen danach weiter. Dass sie offen ist,
+   zeigt „Bearbeiten“: lila getönt mit hellem Rand und einem atmenden Neon-Schein (theme::workshopGlow). Gesetzt wird er nur, solange die Takt-Leiste den zuletzt
+   gesendeten Plan der Auswahl zeigt (nicht die vorige Auswahl oder eine ältere Fassung, deren Wechsel noch
+   aufs Taktende wartet), damit Bereich und Sprung aus denselben Takten kommen. Shift + Ziehen innerhalb des
+   Bereichs bewirkt gar nichts, auch keinen Sprung. Hat die Auswahl weniger Takte als der Bereich, wird sein
+   Ende gekürzt; beginnt er hinter dem Ende, verfällt er. [E 31.10., Code]
+6. **Speed-Trainer:** Knopf „Trainer (S)“ (so groß wie „Löschen“) öffnet ein kleines Menü: „Trainer an“, Von,
+   Bis, Inkrement, Wdh. pro Inkrement (1 bis 5; gespeichert), je ein kleiner Schieberegler mit dem Wert rechts.
+   Von bleibt unter Bis (jeder Regler stoppt 1 BPM vor dem anderen, gleiche Skala). Voreinstellung
+   Inkrement 1, Wdh. 1. An: Tempo auf „Von“, nach je n Durchläufen + Inkrement bis „Bis“, dort geht es so
+   weiter. Durchlauf = Runde durch den Loop-Bereich, sonst durch das Ganze; gezählt werden nur Runden des
+   Plans der Auswahl (kein Einzählen, kein Vorhören, nichts aus der Werkstatt), ein neuer Start beginnt
+   die Zählung neu, schon gezählte Runden bleiben. Jeder gehörte Puls wird einzeln gezählt, auch wenn die
+   Anzeige mehrere auf einmal nachholt; mehrere fällige Inkremente gehen nicht verloren. Jede Tempoänderung, die nicht vom Trainer kommt, beendet ihn. Taste S schaltet um.
+   Bekannte Grenze: Das neue Tempo greift erst, wenn der Rundenanfang zu hören ist (einige zehn ms in die
+   neue Runde hinein). [E 31.10.]
+   **Speicherplätze:** zehn Plätze oben im Trainer-Menü, in einem eigenen Feld (`trainer.json` im
+   Datenordner). Klick auf einen leeren legt genau die jetzige Einstellung ab (Auswahl als ID bzw. Taktart,
+   Loop-Bereich mit an/aus, Von, Bis, Inkrement, Wdh.) und öffnet das Namensfeld mit dem Titel als Vorschlag.
+   Vor dem × (mit kleinem Abstand) ein Kasten: oben der Bereich („T. a-b“, sonst „ganz“), darunter knapp
+   „Von→Bis“. Der zuletzt geladene oder abgelegte Platz ist gelb umrandet, bis eine andere Auswahl kommt. Klick auf einen
+   belegten lädt: Auswahl wählen, Bereich setzen und an dessen Anfang springen (beim Abspielen startet der
+   neue Plan dort), Tempo auf Von, Trainer aus bis S. Doppelklick benennt um, Rechtsklick überschreibt oder
+   leert, × leert. Gelöschte Einträge: „(fehlt)“, Laden geht nicht. Dasselbe Lied auf mehreren Plätzen ist
+   erlaubt. [E 31.10.]
+7. **Verlauf:** Alt+← / Alt+→ wie im Browser durch die zuletzt gewählten Einträge (Bausteine, Arrangements,
+   Taktarten mit Betriebsart), höchstens 50, nach IDs, gelöschte übersprungen; vor nur nach zurück, eine
+   neue Wahl verwirft das Vorwärts-Stück; nach dem Neustart leer. Keine Verlaufsliste im Geister-Menü, es
+   zeigt nur den Ordner des zurückgeholten Eintrags. [E 31.10.]
+8. **Vorhören** gibt es im Baustein-Menü mit P, in der Suche mit ▶ und im Finden mit Klick. Esc stellt
    wieder her, was vorher lief. Hat man das Anspielen selbst gestoppt, bleibt es still. Beim Vorhören ist
    der Titel im Hauptfenster grün. Grün heißt überall „klingt“ oder „ein Klick spielt“. [Bed., E 31.10.]
 
@@ -278,14 +332,13 @@ soweit sie hier nicht abweichen; überholte Stellen stehen im vorletzten Abschni
 Inkonsequenzen und Lücken, die beim Erstellen aufgefallen sind. Jede wird entschieden und dann oben als
 Regel eingetragen oder gestrichen.
 
-1. **Loop-Bereich:** KONZEPT (29.10.) sagt Strg+Streichen über die Song-Leiste, der neue Wunsch (31.10.)
-   Shift+Ziehen, ganze Takte. Noch nicht gebaut, ebenso der Tempo-Trainer.
+1. *(erledigt 31.10.: Loop mit Shift+Ziehen und Speed-Trainer gebaut, siehe Abschnitt 5)*
 2. **Doppelklick im Finden:** Laut Entscheidung 1 vom 29.10. soll ein Doppelklick in die Ablage übernehmen.
    Gebaut sind nur die Knöpfe und Enter.
 3. **Fensterlage:** KONZEPT sagt, Lage und Größe werden gespeichert. Das gilt nur für die Werkstatt, das
    Hauptfenster startet immer mittig mit 1000 × 700.
-4. **Werkstatt-Fenster:** Es wird wie früher das Hauptfenster aufgebaut und kann beim ersten Öffnen kurz als
-   leeres Rechteck oben links aufblitzen. Der gleiche Fix wie beim Hauptfenster wäre möglich.
+4. *(erledigt 31.10.: Das Werkstatt-Fenster kommt wie das Hauptfenster erst auf den Desktop, wenn Titelleiste
+   und Größe feststehen; das leere Rechteck oben links sollte weg sein)*
 5. **„Kleinste Ordner“ bei den Abzeichen:** Die Regel zählt nach Band-Angabe, nicht nach dem tatsächlichen
    Ordner in `ordner.json`. Wer Bausteine in andere Ordner verschiebt, ändert ihre Gruppe nicht. Die
    Bedienungsanleitung spricht von Ordnern.
@@ -300,6 +353,5 @@ Regel eingetragen oder gestrichen.
    (CC-BY 4.0, Sidestick und HiHat-Pedal) und Karoryfer Swirly Drums (CC0, Besen). Die Quellen und Lizenzen
    der importierten Pattern-Sammlungen fehlen ebenfalls im Repo.
 10. **Versionsnummer:** Sie zählt alle Commits, nicht die seit v0.2. Nach 0.1.27 folgt 0.2.28.
-11. **Taste L:** Sie öffnet vorerst still weiter den Mixer, steht aber nicht mehr in der Hilfe. Frei machen,
-    etwa für den Loop-Bereich?
+11. *(erledigt 31.10.: L schaltet jetzt den Loop, der Mixer liegt auf M)*
 12. *(erledigt: Geister-Menü abschaltbar unter System › Menü-Ordner)*

@@ -2,6 +2,8 @@
 
 #include "app/views/Theme.h"
 
+#include <utility>
+
 int SongStrip::preferredHeight (int width) const
 {
     if (view == nullptr || view->spans == nullptr || view->spans->empty())
@@ -104,6 +106,11 @@ void SongStrip::paint (juce::Graphics& g)
                           juce::Justification::centredLeft, 1);
     }
 
+    if (rangeFrom >= 0)   // a range being picked (Shift + drag)
+        paintRange (g, juce::jmin (rangeFrom, rangeTo), juce::jmax (rangeFrom, rangeTo));
+    else if (loopShown && loopFirst >= 0)
+        paintRange (g, loopFirst, loopLast);
+
     if (const auto* b = layout.blockAt (position); b != nullptr)   // position marker with glow
     {
         const auto row = rowBounds (b->row);
@@ -112,6 +119,40 @@ void SongStrip::paint (juce::Graphics& g)
         g.fillRoundedRectangle (juce::Rectangle<float> (x - 5.0f, row.getY() - 3.0f, 10.0f, row.getHeight() + 6.0f), 4.0f);
         g.setColour (juce::Colours::white);
         g.fillRoundedRectangle (juce::Rectangle<float> (x - 1.5f, row.getY() - 3.0f, 3.0f, row.getHeight() + 6.0f), 1.5f);
+    }
+}
+
+void SongStrip::setLoopRange (int firstBar, int lastBar, bool shown)
+{
+    if (firstBar == loopFirst && lastBar == loopLast && shown == loopShown)
+        return;
+    loopFirst = firstBar;
+    loopLast = lastBar;
+    loopShown = shown;
+    repaint();
+}
+
+void SongStrip::paintRange (juce::Graphics& g, int first, int last)
+{
+    // over every block it touches: a light veil and strong edges where the range begins and ends
+    const juce::Colour loopColour (0xffe8c547);   // yellowish: the loop
+    for (const auto& b : layout.blocks)
+    {
+        const int from = juce::jmax (first, b.firstBar), to = juce::jmin (last + 1, b.firstBar + b.bars);
+        if (from >= to)
+            continue;
+        const auto row = rowBounds (b.row);
+        const float x0 = row.getX() + b.xOf (from), x1 = row.getX() + b.xOf (to);
+        const auto area = juce::Rectangle<float> (x0, row.getY() - 2.0f, x1 - x0, row.getHeight() + 4.0f);
+        g.setColour (loopColour.withAlpha (0.22f));
+        g.fillRect (area);
+        g.setColour (loopColour);
+        if (from == first)
+            g.fillRect (area.withWidth (3.0f));
+        if (to == last + 1)
+            g.fillRect (area.withLeft (area.getRight() - 3.0f));
+        g.fillRect (area.withHeight (2.0f));
+        g.fillRect (area.withTop (area.getBottom() - 2.0f));
     }
 }
 
@@ -128,20 +169,93 @@ int SongStrip::barAt (juce::Point<int> p) const
     return juce::jlimit (b->firstBar, b->firstBar + b->bars - 1, (int) std::floor (b->barAt ((float) p.x - r.getX())));
 }
 
+bool SongStrip::nearEdge (juce::Point<float> p, int bar, bool atItsEnd) const
+{
+    constexpr float grip = 14.0f;   // pixels either side of the edge
+    for (const auto& b : layout.blocks)
+        if (b.contains (bar))
+        {
+            const auto row = rowBounds (b.row);
+            const float x = row.getX() + b.xOf (atItsEnd ? bar + 1 : bar);
+            return std::abs (p.x - x) <= grip && p.y >= row.getY() - 6.0f && p.y <= row.getBottom() + 6.0f;
+        }
+    return false;
+}
+
+void SongStrip::mouseMove (const juce::MouseEvent& e)
+{
+    // with Shift held, an edge of the shown range can be taken hold of: say so with the cursor
+    const bool grip = e.mods.isShiftDown() && loopShown && loopFirst >= 0
+                   && (nearEdge (e.position, loopFirst, false) || nearEdge (e.position, loopLast, true));
+    setMouseCursor (grip ? juce::MouseCursor::LeftRightResizeCursor : juce::MouseCursor::PointingHandCursor);
+}
+
 void SongStrip::mouseDown (const juce::MouseEvent& e)
 {
+    ignoreGesture = false;
+    if (e.mods.isShiftDown())   // a loop range of whole bars
+    {
+        if (loopShown && loopFirst >= 0 && nearEdge (e.position, loopFirst, false))
+        {
+            rangeFrom = loopLast;    // its start moves, its end stays
+            rangeTo = loopFirst;
+        }
+        else if (loopShown && loopFirst >= 0 && nearEdge (e.position, loopLast, true))
+        {
+            rangeFrom = loopFirst;   // its end moves, its start stays
+            rangeTo = loopLast;
+        }
+        else if (const int bar = barAt (e.getPosition()); loopShown && loopFirst >= 0 && bar >= loopFirst && bar <= loopLast)
+        {
+            ignoreGesture = true;   // inside the range, away from its edges: nothing (its edges are moved, not redrawn)
+            return;
+        }
+        else
+        {
+            rangeFrom = rangeTo = bar;   // outside: a new range
+        }
+        repaint();
+        return;
+    }
     dragBar = barAt (e.getPosition());
     repaint();
 }
 
 void SongStrip::mouseDrag (const juce::MouseEvent& e)
 {
+    if (ignoreGesture)
+        return;
+    if (rangeFrom >= 0)
+    {
+        if (const int bar = barAt (e.getPosition()); bar >= 0)
+            rangeTo = bar;
+        repaint();
+        return;
+    }
     dragBar = barAt (e.getPosition());
     repaint();
 }
 
+void SongStrip::mouseDoubleClick (const juce::MouseEvent& e)
+{
+    const int bar = barAt (e.getPosition());
+    if (loopShown && loopFirst >= 0 && bar >= loopFirst && bar <= loopLast && onLoopClear)
+        onLoopClear();
+}
+
 void SongStrip::mouseUp (const juce::MouseEvent&)
 {
+    if (std::exchange (ignoreGesture, false))
+        return;
+    if (rangeFrom >= 0)
+    {
+        const int first = juce::jmin (rangeFrom, rangeTo), last = juce::jmax (rangeFrom, rangeTo);
+        rangeFrom = rangeTo = -1;
+        if (first >= 0 && onLoopRange)
+            onLoopRange (first, last);
+        repaint();
+        return;
+    }
     const int bar = dragBar;
     dragBar = -1;
     if (bar >= 0 && onSeek)

@@ -22,7 +22,8 @@ struct KeyActions
     std::function<void (int, bool)> stepCurrent;   // pattern or meter, depending on the mode
     std::function<void (int)> stepStyle;
     std::function<void (int)> seekPart;            // songs: next (+1) / previous (-1) part
-    std::function<void()> patternMenu, meterMenu, editor, mixer, search, help;
+    std::function<void()> patternMenu, meterMenu, editor, mixer, search, help, loop, trainer;
+    std::function<void (int)> history;             // back (-1) / forward (+1) through the entries chosen so far
 };
 
 std::vector<KeyBinding> makeKeyBindings (const KeyActions&);

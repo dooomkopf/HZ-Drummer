@@ -1,8 +1,11 @@
 #include "app/MainComponent.h"
 
 #include "app/Text.h"
+#include "app/views/NeonGlow.h"
 #include "app/views/Theme.h"
 #include "engine/MeterCatalog.h"
+
+#include <utility>
 
 //==============================================================================
 // Setup
@@ -104,6 +107,24 @@ MainComponent::MainComponent()
     beatDisplay.setInterceptsMouseClicks (false, false);
     songStrip.setMouseCursor (juce::MouseCursor::PointingHandCursor);
     songStrip.onSeek = [this] (int bar) { seekToBar (bar); };
+    songStrip.onLoopRange = [this] (int first, int last) { setLoopRange (first, last); };
+    songStrip.onLoopClear = [this] { clearLoop(); };
+    for (auto* b : { &loopButton, &trainerButton })   // quiet: they sit beside the title
+    {
+        addAndMakeVisible (*b);
+        b->setColour (juce::TextButton::buttonColourId, juce::Colour (0xff26262c));
+        b->setColour (juce::TextButton::buttonOnColourId, juce::Colour (0xff1f6b60));
+        b->setColour (juce::TextButton::textColourOffId, theme::textDim);
+        b->setColour (juce::TextButton::textColourOnId, theme::textMain);
+        b->setWantsKeyboardFocus (false);
+        b->setMouseClickGrabsKeyboardFocus (false);
+    }
+    loopButton.setColour (juce::TextButton::buttonOnColourId, juce::Colour (0xffd4b13a));   // yellowish, as the range in the strip
+    loopButton.setColour (juce::TextButton::textColourOnId, juce::Colour (0xff1c1c20));
+    loopButton.setTooltip ("Loop an/aus (L). Den Bereich ganzer Takte mit Shift + Ziehen in der Takt-Leiste setzen, Doppelklick darauf löscht ihn."_u);
+    loopButton.onClick = [this] { toggleLoop(); };
+    trainerButton.setTooltip ("Speed-Trainer (S): von, bis, Inkrement und Wiederholungen pro Inkrement einstellen"_u);
+    trainerButton.onClick = [this] { showTrainer(); };
     statusPanels.setView (&view);
     songStrip.setView (&view);
     beatDisplay.setView (&view);
@@ -173,7 +194,13 @@ void MainComponent::loadSettings()
     currentMeter = juce::jmax (0, meters.fromKey (props.getValue ("meter", "4/4")));
     control.tempoTenths = (std::uint16_t) juce::jlimit (300, 3200, props.getIntValue ("tempoTenths", 1200));
     sound = (MetronomeSound) juce::jlimit (0, 3, props.getIntValue ("sound", (int) MetronomeSound::Kick));
+    trainer.to = juce::jlimit (31.0, 320.0, props.getDoubleValue ("trainerTo", 140.0));
+    trainer.from = juce::jlimit (30.0, trainer.to - 1.0, props.getDoubleValue ("trainerFrom", 100.0));   // always below "Bis"
+    trainer.step = juce::jlimit (1.0, 40.0, props.getDoubleValue ("trainerIncrement", 1.0));
+    trainer.repeats = juce::jlimit (1, 5, props.getIntValue ("trainerRepeatsPerIncrement", 1));
+    trainerSlots = trainerslots::load (trainerslots::file());
     ghostEnabled = props.getBoolValue ("ghostMenu", true);
+    setTooltipsEnabled (props.getBoolValue ("tooltips", true));
     ghostSeconds = juce::jlimit (0.5, 5.0, props.getDoubleValue ("ghostSeconds", 1.0));
     ghostMenu.setHoldSeconds (ghostSeconds);
     countIn = (CountIn) juce::jlimit (0, 2, props.getIntValue ("countIn", 0));
@@ -195,7 +222,14 @@ void MainComponent::saveSettings()
     props.setValue ("meter", MeterLibrary::key (meters.get (currentMeter)));
     props.setValue ("tempoTenths", (int) control.tempoTenths);
     props.setValue ("sound", (int) sound);
+    props.setValue ("trainerFrom", trainer.from);
+    props.setValue ("trainerTo", trainer.to);
+    props.setValue ("trainerIncrement", trainer.step);
+    props.setValue ("trainerRepeatsPerIncrement", trainer.repeats);
+    props.removeValue ("trainerStep");      // the old keys held the old defaults (5 and 2)
+    props.removeValue ("trainerRepeats");
     props.setValue ("ghostMenu", ghostEnabled);
+    props.setValue ("tooltips", tooltipsEnabled);
     props.setValue ("ghostSeconds", ghostSeconds);
     props.setValue ("countIn", (int) countIn);
     props.setValue ("pattern", patternMode() ? juce::String (library.get (currentPattern).id) : juce::String());
@@ -258,6 +292,8 @@ void MainComponent::togglePlay()
 
 void MainComponent::setTempo (double bpm)
 {
+    if (trainer.on && ! trainerSettingTempo)
+        setTrainerOn (false);   // a tempo of one's own ends the speed trainer
     bpm = juce::jlimit (30.0, 320.0, std::round (bpm));
     control.tempoTenths = (std::uint16_t) (bpm * 10.0);
     publishControl();
@@ -286,6 +322,11 @@ void MainComponent::selectMeter (int index)
         return;
 
     // choosing a meter means: metronome in that meter; previews and the arranger's sequence end
+    if (index != currentMeter || patternMode())
+    {
+        clearLoop();   // the range belongs to what was selected before
+        activeTrainerSlot = -1;
+    }
     currentMeter = index;
     currentPattern = -1;
     arranging.reset();
@@ -299,6 +340,7 @@ void MainComponent::selectMeter (int index)
     sendCurrentPlan();
     updateButtons();
     saveSettings();
+    recordHistory();
 }
 
 void MainComponent::selectSound (int index)
@@ -315,6 +357,11 @@ void MainComponent::selectPattern (int index)
     if (index >= library.size())
         return;
 
+    if (index != currentPattern)
+    {
+        clearLoop();                            // the range belongs to what was selected before
+        activeTrainerSlot = -1;                 // ... and so does the save slot in effect
+    }
     currentPattern = index;
     arranging.reset();                          // a selection here ends the arranger's playback
     if (audition == Audition::Arranger || audition == Audition::Menu)
@@ -330,6 +377,7 @@ void MainComponent::selectPattern (int index)
     sendCurrentPlan();
     updateButtons();
     saveSettings();
+    recordHistory();
 }
 
 void MainComponent::selectPatternById (const std::string& id)
@@ -445,7 +493,7 @@ void MainComponent::browseInFolder (int dir)
         return;
     const auto& folder = order[(size_t) f];
     int at = (int) (std::find (folder.ids.begin(), folder.ids.end(), id) - folder.ids.begin());
-    if (const int to = at + dir; to >= 0 && to < (int) folder.ids.size())   // at an end: it stops, the ghost shows why
+    if (const int to = at + dir; dir != 0 && to >= 0 && to < (int) folder.ids.size())   // at an end: it stops, the ghost shows why
         if (const int i = library.indexOf (folder.ids[(size_t) to]); i >= 0)
         {
             selectPattern (i);
@@ -548,8 +596,8 @@ void MainComponent::browseFavorites (int dir)
 
 void MainComponent::browseMeters (int dir, bool favoritesOnly)
 {
-    const int next = favoritesOnly ? meters.stepFavorite (currentMeter, dir) : meters.step (currentMeter, dir);
-    const bool wrapped = next < 0 || (dir > 0 ? next <= currentMeter : next >= currentMeter);
+    const int next = dir == 0 ? currentMeter : favoritesOnly ? meters.stepFavorite (currentMeter, dir) : meters.step (currentMeter, dir);
+    const bool wrapped = dir == 0 || next < 0 || (dir > 0 ? next <= currentMeter : next >= currentMeter);
     if (! wrapped)   // at an end: it stops
         selectMeter (next);
 
@@ -564,6 +612,221 @@ void MainComponent::browseMeters (int dir, bool favoritesOnly)
         }
     c.count = c.current >= 0 ? counter (c.current, c.list.size()) : juce::String();
     showGhost (c);
+}
+
+//==============================================================================
+// Verlauf: back and forward through the entries chosen so far
+
+void MainComponent::recordHistory()
+{
+    if (historyMoving)
+        return;
+    const HistoryEntry entry { patternMode() ? library.get (currentPattern).id : std::string(), patternMode() ? -1 : currentMeter };
+    if (historyAt >= 0 && history[(size_t) historyAt].patternId == entry.patternId && history[(size_t) historyAt].meter == entry.meter)
+        return;
+    history.resize ((size_t) (historyAt + 1));   // a new choice drops what lay ahead, as in a browser
+    history.push_back (entry);
+    if (history.size() > 50)
+        history.erase (history.begin());
+    historyAt = (int) history.size() - 1;
+}
+
+void MainComponent::moveHistory (int dir)
+{
+    for (int i = historyAt + dir; i >= 0 && i < (int) history.size(); i += dir)
+    {
+        const auto& entry = history[(size_t) i];
+        const int index = entry.patternId.empty() ? -1 : library.indexOf (entry.patternId);
+        if (! entry.patternId.empty() && index < 0)
+            continue;   // deleted meanwhile: passed over
+        historyAt = i;
+        historyMoving = true;
+        if (index >= 0)
+            selectPattern (index);
+        else
+            selectMeter (entry.meter);
+        historyMoving = false;
+        if (patternMode())   // where it is, as when browsing
+            browseInFolder (0);
+        else
+            browseMeters (0, false);
+        return;
+    }
+}
+
+//==============================================================================
+// Loop and speed trainer
+
+void MainComponent::setTooltipsEnabled (bool on)
+{
+    tooltipsEnabled = on;
+    if (! on)
+        tooltipWindow = nullptr;   // without a tooltip window JUCE shows no tooltips, in no window
+    else if (tooltipWindow == nullptr)
+        tooltipWindow = std::make_unique<juce::TooltipWindow> (nullptr, 700);
+}
+
+bool MainComponent::stripShowsSelection() const
+{
+    const auto* selection = plans.find (selectionTag);
+    return view.plan != nullptr && selection != nullptr && view.plan->patternId == selection->patternId
+        && ! workshopOpen() && audition == Audition::None;
+}
+
+void MainComponent::showLoopAndTrainer()
+{
+    // "Bearbeiten" glows while the workshop is open (the halo breathes: repainted with every tick)
+    const bool open = editorWindow != nullptr;
+    if (open != (bool) editButton.getProperties()["glow"])
+    {
+        editButton.getProperties().set ("glow", open);
+        editButton.repaint();
+        repaint (editButton.getBounds().expanded (48));
+    }
+    else if (open)
+        repaint (editButton.getBounds().expanded (48));
+
+    const bool workshop = workshopOpen();
+    loopButton.setVisible (! workshop && view.spans != nullptr);   // a range is picked in the strip
+    trainerButton.setVisible (! workshop);
+    if (workshop != std::exchange (workshopWasOpen, workshop))
+        sendLoop();   // the workshop opened or closed: the loop pauses or comes back
+}
+
+bool MainComponent::stripShowsSelectionPlan() const
+{
+    return stripShowsSelection() && (view.hasPosition() ? shown.planTag : plans.latestTag()) == selectionTag;
+}
+
+void MainComponent::setLoopRange (int first, int last)
+{
+    // only in the bars of the selection's latest plan: not while the strip still shows the one before or an
+    // older version of it (a switch waits for the bar end), so that range and jump come from the same bars
+    const auto* selection = plans.find (selectionTag);
+    if (! stripShowsSelectionPlan() || first < 0 || last < first || last >= (int) selection->bars.size())
+        return;
+    loopFirst = first;
+    loopLast = last;
+    loopOn = true;
+    loopPatternId = selection->patternId;
+    sendLoop();
+    if (view.bar < first || view.bar > last)   // outside the range: straight to its start
+        seekToBar (first);
+}
+
+void MainComponent::clearLoop()
+{
+    if (loopFirst < 0 && ! loopOn)
+        return;
+    loopFirst = loopLast = -1;
+    loopOn = false;
+    sendLoop();
+}
+
+void MainComponent::toggleLoop()
+{
+    if (loopFirst < 0)
+        return;   // no range yet: the tooltip says how to pick one
+    loopOn = ! loopOn;
+    sendLoop();
+    if (loopOn && loopFirst >= 0 && stripShowsSelectionPlan() && (view.bar < loopFirst || view.bar > loopLast))
+        seekToBar (loopFirst);
+}
+
+void MainComponent::sendLoop()
+{
+    // The range belongs to the selection. A count-in, a preview or the workshop only suspend it; another
+    // selection ends it, and so do fewer bars than it starts at (a shorter end is cut back).
+    const auto* selection = plans.find (selectionTag);
+    if (loopFirst >= 0 && (selection == nullptr || selection->patternId != loopPatternId
+                           || loopFirst >= (int) selection->bars.size()))
+    {
+        loopFirst = loopLast = -1;
+        loopOn = false;
+    }
+    if (loopFirst >= 0)
+        loopLast = juce::jmin (loopLast, (int) selection->bars.size() - 1);
+    if (loopFirst >= 0 && loopOn && ! workshopOpen() && audition == Audition::None)
+        engine.setLoopRange (selection->bars[(size_t) loopFirst].start,
+                             selection->bars[(size_t) loopLast].start + selection->bars[(size_t) loopLast].length);
+    else
+        engine.clearLoopRange();
+    showLoop();
+}
+
+void MainComponent::showLoop()
+{
+    // drawn only while on, and only over the selection's own bars
+    songStrip.setLoopRange (loopFirst, loopLast, loopOn && loopFirst >= 0 && stripShowsSelection());
+    loopButton.setToggleState (loopOn && loopFirst >= 0, juce::dontSendNotification);
+}
+
+void MainComponent::showTrainer()
+{
+    auto panel = std::make_unique<TrainerPanel> (trainer);
+    panel->onChange = [safe = juce::Component::SafePointer<MainComponent> (this)] (const TrainerPanel::Values& v)
+    {
+        if (safe == nullptr)
+            return;
+        const bool wasOn = safe->trainer.on;
+        safe->trainer = v;
+        safe->trainer.on = wasOn;
+        safe->saveSettings();
+        if (v.on != wasOn)
+            safe->setTrainerOn (v.on);   // switched on: it starts at "Von"
+    };
+    wireTrainerSlots (*panel);
+    juce::CallOutBox::launchAsynchronously (std::move (panel), trainerButton.getScreenBounds(), nullptr);
+}
+
+void MainComponent::setTrainerOn (bool on)
+{
+    trainer.on = on;
+    trainerPasses = 0;
+    trainerLastLoop = -1;
+    if (on)
+    {
+        trainerTempo = trainer.from;
+        trainerSettingTempo = true;
+        setTempo (trainer.from);
+        trainerSettingTempo = false;
+    }
+    trainerButton.setToggleState (on, juce::dontSendNotification);
+}
+
+void MainComponent::trainerCount (const AudioEngine::DisplayEvent& pulse)
+{
+    if (! trainer.on)
+        return;
+    // only passes of the selection count: not the count-in, not a preview, nothing of the workshop
+    if (pulse.planTag != selectionTag || workshopOpen() || audition != Audition::None)
+    {
+        trainerLastLoop = -1;   // counting goes on from where it comes back (passes counted so far stay)
+        return;
+    }
+    if (trainerLastLoop < 0 || pulse.generation != trainerGeneration || pulse.loop < trainerLastLoop)
+    {
+        trainerLastLoop = pulse.loop;   // a new start or a new plan of the selection: count from here
+        trainerGeneration = pulse.generation;
+        return;
+    }
+    trainerPasses += pulse.loop - trainerLastLoop;
+    trainerLastLoop = pulse.loop;
+}
+
+void MainComponent::trainerTick()
+{
+    if (! trainer.on || ! control.play)
+        return;
+    double next = trainerTempo;
+    for (; trainerPasses >= trainer.repeats; trainerPasses -= trainer.repeats)   // several at once (a stalled display): none lost
+        next = juce::jmin (trainer.to, next + trainer.step);
+    if (juce::approximatelyEqual (next, trainerTempo))
+        return;   // not yet, or at "Bis": it simply goes on at that tempo
+    trainerTempo = next;
+    trainerSettingTempo = true;
+    setTempo (next);
+    trainerSettingTempo = false;
 }
 
 void MainComponent::toggleFavorite()
@@ -610,13 +873,28 @@ void MainComponent::sendCurrentPlan()
         info.spans = *library.songSpans (currentPattern);
     }
     else if (patternMode())
-        plan = makePatternPlan (library.get (currentPattern));
+    {
+        const auto& p = library.get (currentPattern);
+        plan = makePatternPlan (p);
+        if (p.bars.size() > 1)   // its bars in the strip too: the loop range is picked there
+        {
+            SongSpan whole;
+            whole.label = juce::String (p.name);
+            whole.part = -1;   // no song part (see StatusPanels)
+            whole.numBars = (int) p.bars.size();
+            whole.colour = sourceColourIndex (p.id);
+            whole.shape = sourceShapeIndex (p.id);
+            info.spans.push_back (whole);
+        }
+    }
 
     if (plan == nullptr)
         plan = makeMetronomePlan (meters.get (currentMeter), sound);
 
     channelsInUse = mix::channelsUsedBy (*plan);
     plans.registerPlan (*plan, meters, std::move (info));
+    if (! editing.has_value() && ! arranging.has_value())
+        selectionTag = plans.latestTag();   // the loop range and the speed trainer belong to this one
     engine.sendPlan (std::move (plan));
     if (! control.play)
         hasShown = false;   // a new plan starts from its beginning
@@ -625,6 +903,7 @@ void MainComponent::sendCurrentPlan()
     channelsInUse[mix::Click] = channelsInUse[mix::Click] || control.click;
     publishControl();
     updateView();
+    sendLoop();   // the loop applies to this plan only, and never in the workshop
 }
 
 void MainComponent::updateButtons()
@@ -678,6 +957,8 @@ void MainComponent::updateView()
     titleLabel.setText (view.title, juce::dontSendNotification);
     titleLabel.setColour (juce::Label::textColourId, audition == Audition::Menu ? juce::Colour (0xff3cc6b4) : theme::textMain);   // green while auditioning
     songStrip.setVisible (view.spans != nullptr);
+    showLoopAndTrainer();
+    showLoop();
     if (songStrip.isVisible() != (songStrip.getHeight() > 0)
         || (songStrip.isVisible() && songStrip.getHeight() != songStrip.preferredHeight (songStrip.getWidth())))
         resized();   // the strip's height follows the song (one to three rows)
@@ -695,6 +976,7 @@ void MainComponent::timerCallback()
             editorWindow->getEditor().kitChanged();
     }
     engine.collectRetiredPlans();
+    showLoopAndTrainer();   // also when the workshop opens or closes while nothing plays
 
     // take the keyboard focus back only if our window is active (not from dialogs or menus)
     if (auto* peer = getPeer(); peer != nullptr && peer->isFocused() && ! hasKeyboardFocus (true)
@@ -722,11 +1004,13 @@ void MainComponent::timerCallback()
         shown = pendingDisplay.front();
         pendingDisplay.pop_front();
         hasShown = changed = true;
+        trainerCount (shown);   // every pulse, also when several come due at once
     }
 
     if (changed)
     {
         followCountIn();
+        trainerTick();
         updateView();
     }
     else if (hasShown)
@@ -744,6 +1028,8 @@ void MainComponent::paint (juce::Graphics& g)
 {
     g.fillAll (theme::background);
     watermark.draw (g, getLocalBounds());
+    if (editorWindow != nullptr)   // the workshop is open: "Bearbeiten" glows, so one notices (Loop and Trainer rest)
+        neonglow::draw (g, editButton.getBounds().toFloat().reduced (1.0f, 2.0f), theme::workshopGlow, neonglow::breathing());
 }
 
 void MainComponent::resized()
@@ -789,6 +1075,10 @@ void MainComponent::resized()
     deleteEntryButton.setBounds (titleRow.removeFromRight (94).reduced (0, 3));
     titleRow.removeFromRight (8);
     renameEntryButton.setBounds (titleRow.removeFromRight (120).reduced (0, 3));
+    titleRow.removeFromRight (8);
+    trainerButton.setBounds (titleRow.removeFromRight (94).reduced (0, 3));   // as big as "Löschen"
+    titleRow.removeFromRight (8);
+    loopButton.setBounds (titleRow.removeFromRight (94).reduced (0, 3));
     titleRow.removeFromRight (8);
     titleLabel.setBounds (titleRow);
     songStrip.setBounds (songStrip.isVisible() ? area.removeFromTop (songStrip.preferredHeight (area.getWidth())) : juce::Rectangle<int>());

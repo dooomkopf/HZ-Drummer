@@ -197,7 +197,7 @@ void MixerPanel::paint (juce::Graphics& g)
 
     g.setColour (textDim);
     g.setFont (juce::FontOptions (15.0f));
-    g.drawText ("Doppelklick: Grundwert, Klick -8 dB   ·   M = stumm   ·   S = solo   ·   blass = spielt hier nicht"_u,
+    g.drawText ("Doppelklick: Grundwert, Klick -8 dB   ·   M = stumm   ·   S = solo"_u,
                 getLocalBounds().reduced (20, 14).removeFromBottom (32), juce::Justification::centredLeft);
 }
 

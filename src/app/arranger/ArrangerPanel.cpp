@@ -95,6 +95,7 @@ ArrangerPanel::ArrangerPanel (ArrangerHost& h) : host (h), hint ("hilfezeile.txt
         }
     };
     sequence.onContextMenu = [this] (int part) { showBlockMenu (part); };
+    sequence.onSeek     = [this] (int bar) { if (transportHoldsSequence()) host.arrangerSeekToBar (bar); };
 
     // detail row
     detail.onRepeats   = [this] (int delta) { if (int p = sequence.getSelected(); p >= 0) model.setRepeats (p, model.song().parts[(size_t) p].repeats + delta); };

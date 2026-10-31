@@ -41,7 +41,7 @@ void StatusPanels::paint (juce::Graphics& g)
             if (v.bar >= sp.firstBar && v.bar < sp.firstBar + sp.numBars)
                 span = &sp;
 
-    if (span != nullptr)
+    if (span != nullptr && span->part >= 0)   // a song part (a pattern's own strip has part -1)
     {
         barText = juce::String (v.bar - span->firstBar + 1) + "/" + juce::String (span->numBars);
         caption = "Takt im Teil"_u + (span->repeats > 1 ? "  (Wdh. " + juce::String (span->repeat + 1) + "/" + juce::String (span->repeats) + ")"

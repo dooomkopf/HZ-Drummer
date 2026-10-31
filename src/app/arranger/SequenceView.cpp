@@ -3,6 +3,9 @@
 #include "app/Text.h"
 #include "app/arranger/ArrangerStyle.h"
 
+#include <cmath>
+#include <utility>
+
 using namespace arrangerstyle;
 
 void SequenceView::setSpans (const std::vector<SongSpan>* s)
@@ -205,15 +208,53 @@ void SequenceView::paint (juce::Graphics& g)
         }
     }
 
-    if (const auto* b = layout.blockAt (position); b != nullptr)   // playhead
+    const double shown = seekBar >= 0 ? (double) seekBar : position;
+    if (const auto* b = layout.blockAt (shown); b != nullptr)   // playhead
     {
         const auto row = rowBounds (b->row);
-        const float x = row.getX() + b->xOf (position);
+        const float x = row.getX() + b->xOf (shown);
         g.setColour (juce::Colours::white.withAlpha (0.18f));
         g.fillRoundedRectangle (x - 5.0f, row.getY() - 3.0f, 10.0f, row.getHeight() + 6.0f, 4.0f);
         g.setColour (juce::Colours::white);
         g.fillRoundedRectangle (x - 1.5f, row.getY() - 3.0f, 3.0f, row.getHeight() + 6.0f, 1.5f);
+        if (onSeek)   // its top is the grip: a small tab with two grooves
+        {
+            const auto grip = gripRect();
+            g.fillRoundedRectangle (grip, 2.5f);
+            g.setColour (juce::Colours::black.withAlpha (0.45f));
+            for (float dx : { -1.5f, 1.5f })
+                g.fillRect (juce::Rectangle<float> (grip.getCentreX() + dx - 0.5f, grip.getY() + 3.0f, 1.0f, grip.getHeight() - 6.0f));
+        }
     }
+}
+
+juce::Rectangle<float> SequenceView::gripRect() const
+{
+    const double shown = seekBar >= 0 ? (double) seekBar : position;
+    const auto* b = layout.blockAt (shown);
+    if (b == nullptr)
+        return {};
+    const auto row = rowBounds (b->row);
+    return { row.getX() + b->xOf (shown) - 5.0f, row.getY() - 3.0f, 10.0f, 15.0f };
+}
+
+int SequenceView::barAt (juce::Point<int> p) const
+{
+    for (int row = 0; row < layout.rows; ++row)
+    {
+        const auto r = rowBounds (row);
+        if ((float) p.y < r.getY() - rowGap * 0.5f || (float) p.y >= r.getBottom() + rowGap * 0.5f)
+            continue;
+        if (const auto* b = layout.blockAt ((float) p.x - r.getX(), row))
+            return juce::jlimit (b->firstBar, b->firstBar + b->bars - 1, (int) std::floor (b->barAt ((float) p.x - r.getX())));
+    }
+    return -1;
+}
+
+void SequenceView::mouseMove (const juce::MouseEvent& e)
+{
+    const bool grip = onSeek && gripRect().expanded (3.0f).contains (e.position);
+    setMouseCursor (grip ? juce::MouseCursor::LeftRightResizeCursor : juce::MouseCursor::NormalCursor);
 }
 
 //==============================================================================
@@ -221,6 +262,13 @@ void SequenceView::mouseDown (const juce::MouseEvent& e)
 {
     dragging = false;
     pressedPart = -1;
+    seekBar = -1;
+    if (onSeek && ! e.mods.isPopupMenu() && gripRect().expanded (3.0f).contains (e.position))
+    {
+        seekBar = juce::jmax (0, (int) std::floor (position));   // the grip taken: blocks stay as they are
+        repaint();
+        return;
+    }
     const auto* b = blockAt (e.getPosition());
     if (b == nullptr)
     {
@@ -245,6 +293,13 @@ void SequenceView::mouseDown (const juce::MouseEvent& e)
 
 void SequenceView::mouseDrag (const juce::MouseEvent& e)
 {
+    if (seekBar >= 0)
+    {
+        if (const int bar = barAt (e.getPosition()); bar >= 0)
+            seekBar = bar;
+        repaint();
+        return;
+    }
     if (dragging || e.getDistanceFromDragStart() < 6 || selectedPart < 0 || spans == nullptr)
         return;
     const auto* b = blockAt (e.getMouseDownPosition());
@@ -259,6 +314,14 @@ void SequenceView::mouseDrag (const juce::MouseEvent& e)
 
 void SequenceView::mouseUp (const juce::MouseEvent& e)
 {
+    if (seekBar >= 0)
+    {
+        const int bar = std::exchange (seekBar, -1);
+        if (onSeek)
+            onSeek (bar);
+        repaint();
+        return;
+    }
     const int part = pressedPart;
     pressedPart = -1;
     if (dragging || part < 0 || e.mods.isPopupMenu())
