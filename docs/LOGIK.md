@@ -314,6 +314,17 @@ soweit sie hier nicht abweichen; überholte Stellen stehen im vorletzten Abschni
 
 ---
 
+**Startpaket und Quellen** [E 31.10.]
+- **Startpaket:** Nur beim ersten Start (weder `patterns/` noch `songs/` im Datenordner) kopiert das Programm
+  `community/*/` (Bausteine), `community/*/songs/` und `startpaket/songs/` (Arrangements) sowie
+  `startpaket/ordner.json` hinein; nie wieder danach. Vorhandenes wird nie überschrieben.
+- **Quellen (System › Quellen):** `tools/import/quellen.py` lädt je Quelle von der Originalquelle, wandelt in einen
+  Zwischenordner um und schreibt ins Import-Log, was wegfiel oder vereinfacht wurde (Zeilen „HINWEIS:“ der
+  Umwandler). Das Programm kopiert nur neue Dateien in den Datenordner und legt nur die neu angelegten
+  Arrangements in einen Ordner je Band; Vorhandenes, ob eigenes oder von einer älteren Installation, bleibt
+  unverändert an seinem Platz. Danach lädt es die Bibliothek neu und behält die Auswahl.
+- **Abstürze** landen mit Aufrufstapel in `app.log`.
+
 ## 9. Überholt in den älteren Entwürfen
 
 - **KONZEPT.md:** „Status: Planung (noch kein Code)“ und der Fahrplan sind veraltet. E5 (Kit: Aasimonster),

@@ -59,6 +59,8 @@ target_sources(HZDrummer PRIVATE
     src/app/SearchQuery.cpp
     src/app/MainComponentArranger.cpp
     src/app/MainComponentTrainer.cpp
+    src/app/MainComponentQuellen.cpp
+    src/app/QuellenPanel.cpp
     src/app/TrainerSlots.cpp
     src/app/views/TrainerPanel.cpp
     src/app/MainComponentCountIn.cpp

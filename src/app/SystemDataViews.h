@@ -95,6 +95,7 @@ public:
     {
         addAndMakeVisible (choice); addAndMakeVisible (output); addAndMakeVisible (reload); addAndMakeVisible (clear);
         choice.addItem ("App-Protokoll (app.log)", 1); choice.addItem ("Start und Abstürze (run.log)"_u, 2);
+        choice.addItem ("Import aus Quellen (import.log)", 3);
         choice.onChange = [this] { refresh(); }; choice.setSelectedId (2);
         output.setMultiLine (true); output.setReadOnly (true); output.setScrollbarsShown (true);
         output.setFont (juce::FontOptions (18.0f));
@@ -136,8 +137,12 @@ private:
     juce::File logFile() const
     {
         return juce::File::getSpecialLocation (juce::File::userHomeDirectory)
-            .getChildFile (choice.getSelectedId() == 1 ? ".cache/HZ-Drummer/app.log" : ".cache/HZ-Drummer/run.log");
+            .getChildFile (choice.getSelectedId() == 1 ? ".cache/HZ-Drummer/app.log"
+                           : choice.getSelectedId() == 3 ? ".cache/HZ-Drummer/import.log" : ".cache/HZ-Drummer/run.log");
     }
+public:
+    void showLog (int id) { choice.setSelectedId (id); }   // 1 app, 2 start, 3 import
+private:
     juce::ComboBox choice;
     juce::TextEditor output;
     juce::TextButton reload { "Aktualisieren" }, clear { "Log leeren" };

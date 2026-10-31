@@ -19,6 +19,11 @@ public:
         logFile.getParentDirectory().createDirectory();
         logger = std::make_unique<juce::FileLogger> (logFile, "HZ-Drummer v" HZ_VERSION " gestartet", 1024 * 1024);
         juce::Logger::setCurrentLogger (logger.get());
+        juce::SystemStats::setApplicationCrashHandler ([] (void*)
+        {
+            // best effort in a crashed process: the call stack into app.log, so a crash can be found later
+            juce::Logger::writeToLog ("ABSTURZ (HZ-Drummer v" HZ_VERSION "), Aufrufstapel:\n" + juce::SystemStats::getStackBacktrace());
+        });
         juce::LookAndFeel::setDefaultLookAndFeel (&look);
 
         // the window first shows a splash, then builds the main component (the library takes a second or two)

@@ -367,7 +367,8 @@ void MainComponent::showAudioSettings()
             AudioSettingsPanel selector;
             BadgeLine badgeLine;
             juce::Label info, version;
-            juce::TextButton trash { "Papierkorb" }, logs { "Log-Dateien" }, structure { "Ordnerstruktur" }, menuFolders { "Menü-Ordner"_u };
+            juce::TextButton trash { "Papierkorb" }, logs { "Log-Dateien" }, structure { "Ordnerstruktur" }, menuFolders { "Menü-Ordner"_u },
+                             quellen { "Quellen" };
             juce::Label badgeRuleLabel { {}, "Verteilung:" };
             juce::ComboBox badgeRule;
             juce::TextButton redistribute { "Neu verteilen" };
@@ -379,6 +380,8 @@ void MainComponent::showAudioSettings()
                 tooltips.setColour (juce::ToggleButton::tickColourId, theme::textMain);
                 addAndMakeVisible (selector);
                 addAndMakeVisible (trash); addAndMakeVisible (logs); addAndMakeVisible (structure); addAndMakeVisible (menuFolders);
+                addAndMakeVisible (quellen);
+                quellen.setTooltip ("Weitere Bausteine von ihren Originalquellen laden und umwandeln, nur für den eigenen Gebrauch"_u);
                 addAndMakeVisible (badgeLine);
                 addAndMakeVisible (badgeRuleLabel); addAndMakeVisible (badgeRule); addAndMakeVisible (redistribute);
                 badgeRuleLabel.setFont (juce::FontOptions (15.0f));
@@ -392,7 +395,7 @@ void MainComponent::showAudioSettings()
                 version.setFont (juce::FontOptions (14.0f));
                 version.setColour (juce::Label::textColourId, theme::textDim);
                 version.setText ("HZ-Drummer v" HZ_VERSION, juce::dontSendNotification);
-                setSize (560, ActiveGlow::height + AudioSettingsPanel::preferredHeight + 4 + 42 + 64 + 38 + 50 + 28 + 28);
+                setSize (640, ActiveGlow::height + AudioSettingsPanel::preferredHeight + 4 + 42 + 64 + 38 + 50 + 28 + 28);
             }
             void resized() override
             {
@@ -410,8 +413,9 @@ void MainComponent::showAudioSettings()
                 badgeLine.setBounds (r.removeFromBottom (64).reduced (12, 4));
                 selector.setBounds (r.withTrimmedTop (ActiveGlow::height).withHeight (AudioSettingsPanel::preferredHeight));
                 auto actions = juce::Rectangle<int> (0, selector.getBottom() + 4, getWidth(), 42).reduced (12, 4);
-                const int w = (actions.getWidth() - 3 * 8) / 4;   // four buttons across
-                menuFolders.setBounds (actions.removeFromRight (w)); actions.removeFromRight (8);   // right-aligned
+                const int w = (actions.getWidth() - 4 * 8) / 5;   // five buttons across
+                quellen.setBounds (actions.removeFromRight (w)); actions.removeFromRight (8);   // right-aligned
+                menuFolders.setBounds (actions.removeFromRight (w)); actions.removeFromRight (8);
                 structure.setBounds (actions.removeFromRight (w)); actions.removeFromRight (8);
                 logs.setBounds (actions.removeFromRight (w)); actions.removeFromRight (8);
                 trash.setBounds (actions.removeFromRight (w));
@@ -423,6 +427,7 @@ void MainComponent::showAudioSettings()
         panel->logs.onClick = [safe] { if (safe != nullptr) safe->showDataTools (1); };
         panel->structure.onClick = [safe] { if (safe != nullptr) safe->showDataTools (2); };
         panel->menuFolders.onClick = [safe] { if (safe != nullptr) safe->showDataTools (3); };
+        panel->quellen.onClick = [safe] { if (safe != nullptr) safe->showQuellen(); };
         panel->tooltips.setToggleState (tooltipsEnabled, juce::dontSendNotification);
         panel->tooltips.onClick = [safe, panel]
         {

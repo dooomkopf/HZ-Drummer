@@ -26,6 +26,20 @@ Das Programm ist ein Übungswerkzeug, kein Drum-Computer für Aufnahmen: Es soll
 - **Ordnerstruktur** und **Papierkorb** für eigene Patterns und Songs.
 - **Community-Bausteine**: kurze Loops von Carcass und Exhorder zum Mitspielen, siehe [community/](community/).
 
+## Voraussetzungen
+
+| Was | Wofür |
+|---|---|
+| Linux, x86_64 | getestet unter Ubuntu 22.04 |
+| C++-Compiler mit C++20, z. B. GCC 11 (Paket `build-essential`) oder Clang | Programm und Tests bauen |
+| CMake ab 3.22, optional Ninja | Build-System (JUCE verlangt 3.22) |
+| Git | Klonen, JUCE kommt als Submodul mit |
+| ALSA, JACK, FreeType, Fontconfig, X11 (Pakete im Schnellstart) | Audio und Oberfläche |
+| rund 140 MB für `build/`, rund 400 MB für das Drum-Kit | Platz |
+| Python 3 (bei Ubuntu dabei) | System › Quellen und die Import-Werkzeuge unter `tools/` |
+| optional Java und TuxGuitar 1.5.6 | Guitar-Pro-Dateien umwandeln, siehe [docs/SETUP.md](docs/SETUP.md) |
+| optional Internet | System › Quellen lädt von den Originalquellen |
+
 ## Schnellstart
 
 Die Schritte sind so geschrieben, dass sie ein Mensch oder ein KI-Assistent direkt ausführen kann. Getestet unter Ubuntu 22.04.
@@ -78,7 +92,33 @@ Danach liegt das fertige Kit unter `kits/aasimonster/`, das Programm findet es b
 | `tests/` | `engine_tests` (Timing, Taktarten, Parser, Player, Bearbeitung), `app_tests` (Dateiformate, Suche, Arranger-Modell) |
 | `docs/` | Bedienung, Konzept, Formate, Entscheidungen |
 
-Nutzerdaten liegen unter `~/.config/HZ-Drummer/`: eigene Patterns, Songs, Papierkorb, Einstellungen. Protokolle liegen unter `~/.cache/HZ-Drummer/`.
+## Dateien, Logik und Deinstallation
+
+Das Programm legt außerhalb seines Ordners nur diese Dateien an:
+
+| Ort | Inhalt |
+|---|---|
+| `~/.config/HZ-Drummer/` | Datenordner: `patterns/` (eigene Bausteine), `songs/` (Arrangements), `trash/` (Papierkorb), `ordner.json` (Ordnerstruktur), `abzeichen.json`, `ablage.json` und `arranger.json` (Arbeitsstand des Arrangers), `trainer.json` (Speicherplätze des Trainers) |
+| `~/.config/HZ-Drummer/HZ-Drummer.settings` | persönliche Einstellungen: Audio-Gerät, Tempo, Fensterlage, Favoriten, Trainer, Tooltips |
+| `~/.cache/HZ-Drummer/` | Protokolle `app.log` (auch Abstürze mit Aufrufstapel), `run.log` (Start), `import.log` (System › Quellen); `abzeichen/` (die letzten zehn Abzeichen-Verteilungen); `quellen/` (Downloads und Zwischenstände des Quellen-Imports) |
+| `~/.local/share/applications/hz-drummer.desktop` | Starter, nur wenn `tools/install-desktop.sh` lief |
+
+**Logik:**
+- **Erster Start:** Gibt es weder `patterns/` noch `songs/`, kopiert das Programm das Startpaket in den Datenordner: die Community-Sätze (Carcass, Exhorder, Groove MIDI, R.P. Bardet) mit ihren Ordnern und Arrangements sowie drei Beispiel-Arrangements (Thrash, Prog, Doom) aus Bibliothek-Bausteinen. Danach nie wieder; vorhandene Dateien werden nie überschrieben. Siehe [community/README.md](community/README.md) und [docs/QUELLEN.md](docs/QUELLEN.md).
+- **System › Quellen:** lädt Bausteine, die nicht mitgeliefert werden dürfen, von der Originalquelle, wandelt sie auf dem eigenen Rechner um und legt nur Neues in den Datenordner, die neuen Arrangements in einen Ordner je Band. Was schon da ist, ob selbst gemacht oder von einer älteren Installation, bleibt unverändert an seinem Platz. Was wegfällt oder vereinfacht wird, steht in `import.log` (System › Log-Dateien).
+- **Abgleich:** Ist der Datenordner ein Git-Repo mit Remote `origin`, gleicht `tools/run.sh` ihn vor dem Start und nach dem Ende ab (`tools/sync-daten.sh`). Ohne Git passiert nichts.
+- Die Bibliothek (`library/`) gehört zum Programm und wird nie in den Datenordner kopiert.
+
+**Deinstallieren** (vorher den Datenordner sichern, wenn eigene Bausteine darin stecken):
+
+```bash
+rm -f ~/.local/share/applications/hz-drummer.desktop   # Starter
+rm -rf ~/.cache/HZ-Drummer                             # Protokolle und Downloads
+rm -rf ~/.config/HZ-Drummer                            # Datenordner samt Einstellungen
+rm -rf ~/HZ-Drummer                                    # der Klon mit Build und Kit (Pfad anpassen)
+```
+
+Nur die persönlichen Einstellungen behalten: statt der dritten Zeile alles in `~/.config/HZ-Drummer/` außer `HZ-Drummer.settings` löschen. Beim nächsten Start ist das dann wieder ein erster Start mit Startpaket.
 
 ## Dokumentation
 

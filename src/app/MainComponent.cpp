@@ -20,6 +20,7 @@ MainComponent::MainComponent()
     opts.millisecondsBeforeSaving = 1000;
     appProperties.setStorageParameters (opts);
 
+    Library::installStartPackage();   // first start only: community sets, example arrangements, folder tree
     badges.load (Library::songFolder().getSiblingFile ("abzeichen.json"));
     BadgeRegistry::setGlobal (&badges);
     library.onReloaded = [this] (const std::vector<hz::Pattern>& all) { badges.ensure (all); refreshFolders(); };
@@ -180,6 +181,7 @@ MainComponent::~MainComponent()
     editorWindow = nullptr;
     mixerWindow = nullptr;
     trashWindow = nullptr;
+    quellenWindow = nullptr;   // stops a running import first
     logsWindow = nullptr;
     audioWindow = nullptr;
     saveSettings();

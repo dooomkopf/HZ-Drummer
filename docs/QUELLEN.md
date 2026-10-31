@@ -5,6 +5,11 @@ Projekt. Dazu kommen importierte Bausteine im Datenordner. Jeder Baustein nennt 
 selbst im Feld `origin.operators` (Quelle, Datei, Takte, Lizenz). Die Umwandler liegen unter
 [tools/import](../tools/import/README.md) und [tools/gpdrums](../tools/gpdrums).
 
+Mitgeliefert wird, was die Lizenz erlaubt: Groove MIDI (CC BY 4.0) und die Bardet-Fassung von Albert Phelipot
+(CC BY-SA) liegen als Sätze unter [community](../community/README.md) und kommen bei einem frischen Install
+beim ersten Start automatisch in den Datenordner, zusammen mit Carcass, Exhorder und drei Beispiel-Arrangements
+aus Bibliothek-Bausteinen (`startpaket/`). Alles, was „nur privat“ ist, bleibt im eigenen Datenordner.
+
 ## Importiert (Stand 31.10.2026)
 
 | Quelle | Herkunft | Lizenz | Bausteine | Umwandler |

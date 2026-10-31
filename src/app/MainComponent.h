@@ -264,7 +264,9 @@ private:
         bool keyPressed (const juce::KeyPress& k, juce::Component*) override { return onKey != nullptr && onKey (k); }
     } mixerKeys;
     std::unique_ptr<WorkshopWindow> editorWindow;
-    std::unique_ptr<juce::DialogWindow> mixerWindow, audioWindow, trashWindow, logsWindow, foldersWindow, menuFoldersWindow;
+    std::unique_ptr<juce::DialogWindow> mixerWindow, audioWindow, trashWindow, logsWindow, foldersWindow, menuFoldersWindow, quellenWindow;
+    void showQuellen();                                       // System › Quellen (MainComponentQuellen.cpp)
+    juce::String installFromSource (const juce::File& staging);   // a loaded source into the data folder
     juce::TextButton playButton { "Start" }, tapButton { "Tap" }, audioButton { "System" },
                      editButton { "Bearbeiten" }, mixerButton { "Mixer" }, searchButton { "Suchen" }, deleteEntryButton { "Löschen"_u },
                      renameEntryButton { "Umbenennen" }, countInButton,

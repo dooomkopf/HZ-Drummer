@@ -1,0 +1,2217 @@
+{
+ "formatVersion": 1,
+ "songs": {
+  "folders": [
+   {
+    "name": "Beispiele",
+    "folders": [],
+    "items": [
+     "song.beispiel-thrash",
+     "song.beispiel-prog",
+     "song.beispiel-doom"
+    ]
+   },
+   {
+    "name": "Groove MIDI",
+    "folders": [
+     {
+      "name": "Jazz",
+      "folders": [],
+      "items": [
+       "song.gmd-jazz-d1-s3-2",
+       "song.gmd-jazz-d1-s3-4",
+       "song.gmd-jazz-d1-s3-5"
+      ]
+     },
+     {
+      "name": "Rock",
+      "folders": [],
+      "items": [
+       "song.gmd-rock-d1-s1-202",
+       "song.gmd-rock-d1-s3-1",
+       "song.gmd-rock-d5-s1-16"
+      ]
+     },
+     {
+      "name": "Latin",
+      "folders": [],
+      "items": [
+       "song.gmd-latin-d5-s1-20",
+       "song.gmd-latin-d5-s1-8",
+       "song.gmd-latin-d5-s2-16"
+      ]
+     },
+     {
+      "name": "Funk",
+      "folders": [],
+      "items": [
+       "song.gmd-funk-d1-s1-239",
+       "song.gmd-funk-d5-s1-15",
+       "song.gmd-funk-d8-s1-22"
+      ]
+     },
+     {
+      "name": "Hip-Hop und Soul",
+      "folders": [],
+      "items": [
+       "song.gmd-hiphop-d7-s2-123",
+       "song.gmd-hiphop-d8-s1-15",
+       "song.gmd-soul-d7-s2-54"
+      ]
+     },
+     {
+      "name": "Afro und New Orleans",
+      "folders": [],
+      "items": [
+       "song.gmd-afrocuban-d1-s3-17",
+       "song.gmd-afrocuban-d5-s1-18",
+       "song.gmd-neworleans-d5-s2-6"
+      ]
+     },
+     {
+      "name": "Weitere",
+      "folders": [],
+      "items": [
+       "song.gmd-dance-d1-s3-6",
+       "song.gmd-middleeastern-d5-s1-19",
+       "song.gmd-reggae-d5-s2-4"
+      ]
+     }
+    ],
+    "items": []
+   }
+  ],
+  "items": []
+ },
+ "patterns": {
+  "folders": [
+   {
+    "name": "Groove MIDI",
+    "folders": [
+     {
+      "name": "Jazz",
+      "folders": [
+       {
+        "name": "Fast",
+        "folders": [],
+        "items": [
+         "user.gmd-jazz-d1-s1-78-t25",
+         "user.gmd-jazz-d1-s1-78-t41"
+        ]
+       },
+       {
+        "name": "Fusion",
+        "folders": [],
+        "items": [
+         "user.gmd-jazz-d7-s2-112-t1",
+         "user.gmd-jazz-d7-s2-112-t9",
+         "user.gmd-jazz-d7-s2-113-t1",
+         "user.gmd-jazz-d7-s2-113-t9",
+         "user.gmd-jazz-d7-s2-114-t1",
+         "user.gmd-jazz-d7-s2-115-t1",
+         "user.gmd-jazz-d7-s2-115-t9"
+        ]
+       },
+       {
+        "name": "Jazz allgemein",
+        "folders": [],
+        "items": [
+         "user.gmd-jazz-d1-s1-47-t33",
+         "user.gmd-jazz-d1-s1-47-t65",
+         "user.gmd-jazz-d1-s1-48-t9",
+         "user.gmd-jazz-d1-s1-48-t17",
+         "user.gmd-jazz-d1-s1-49-t25",
+         "user.gmd-jazz-d1-s1-49-t33",
+         "user.gmd-jazz-d1-s1-50-t41",
+         "user.gmd-jazz-d1-s1-50-t49",
+         "user.gmd-jazz-d1-s1-52-t25",
+         "user.gmd-jazz-d1-s1-52-t41",
+         "user.gmd-jazz-d1-s1-75-t9",
+         "user.gmd-jazz-d1-s1-75-t17",
+         "user.gmd-jazz-d1-s2-4-t9",
+         "user.gmd-jazz-d1-s2-4-t49",
+         "user.gmd-jazz-d1-s2-5-t89",
+         "user.gmd-jazz-d1-s2-5-t105",
+         "user.gmd-jazz-d3-s1-8-t1",
+         "user.gmd-jazz-d3-s1-8-t9",
+         "user.gmd-jazz-d3-s1-15-t1",
+         "user.gmd-jazz-d3-s1-15-t9",
+         "user.gmd-jazz-d3-s1-16-t1",
+         "user.gmd-jazz-d3-s1-16-t9",
+         "user.gmd-jazz-d3-s1-22-t1",
+         "user.gmd-jazz-d3-s1-22-t9",
+         "user.gmd-jazz-d4-s1-2-t9",
+         "user.gmd-jazz-d4-s1-2-t17",
+         "user.gmd-jazz-d7-s1-14-t9",
+         "user.gmd-jazz-d7-s1-14-t17",
+         "user.gmd-jazz-d7-s1-15-t1",
+         "user.gmd-jazz-d7-s1-15-t17"
+        ]
+       },
+       {
+        "name": "Jazz-Funk",
+        "folders": [],
+        "items": [
+         "user.gmd-jazz-d1-s1-4-t1",
+         "user.gmd-jazz-d1-s1-4-t17",
+         "user.gmd-jazz-d1-s1-5-t9",
+         "user.gmd-jazz-d1-s1-5-t41"
+        ]
+       },
+       {
+        "name": "Klezmer",
+        "folders": [],
+        "items": [
+         "user.gmd-jazz-d4-s1-3-t9",
+         "user.gmd-jazz-d4-s1-3-t17"
+        ]
+       },
+       {
+        "name": "Linear",
+        "folders": [],
+        "items": [
+         "user.gmd-jazz-d1-s3-4-t1",
+         "user.gmd-jazz-d1-s3-4-t9",
+         "user.gmd-jazz-d1-s3-4-t17",
+         "user.gmd-jazz-d1-s3-4-t25",
+         "user.gmd-jazz-d1-s3-4-t33",
+         "user.gmd-jazz-d1-s3-4-t41",
+         "user.gmd-jazz-d1-s3-4-t49",
+         "user.gmd-jazz-d1-s3-4-t57",
+         "user.gmd-jazz-d1-s3-4-t65",
+         "user.gmd-jazz-d1-s3-4-t73",
+         "user.gmd-jazz-d1-s3-4-t81",
+         "user.gmd-jazz-d1-s3-4-t89",
+         "user.gmd-jazz-d1-s3-4-t97",
+         "user.gmd-jazz-d1-s3-4-t105",
+         "user.gmd-jazz-d1-s3-4-t113",
+         "user.gmd-jazz-d1-s3-4-t121",
+         "user.gmd-jazz-d1-s3-4-t129",
+         "user.gmd-jazz-d1-s3-4-t137",
+         "user.gmd-jazz-d1-s3-4-t145",
+         "user.gmd-jazz-d1-s3-4-t153",
+         "user.gmd-jazz-d1-s3-4-t161",
+         "user.gmd-jazz-d1-s3-4-t169",
+         "user.gmd-jazz-d1-s3-4-t177",
+         "user.gmd-jazz-d1-s3-4-t185",
+         "user.gmd-jazz-d1-s3-4-t193",
+         "user.gmd-jazz-d1-s3-4-t201",
+         "user.gmd-jazz-d1-s3-5-t1",
+         "user.gmd-jazz-d1-s3-5-t9",
+         "user.gmd-jazz-d1-s3-5-t17",
+         "user.gmd-jazz-d1-s3-5-t25",
+         "user.gmd-jazz-d1-s3-5-t33",
+         "user.gmd-jazz-d1-s3-5-t41",
+         "user.gmd-jazz-d1-s3-5-t49",
+         "user.gmd-jazz-d1-s3-5-t57",
+         "user.gmd-jazz-d1-s3-5-t65",
+         "user.gmd-jazz-d1-s3-5-t73",
+         "user.gmd-jazz-d1-s3-5-t81",
+         "user.gmd-jazz-d1-s3-5-t89",
+         "user.gmd-jazz-d1-s3-5-t97",
+         "user.gmd-jazz-d1-s3-5-t105",
+         "user.gmd-jazz-d1-s3-5-t113",
+         "user.gmd-jazz-d1-s3-5-t121",
+         "user.gmd-jazz-d1-s3-5-t129"
+        ]
+       },
+       {
+        "name": "March",
+        "folders": [],
+        "items": [
+         "user.gmd-jazz-d1-s2-7-t49",
+         "user.gmd-jazz-d1-s2-7-t57",
+         "user.gmd-jazz-d1-s2-8-t81",
+         "user.gmd-jazz-d1-s2-8-t89",
+         "user.gmd-jazz-d1-s2-9-t33",
+         "user.gmd-jazz-d1-s2-9-t49"
+        ]
+       },
+       {
+        "name": "Medium-fast",
+        "folders": [],
+        "items": [
+         "user.gmd-jazz-d1-s1-77-t81",
+         "user.gmd-jazz-d1-s1-77-t105"
+        ]
+       },
+       {
+        "name": "Swing",
+        "folders": [],
+        "items": [
+         "user.gmd-jazz-d1-s3-2-t1",
+         "user.gmd-jazz-d1-s3-2-t9",
+         "user.gmd-jazz-d1-s3-2-t17",
+         "user.gmd-jazz-d1-s3-2-t25",
+         "user.gmd-jazz-d1-s3-2-t33",
+         "user.gmd-jazz-d1-s3-2-t41",
+         "user.gmd-jazz-d1-s3-2-t49",
+         "user.gmd-jazz-d1-s3-2-t57",
+         "user.gmd-jazz-d1-s3-2-t65",
+         "user.gmd-jazz-d1-s3-2-t73",
+         "user.gmd-jazz-d1-s3-2-t81",
+         "user.gmd-jazz-d1-s3-2-t89",
+         "user.gmd-jazz-d1-s3-2-t97",
+         "user.gmd-jazz-d1-s3-2-t105",
+         "user.gmd-jazz-d1-s3-2-t113",
+         "user.gmd-jazz-d1-s3-2-t121",
+         "user.gmd-jazz-d1-s3-2-t129",
+         "user.gmd-jazz-d1-s3-2-t137",
+         "user.gmd-jazz-d1-s3-2-t145",
+         "user.gmd-jazz-d1-s3-2-t153",
+         "user.gmd-jazz-d1-s3-2-t161",
+         "user.gmd-jazz-d1-s3-2-t169",
+         "user.gmd-jazz-d1-s3-2-t177",
+         "user.gmd-jazz-d1-s3-2-t185",
+         "user.gmd-jazz-d10-s1-1-t17",
+         "user.gmd-jazz-d10-s1-1-t73",
+         "user.gmd-jazz-d10-s1-2-t57",
+         "user.gmd-jazz-d10-s1-2-t65",
+         "user.gmd-jazz-d10-s1-3-t25",
+         "user.gmd-jazz-d10-s1-3-t33",
+         "user.gmd-jazz-d10-s1-4-t1",
+         "user.gmd-jazz-d10-s1-4-t9",
+         "user.gmd-jazz-d10-s1-5-t9",
+         "user.gmd-jazz-d10-s1-5-t17",
+         "user.gmd-jazz-d10-s1-6-t1",
+         "user.gmd-jazz-d10-s1-6-t9",
+         "user.gmd-jazz-d10-s1-7-t1",
+         "user.gmd-jazz-d10-s1-7-t9",
+         "user.gmd-jazz-d10-s1-8-t1",
+         "user.gmd-jazz-d10-s1-8-t9",
+         "user.gmd-jazz-d10-s1-9-t41",
+         "user.gmd-jazz-d10-s1-9-t49",
+         "user.gmd-jazz-d10-s1-10-t9",
+         "user.gmd-jazz-d10-s1-10-t25"
+        ]
+       }
+      ],
+      "items": []
+     },
+     {
+      "name": "Rock",
+      "folders": [
+       {
+        "name": "Folk",
+        "folders": [],
+        "items": [
+         "user.gmd-rock-d1-s3-10-t33",
+         "user.gmd-rock-d1-s3-10-t81"
+        ]
+       },
+       {
+        "name": "Halftime",
+        "folders": [],
+        "items": [
+         "user.gmd-rock-d1-s1-202-t1",
+         "user.gmd-rock-d1-s1-202-t9",
+         "user.gmd-rock-d1-s1-202-t17",
+         "user.gmd-rock-d1-s1-202-t25",
+         "user.gmd-rock-d1-s1-202-t33",
+         "user.gmd-rock-d1-s1-202-t41",
+         "user.gmd-rock-d1-s1-202-t49",
+         "user.gmd-rock-d1-s1-202-t57",
+         "user.gmd-rock-d1-s1-202-t65",
+         "user.gmd-rock-d1-s1-202-t73",
+         "user.gmd-rock-d1-s1-202-t81",
+         "user.gmd-rock-d1-s1-202-t89",
+         "user.gmd-rock-d1-s1-202-t97",
+         "user.gmd-rock-d1-s1-202-t105",
+         "user.gmd-rock-d1-s1-202-t113",
+         "user.gmd-rock-d1-s1-202-t121"
+        ]
+       },
+       {
+        "name": "Indie",
+        "folders": [],
+        "items": [
+         "user.gmd-rock-d7-s3-39-t9",
+         "user.gmd-rock-d7-s3-39-t17",
+         "user.gmd-rock-d7-s3-46-t1",
+         "user.gmd-rock-d7-s3-46-t9",
+         "user.gmd-rock-d8-s2-39-t49",
+         "user.gmd-rock-d8-s2-39-t65",
+         "user.gmd-rock-d8-s2-40-t25",
+         "user.gmd-rock-d8-s2-40-t33"
+        ]
+       },
+       {
+        "name": "Prog",
+        "folders": [],
+        "items": [
+         "user.gmd-rock-d1-s2-111-t17",
+         "user.gmd-rock-d1-s2-111-t25",
+         "user.gmd-rock-d1-s3-1-t1",
+         "user.gmd-rock-d1-s3-1-t9",
+         "user.gmd-rock-d1-s3-1-t17",
+         "user.gmd-rock-d1-s3-1-t25",
+         "user.gmd-rock-d1-s3-1-t33",
+         "user.gmd-rock-d1-s3-1-t41",
+         "user.gmd-rock-d1-s3-1-t49",
+         "user.gmd-rock-d1-s3-1-t57",
+         "user.gmd-rock-d1-s3-1-t65",
+         "user.gmd-rock-d1-s3-1-t73",
+         "user.gmd-rock-d1-s3-1-t81",
+         "user.gmd-rock-d1-s3-1-t89",
+         "user.gmd-rock-d1-s3-1-t97",
+         "user.gmd-rock-d1-s3-1-t105",
+         "user.gmd-rock-d1-s3-1-t113",
+         "user.gmd-rock-d1-s3-1-t121",
+         "user.gmd-rock-d1-s3-1-t129",
+         "user.gmd-rock-d1-s3-1-t137",
+         "user.gmd-rock-d1-s3-1-t145"
+        ]
+       },
+       {
+        "name": "Shuffle",
+        "folders": [],
+        "items": [
+         "user.gmd-rock-d1-s1-51-t81",
+         "user.gmd-rock-d2-s3-1-t25",
+         "user.gmd-rock-d2-s3-1-t33"
+        ]
+       },
+       {
+        "name": "langsam (unter 100 BPM)",
+        "folders": [],
+        "items": [
+         "user.gmd-rock-d1-s2-180-t25",
+         "user.gmd-rock-d1-s2-180-t33",
+         "user.gmd-rock-d6-s2-1-t1",
+         "user.gmd-rock-d6-s2-1-t17",
+         "user.gmd-rock-d6-s2-2-t33",
+         "user.gmd-rock-d6-s2-2-t41",
+         "user.gmd-rock-d6-s2-3-t25",
+         "user.gmd-rock-d6-s2-3-t57",
+         "user.gmd-rock-d6-s3-1-t9",
+         "user.gmd-rock-d6-s3-6-t17",
+         "user.gmd-rock-d7-s1-8-t1",
+         "user.gmd-rock-d7-s1-8-t33",
+         "user.gmd-rock-d7-s2-27-t9",
+         "user.gmd-rock-d7-s2-27-t17",
+         "user.gmd-rock-d7-s2-29-t1",
+         "user.gmd-rock-d7-s3-1-t9",
+         "user.gmd-rock-d7-s3-10-t1",
+         "user.gmd-rock-d7-s3-10-t17",
+         "user.gmd-rock-d7-s3-108-t17",
+         "user.gmd-rock-d7-s3-108-t33",
+         "user.gmd-rock-d7-s3-109-t1",
+         "user.gmd-rock-d7-s3-109-t9",
+         "user.gmd-rock-d7-s3-119-t1",
+         "user.gmd-rock-d7-s3-120-t1",
+         "user.gmd-rock-d7-s3-120-t17",
+         "user.gmd-rock-d7-s3-129-t1",
+         "user.gmd-rock-d7-s3-129-t9",
+         "user.gmd-rock-d8-s2-22-t41",
+         "user.gmd-rock-d8-s2-23-t41",
+         "user.gmd-rock-d8-s2-23-t49",
+         "user.gmd-rock-d9-s1-28-t1"
+        ]
+       },
+       {
+        "name": "mittel (100-140 BPM)",
+        "folders": [],
+        "items": [
+         "user.gmd-rock-d1-s2-6-t81",
+         "user.gmd-rock-d1-s2-6-t89",
+         "user.gmd-rock-d1-s2-181-t33",
+         "user.gmd-rock-d1-s2-181-t41",
+         "user.gmd-rock-d1-s3-9-t41",
+         "user.gmd-rock-d1-s3-9-t97",
+         "user.gmd-rock-d1-s3-13-t73",
+         "user.gmd-rock-d1-s3-13-t97",
+         "user.gmd-rock-d1-s3-13-t105",
+         "user.gmd-rock-d1-s3-13-t121",
+         "user.gmd-rock-d1-s3-13-t129",
+         "user.gmd-rock-d1-s3-13-t137",
+         "user.gmd-rock-d2-s1-1-t553",
+         "user.gmd-rock-d2-s1-1-t561",
+         "user.gmd-rock-d2-s1-1-t569",
+         "user.gmd-rock-d2-s1-1-t601",
+         "user.gmd-rock-d2-s1-1-t609",
+         "user.gmd-rock-d2-s1-1-t617",
+         "user.gmd-rock-d2-s1-2-t1",
+         "user.gmd-rock-d2-s1-2-t9",
+         "user.gmd-rock-d2-s1-2-t185",
+         "user.gmd-rock-d2-s1-2-t265",
+         "user.gmd-rock-d2-s1-2-t281",
+         "user.gmd-rock-d2-s1-2-t313",
+         "user.gmd-rock-d5-s1-16-t1",
+         "user.gmd-rock-d5-s1-16-t9",
+         "user.gmd-rock-d5-s1-16-t17",
+         "user.gmd-rock-d5-s1-16-t25",
+         "user.gmd-rock-d5-s1-16-t33",
+         "user.gmd-rock-d5-s1-16-t41",
+         "user.gmd-rock-d5-s1-16-t49",
+         "user.gmd-rock-d5-s1-16-t57",
+         "user.gmd-rock-d5-s1-16-t65",
+         "user.gmd-rock-d5-s1-16-t73",
+         "user.gmd-rock-d5-s1-16-t81",
+         "user.gmd-rock-d5-s1-16-t89",
+         "user.gmd-rock-d5-s1-16-t97",
+         "user.gmd-rock-d5-s1-16-t105",
+         "user.gmd-rock-d5-s1-16-t113",
+         "user.gmd-rock-d5-s1-16-t121",
+         "user.gmd-rock-d5-s1-16-t129",
+         "user.gmd-rock-d5-s1-16-t137",
+         "user.gmd-rock-d5-s1-16-t145",
+         "user.gmd-rock-d5-s1-16-t153",
+         "user.gmd-rock-d5-s1-16-t161",
+         "user.gmd-rock-d5-s2-12-t25",
+         "user.gmd-rock-d5-s2-12-t41",
+         "user.gmd-rock-d7-s2-15-t33",
+         "user.gmd-rock-d7-s2-24-t1",
+         "user.gmd-rock-d7-s2-26-t1",
+         "user.gmd-rock-d7-s2-46-t9",
+         "user.gmd-rock-d8-s1-28-t57",
+         "user.gmd-rock-d8-s2-33-t33",
+         "user.gmd-rock-d8-s2-33-t41",
+         "user.gmd-rock-d8-s2-37-t1",
+         "user.gmd-rock-d8-s2-37-t41",
+         "user.gmd-rock-d8-s2-38-t25",
+         "user.gmd-rock-d8-s2-38-t41",
+         "user.gmd-rock-d9-s1-13-t1"
+        ]
+       }
+      ],
+      "items": []
+     },
+     {
+      "name": "Latin",
+      "folders": [
+       {
+        "name": "Allgemein",
+        "folders": [],
+        "items": [
+         "user.gmd-latin-d8-s1-12-t1",
+         "user.gmd-latin-d8-s1-12-t9",
+         "user.gmd-latin-d8-s1-13-t9",
+         "user.gmd-latin-d8-s1-13-t41",
+         "user.gmd-latin-d8-s1-27-t57",
+         "user.gmd-latin-d8-s1-27-t89",
+         "user.gmd-latin-d8-s2-7-t65",
+         "user.gmd-latin-d8-s2-7-t81",
+         "user.gmd-latin-d8-s2-8-t17",
+         "user.gmd-latin-d8-s2-8-t57",
+         "user.gmd-latin-d8-s2-24-t25",
+         "user.gmd-latin-d8-s2-24-t49",
+         "user.gmd-latin-d8-s2-25-t25",
+         "user.gmd-latin-d8-s2-25-t33",
+         "user.gmd-latin-d8-s2-36-t17",
+         "user.gmd-latin-d8-s2-36-t33"
+        ]
+       },
+       {
+        "name": "Ando",
+        "folders": [],
+        "items": [
+         "user.gmd-latin-d5-s2-16-t1",
+         "user.gmd-latin-d5-s2-16-t9",
+         "user.gmd-latin-d5-s2-16-t17",
+         "user.gmd-latin-d5-s2-16-t25",
+         "user.gmd-latin-d5-s2-16-t33",
+         "user.gmd-latin-d5-s2-16-t41",
+         "user.gmd-latin-d5-s2-16-t49",
+         "user.gmd-latin-d5-s2-16-t57",
+         "user.gmd-latin-d5-s2-16-t65",
+         "user.gmd-latin-d5-s2-16-t73",
+         "user.gmd-latin-d5-s2-16-t81",
+         "user.gmd-latin-d5-s2-16-t89",
+         "user.gmd-latin-d5-s2-16-t97",
+         "user.gmd-latin-d5-s2-16-t105"
+        ]
+       },
+       {
+        "name": "Baião",
+        "folders": [],
+        "items": [
+         "user.gmd-latin-d1-s1-145-t1",
+         "user.gmd-latin-d1-s1-146-t41",
+         "user.gmd-latin-d1-s1-146-t49",
+         "user.gmd-latin-d5-s1-20-t1",
+         "user.gmd-latin-d5-s1-20-t9",
+         "user.gmd-latin-d5-s1-20-t17",
+         "user.gmd-latin-d5-s1-20-t25",
+         "user.gmd-latin-d5-s1-20-t33",
+         "user.gmd-latin-d5-s1-20-t41",
+         "user.gmd-latin-d5-s1-20-t49",
+         "user.gmd-latin-d5-s1-20-t57",
+         "user.gmd-latin-d5-s1-20-t65",
+         "user.gmd-latin-d5-s1-20-t73",
+         "user.gmd-latin-d5-s1-20-t81",
+         "user.gmd-latin-d5-s1-20-t89",
+         "user.gmd-latin-d5-s1-20-t97"
+        ]
+       },
+       {
+        "name": "Bomba",
+        "folders": [],
+        "items": [
+         "user.gmd-latin-d1-s3-12-t33",
+         "user.gmd-latin-d1-s3-12-t41"
+        ]
+       },
+       {
+        "name": "Bounce",
+        "folders": [],
+        "items": [
+         "user.gmd-latin-d8-s2-28-t41",
+         "user.gmd-latin-d8-s2-28-t49",
+         "user.gmd-latin-d8-s2-29-t33",
+         "user.gmd-latin-d8-s2-29-t41"
+        ]
+       },
+       {
+        "name": "Brasilianisch",
+        "folders": [],
+        "items": [
+         "user.gmd-latin-d4-s1-4-t1",
+         "user.gmd-latin-d4-s1-5-t1",
+         "user.gmd-latin-d4-s1-5-t17",
+         "user.gmd-latin-d5-s2-2-t9",
+         "user.gmd-latin-d5-s2-2-t17",
+         "user.gmd-latin-d5-s2-3-t9",
+         "user.gmd-latin-d5-s2-3-t17"
+        ]
+       },
+       {
+        "name": "Brazilian bossa",
+        "folders": [],
+        "items": [
+         "user.gmd-latin-d5-s1-1-t49",
+         "user.gmd-latin-d5-s1-1-t57",
+         "user.gmd-latin-d5-s1-1-t137",
+         "user.gmd-latin-d5-s1-1-t145",
+         "user.gmd-latin-d5-s1-1-t185",
+         "user.gmd-latin-d5-s1-1-t193",
+         "user.gmd-latin-d5-s1-2-t161",
+         "user.gmd-latin-d5-s1-2-t169",
+         "user.gmd-latin-d5-s1-2-t193",
+         "user.gmd-latin-d5-s1-2-t209",
+         "user.gmd-latin-d5-s1-2-t225",
+         "user.gmd-latin-d5-s1-2-t249"
+        ]
+       },
+       {
+        "name": "Brazilian frevo",
+        "folders": [],
+        "items": [
+         "user.gmd-latin-d5-s2-22-t25",
+         "user.gmd-latin-d5-s2-22-t65"
+        ]
+       },
+       {
+        "name": "Brazilian maracatu",
+        "folders": [],
+        "items": [
+         "user.gmd-latin-d5-s1-6-t9",
+         "user.gmd-latin-d5-s1-6-t17",
+         "user.gmd-latin-d5-s1-7-t17",
+         "user.gmd-latin-d5-s1-7-t33"
+        ]
+       },
+       {
+        "name": "Chacarera",
+        "folders": [],
+        "items": [
+         "user.gmd-latin-d1-s2-1-t57",
+         "user.gmd-latin-d1-s2-1-t65",
+         "user.gmd-latin-d1-s2-2-t33",
+         "user.gmd-latin-d1-s2-2-t41",
+         "user.gmd-latin-d1-s2-3-t33",
+         "user.gmd-latin-d1-s2-3-t41"
+        ]
+       },
+       {
+        "name": "Dominican merengue",
+        "folders": [],
+        "items": [
+         "user.gmd-latin-d5-s1-9-t113",
+         "user.gmd-latin-d5-s1-9-t121",
+         "user.gmd-latin-d5-s1-9-t129",
+         "user.gmd-latin-d5-s1-9-t137",
+         "user.gmd-latin-d5-s1-9-t145",
+         "user.gmd-latin-d5-s1-9-t153"
+        ]
+       },
+       {
+        "name": "Ijexá",
+        "folders": [],
+        "items": [
+         "user.gmd-latin-d5-s2-19-t17",
+         "user.gmd-latin-d5-s2-19-t33",
+         "user.gmd-latin-d5-s2-20-t1",
+         "user.gmd-latin-d5-s2-21-t1",
+         "user.gmd-latin-d5-s2-21-t9"
+        ]
+       },
+       {
+        "name": "Merengue",
+        "folders": [],
+        "items": [
+         "user.gmd-latin-d4-s1-9-t1"
+        ]
+       },
+       {
+        "name": "Reggaeton",
+        "folders": [],
+        "items": [
+         "user.gmd-latin-d1-s1-79-t17",
+         "user.gmd-latin-d1-s1-79-t25"
+        ]
+       },
+       {
+        "name": "Samba",
+        "folders": [],
+        "items": [
+         "user.gmd-latin-d1-s1-28-t25",
+         "user.gmd-latin-d1-s1-28-t33",
+         "user.gmd-latin-d1-s1-38-t1",
+         "user.gmd-latin-d1-s1-38-t17",
+         "user.gmd-latin-d5-s1-3-t49",
+         "user.gmd-latin-d5-s1-3-t57",
+         "user.gmd-latin-d5-s1-4-t9",
+         "user.gmd-latin-d5-s1-4-t17",
+         "user.gmd-latin-d5-s1-5-t1",
+         "user.gmd-latin-d5-s1-5-t9",
+         "user.gmd-latin-d5-s2-17-t9",
+         "user.gmd-latin-d5-s2-17-t41",
+         "user.gmd-latin-d5-s2-18-t1",
+         "user.gmd-latin-d5-s2-18-t9"
+        ]
+       },
+       {
+        "name": "Samba-Reggae",
+        "folders": [],
+        "items": [
+         "user.gmd-latin-d5-s1-10-t1",
+         "user.gmd-latin-d5-s1-10-t9",
+         "user.gmd-latin-d5-s1-11-t41",
+         "user.gmd-latin-d5-s1-11-t49",
+         "user.gmd-latin-d5-s1-12-t25",
+         "user.gmd-latin-d5-s1-12-t65"
+        ]
+       },
+       {
+        "name": "Songo",
+        "folders": [],
+        "items": [
+         "user.gmd-latin-d5-s1-14-t49",
+         "user.gmd-latin-d5-s1-14-t73",
+         "user.gmd-latin-d5-s1-14-t81",
+         "user.gmd-latin-d5-s1-14-t89",
+         "user.gmd-latin-d5-s1-14-t105",
+         "user.gmd-latin-d5-s1-14-t121",
+         "user.gmd-latin-d5-s2-23-t9",
+         "user.gmd-latin-d5-s2-23-t33",
+         "user.gmd-latin-d5-s2-24-t49",
+         "user.gmd-latin-d5-s2-24-t57",
+         "user.gmd-latin-d8-s2-34-t33",
+         "user.gmd-latin-d8-s2-34-t49",
+         "user.gmd-latin-d8-s2-35-t9",
+         "user.gmd-latin-d8-s2-35-t65"
+        ]
+       },
+       {
+        "name": "Venezuelan joropo",
+        "folders": [],
+        "items": [
+         "user.gmd-latin-d5-s2-15-t25",
+         "user.gmd-latin-d5-s2-15-t33"
+        ]
+       },
+       {
+        "name": "Venezuelan merengue",
+        "folders": [],
+        "items": [
+         "user.gmd-latin-d5-s1-8-t1",
+         "user.gmd-latin-d5-s1-8-t9",
+         "user.gmd-latin-d5-s1-8-t17",
+         "user.gmd-latin-d5-s1-8-t25",
+         "user.gmd-latin-d5-s1-8-t33",
+         "user.gmd-latin-d5-s1-8-t41",
+         "user.gmd-latin-d5-s1-8-t49",
+         "user.gmd-latin-d5-s1-8-t57",
+         "user.gmd-latin-d5-s1-8-t65",
+         "user.gmd-latin-d5-s1-8-t73",
+         "user.gmd-latin-d5-s1-8-t81",
+         "user.gmd-latin-d5-s1-8-t89",
+         "user.gmd-latin-d5-s1-8-t97",
+         "user.gmd-latin-d5-s1-8-t105",
+         "user.gmd-latin-d5-s1-8-t113",
+         "user.gmd-latin-d5-s1-8-t121",
+         "user.gmd-latin-d5-s1-8-t129",
+         "user.gmd-latin-d5-s1-8-t137",
+         "user.gmd-latin-d5-s1-8-t145",
+         "user.gmd-latin-d5-s1-8-t153",
+         "user.gmd-latin-d5-s1-8-t161",
+         "user.gmd-latin-d5-s1-8-t169",
+         "user.gmd-latin-d5-s1-8-t177"
+        ]
+       },
+       {
+        "name": "Venezuelan sangueo",
+        "folders": [],
+        "items": [
+         "user.gmd-latin-d5-s2-1-t1",
+         "user.gmd-latin-d5-s2-1-t25"
+        ]
+       }
+      ],
+      "items": []
+     },
+     {
+      "name": "Funk",
+      "folders": [
+       {
+        "name": "Allgemein",
+        "folders": [],
+        "items": [
+         "user.gmd-funk-d1-s1-1-t9",
+         "user.gmd-funk-d1-s1-1-t17",
+         "user.gmd-funk-d1-s1-2-t9",
+         "user.gmd-funk-d1-s1-2-t17",
+         "user.gmd-funk-d1-s1-3-t9",
+         "user.gmd-funk-d1-s1-3-t17",
+         "user.gmd-funk-d1-s1-102-t73",
+         "user.gmd-funk-d1-s1-102-t81",
+         "user.gmd-funk-d1-s3-15-t49",
+         "user.gmd-funk-d1-s3-15-t57",
+         "user.gmd-funk-d1-s3-16-t17",
+         "user.gmd-funk-d1-s3-16-t33",
+         "user.gmd-funk-d5-s1-15-t1",
+         "user.gmd-funk-d5-s1-15-t9",
+         "user.gmd-funk-d5-s1-15-t17",
+         "user.gmd-funk-d5-s1-15-t25",
+         "user.gmd-funk-d5-s1-15-t33",
+         "user.gmd-funk-d5-s1-15-t41",
+         "user.gmd-funk-d5-s1-15-t49",
+         "user.gmd-funk-d5-s1-15-t57",
+         "user.gmd-funk-d5-s1-15-t65",
+         "user.gmd-funk-d5-s1-15-t73",
+         "user.gmd-funk-d5-s1-15-t81",
+         "user.gmd-funk-d5-s1-15-t89",
+         "user.gmd-funk-d5-s1-15-t97",
+         "user.gmd-funk-d5-s1-15-t105",
+         "user.gmd-funk-d5-s1-15-t113",
+         "user.gmd-funk-d5-s1-15-t121",
+         "user.gmd-funk-d7-s1-12-t1",
+         "user.gmd-funk-d7-s1-12-t9",
+         "user.gmd-funk-d7-s1-13-t25",
+         "user.gmd-funk-d7-s1-13-t33",
+         "user.gmd-funk-d7-s2-72-t1",
+         "user.gmd-funk-d7-s2-72-t17",
+         "user.gmd-funk-d7-s2-79-t1",
+         "user.gmd-funk-d7-s3-47-t1",
+         "user.gmd-funk-d7-s3-47-t17",
+         "user.gmd-funk-d7-s3-49-t1",
+         "user.gmd-funk-d7-s3-49-t9",
+         "user.gmd-funk-d7-s3-64-t1",
+         "user.gmd-funk-d7-s3-64-t9",
+         "user.gmd-funk-d7-s3-65-t17",
+         "user.gmd-funk-d7-s3-65-t25",
+         "user.gmd-funk-d8-s1-1-t41",
+         "user.gmd-funk-d8-s1-1-t89",
+         "user.gmd-funk-d8-s1-2-t25",
+         "user.gmd-funk-d8-s1-2-t33",
+         "user.gmd-funk-d8-s1-6-t41",
+         "user.gmd-funk-d8-s1-6-t49",
+         "user.gmd-funk-d8-s1-7-t1",
+         "user.gmd-funk-d8-s1-7-t9",
+         "user.gmd-funk-d8-s1-8-t33",
+         "user.gmd-funk-d8-s1-8-t49",
+         "user.gmd-funk-d8-s1-9-t1",
+         "user.gmd-funk-d8-s1-9-t25",
+         "user.gmd-funk-d8-s1-18-t25",
+         "user.gmd-funk-d8-s1-18-t49",
+         "user.gmd-funk-d8-s1-19-t65",
+         "user.gmd-funk-d8-s1-19-t73",
+         "user.gmd-funk-d8-s1-22-t1",
+         "user.gmd-funk-d8-s1-22-t9",
+         "user.gmd-funk-d8-s1-22-t17",
+         "user.gmd-funk-d8-s1-22-t25",
+         "user.gmd-funk-d8-s1-22-t33",
+         "user.gmd-funk-d8-s1-22-t41",
+         "user.gmd-funk-d8-s1-22-t49",
+         "user.gmd-funk-d8-s1-22-t57",
+         "user.gmd-funk-d8-s1-22-t65",
+         "user.gmd-funk-d8-s1-22-t73",
+         "user.gmd-funk-d8-s1-22-t81",
+         "user.gmd-funk-d8-s1-22-t89",
+         "user.gmd-funk-d8-s1-22-t97",
+         "user.gmd-funk-d8-s1-22-t105",
+         "user.gmd-funk-d8-s1-22-t113",
+         "user.gmd-funk-d8-s2-1-t17",
+         "user.gmd-funk-d8-s2-1-t33",
+         "user.gmd-funk-d8-s2-2-t41",
+         "user.gmd-funk-d8-s2-2-t81",
+         "user.gmd-funk-d8-s2-2-t89",
+         "user.gmd-funk-d8-s2-2-t105",
+         "user.gmd-funk-d8-s2-2-t121",
+         "user.gmd-funk-d8-s2-2-t129",
+         "user.gmd-funk-d8-s2-5-t25",
+         "user.gmd-funk-d8-s2-5-t41",
+         "user.gmd-funk-d8-s2-6-t25",
+         "user.gmd-funk-d8-s2-6-t41",
+         "user.gmd-funk-d8-s2-11-t57",
+         "user.gmd-funk-d8-s2-11-t65",
+         "user.gmd-funk-d8-s2-12-t49",
+         "user.gmd-funk-d8-s2-12-t57",
+         "user.gmd-funk-d8-s2-15-t25",
+         "user.gmd-funk-d8-s2-15-t33",
+         "user.gmd-funk-d8-s2-16-t33",
+         "user.gmd-funk-d8-s2-16-t41"
+        ]
+       },
+       {
+        "name": "Fast",
+        "folders": [],
+        "items": [
+         "user.gmd-funk-d1-s1-126-t33",
+         "user.gmd-funk-d1-s1-126-t57"
+        ]
+       },
+       {
+        "name": "Groove1",
+        "folders": [],
+        "items": [
+         "user.gmd-funk-d1-es-1-t1",
+         "user.gmd-funk-d1-es-1-t9",
+         "user.gmd-funk-d5-es-1-t9",
+         "user.gmd-funk-d7-es-1-t1",
+         "user.gmd-funk-d7-es-1-t9",
+         "user.gmd-funk-d8-es-1-t1",
+         "user.gmd-funk-d8-es-1-t9"
+        ]
+       },
+       {
+        "name": "Groove2",
+        "folders": [],
+        "items": [
+         "user.gmd-funk-d1-es-2-t1",
+         "user.gmd-funk-d1-es-2-t9",
+         "user.gmd-funk-d5-es-2-t1",
+         "user.gmd-funk-d5-es-2-t9",
+         "user.gmd-funk-d7-es-2-t1",
+         "user.gmd-funk-d8-es-2-t1"
+        ]
+       },
+       {
+        "name": "Groove5",
+        "folders": [],
+        "items": [
+         "user.gmd-funk-d1-es-5-t1",
+         "user.gmd-funk-d1-es-5-t9",
+         "user.gmd-funk-d5-es-5-t1",
+         "user.gmd-funk-d5-es-5-t9",
+         "user.gmd-funk-d7-es-5-t1",
+         "user.gmd-funk-d7-es-5-t9",
+         "user.gmd-funk-d8-es-5-t1"
+        ]
+       },
+       {
+        "name": "Latin",
+        "folders": [],
+        "items": [
+         "user.gmd-funk-d8-s1-24-t41",
+         "user.gmd-funk-d8-s1-24-t65",
+         "user.gmd-funk-d8-s1-25-t25",
+         "user.gmd-funk-d8-s1-25-t41"
+        ]
+       },
+       {
+        "name": "Purdie-Shuffle",
+        "folders": [],
+        "items": [
+         "user.gmd-funk-d1-s1-239-t1",
+         "user.gmd-funk-d1-s1-239-t9",
+         "user.gmd-funk-d1-s1-239-t17",
+         "user.gmd-funk-d1-s1-239-t25",
+         "user.gmd-funk-d1-s1-239-t33",
+         "user.gmd-funk-d1-s1-239-t41",
+         "user.gmd-funk-d1-s1-239-t49",
+         "user.gmd-funk-d1-s1-239-t57",
+         "user.gmd-funk-d1-s1-239-t65",
+         "user.gmd-funk-d1-s1-239-t73",
+         "user.gmd-funk-d1-s1-239-t81",
+         "user.gmd-funk-d1-s1-239-t89",
+         "user.gmd-funk-d1-s1-239-t97"
+        ]
+       },
+       {
+        "name": "Rock",
+        "folders": [],
+        "items": [
+         "user.gmd-funk-d1-s2-90-t9",
+         "user.gmd-funk-d1-s2-90-t17"
+        ]
+       }
+      ],
+      "items": []
+     },
+     {
+      "name": "Hip-Hop und Soul",
+      "folders": [
+       {
+        "name": "Hip-Hop",
+        "folders": [],
+        "items": [
+         "user.gmd-hiphop-d3-s2-25-t1",
+         "user.gmd-hiphop-d3-s2-26-t1",
+         "user.gmd-hiphop-d3-s2-26-t9",
+         "user.gmd-hiphop-d3-s2-40-t1",
+         "user.gmd-hiphop-d7-s1-16-t1",
+         "user.gmd-hiphop-d7-s1-16-t9",
+         "user.gmd-hiphop-d7-s1-17-t9",
+         "user.gmd-hiphop-d7-s1-17-t17",
+         "user.gmd-hiphop-d7-s1-18-t1",
+         "user.gmd-hiphop-d7-s1-22-t1",
+         "user.gmd-hiphop-d7-s1-38-t1",
+         "user.gmd-hiphop-d7-s1-39-t1",
+         "user.gmd-hiphop-d7-s2-87-t25",
+         "user.gmd-hiphop-d7-s2-87-t33",
+         "user.gmd-hiphop-d7-s2-93-t1",
+         "user.gmd-hiphop-d7-s2-123-t1",
+         "user.gmd-hiphop-d7-s2-123-t9",
+         "user.gmd-hiphop-d7-s2-123-t17",
+         "user.gmd-hiphop-d7-s2-123-t25",
+         "user.gmd-hiphop-d7-s2-123-t33",
+         "user.gmd-hiphop-d7-s2-123-t41",
+         "user.gmd-hiphop-d7-s2-123-t49",
+         "user.gmd-hiphop-d7-s2-123-t57",
+         "user.gmd-hiphop-d7-s3-24-t9",
+         "user.gmd-hiphop-d7-s3-24-t17",
+         "user.gmd-hiphop-d7-s3-38-t1",
+         "user.gmd-hiphop-d7-s3-38-t9",
+         "user.gmd-hiphop-d7-s3-92-t17",
+         "user.gmd-hiphop-d7-s3-92-t25",
+         "user.gmd-hiphop-d7-s3-106-t1",
+         "user.gmd-hiphop-d7-s3-106-t9",
+         "user.gmd-hiphop-d8-s1-3-t1",
+         "user.gmd-hiphop-d8-s1-4-t9",
+         "user.gmd-hiphop-d8-s1-4-t25",
+         "user.gmd-hiphop-d8-s1-5-t1",
+         "user.gmd-hiphop-d8-s1-5-t17",
+         "user.gmd-hiphop-d8-s1-14-t9",
+         "user.gmd-hiphop-d8-s1-14-t41",
+         "user.gmd-hiphop-d8-s1-15-t1",
+         "user.gmd-hiphop-d8-s1-15-t9",
+         "user.gmd-hiphop-d8-s1-15-t17",
+         "user.gmd-hiphop-d8-s1-15-t25",
+         "user.gmd-hiphop-d8-s1-15-t33",
+         "user.gmd-hiphop-d8-s1-15-t41",
+         "user.gmd-hiphop-d8-s1-15-t49",
+         "user.gmd-hiphop-d8-s1-15-t57",
+         "user.gmd-hiphop-d8-s1-15-t65",
+         "user.gmd-hiphop-d8-s1-23-t33",
+         "user.gmd-hiphop-d8-s1-23-t41",
+         "user.gmd-hiphop-d8-s2-9-t17",
+         "user.gmd-hiphop-d8-s2-9-t41",
+         "user.gmd-hiphop-d8-s2-10-t33",
+         "user.gmd-hiphop-d8-s2-10-t41"
+        ]
+       },
+       {
+        "name": "Hip-Hop Groove6",
+        "folders": [],
+        "items": [
+         "user.gmd-hiphop-d1-es-6-t1",
+         "user.gmd-hiphop-d5-es-6-t1",
+         "user.gmd-hiphop-d5-es-6-t9",
+         "user.gmd-hiphop-d7-es-6-t1",
+         "user.gmd-hiphop-d8-es-6-t1"
+        ]
+       },
+       {
+        "name": "Soul",
+        "folders": [],
+        "items": [
+         "user.gmd-soul-d5-s2-11-t17",
+         "user.gmd-soul-d5-s2-11-t33",
+         "user.gmd-soul-d7-s3-130-t1",
+         "user.gmd-soul-d7-s3-131-t1",
+         "user.gmd-soul-d7-s3-132-t9",
+         "user.gmd-soul-d7-s3-132-t41",
+         "user.gmd-soul-d7-s3-133-t9",
+         "user.gmd-soul-d7-s3-133-t17",
+         "user.gmd-soul-d7-s3-150-t9",
+         "user.gmd-soul-d7-s3-150-t17",
+         "user.gmd-soul-d7-s3-151-t17",
+         "user.gmd-soul-d7-s3-151-t25",
+         "user.gmd-soul-d7-s3-159-t1"
+        ]
+       },
+       {
+        "name": "Soul Groove10",
+        "folders": [],
+        "items": [
+         "user.gmd-soul-d1-es-10-t1",
+         "user.gmd-soul-d1-es-10-t9",
+         "user.gmd-soul-d5-es-10-t1",
+         "user.gmd-soul-d5-es-10-t9",
+         "user.gmd-soul-d7-es-10-t1",
+         "user.gmd-soul-d7-es-10-t9",
+         "user.gmd-soul-d8-es-10-t1",
+         "user.gmd-soul-d8-es-10-t9"
+        ]
+       },
+       {
+        "name": "Soul Groove3",
+        "folders": [],
+        "items": [
+         "user.gmd-soul-d1-es-3-t1",
+         "user.gmd-soul-d1-es-3-t9",
+         "user.gmd-soul-d5-es-3-t1",
+         "user.gmd-soul-d7-es-3-t9",
+         "user.gmd-soul-d8-es-3-t1"
+        ]
+       },
+       {
+        "name": "Soul Groove4",
+        "folders": [],
+        "items": [
+         "user.gmd-soul-d1-es-4-t9",
+         "user.gmd-soul-d5-es-4-t1",
+         "user.gmd-soul-d5-es-4-t9",
+         "user.gmd-soul-d7-es-4-t9",
+         "user.gmd-soul-d8-es-4-t1"
+        ]
+       },
+       {
+        "name": "Soul Groove9",
+        "folders": [],
+        "items": [
+         "user.gmd-soul-d1-es-9-t1",
+         "user.gmd-soul-d5-es-9-t9",
+         "user.gmd-soul-d7-es-9-t9",
+         "user.gmd-soul-d8-es-9-t1"
+        ]
+       },
+       {
+        "name": "Soul Motown",
+        "folders": [],
+        "items": [
+         "user.gmd-soul-d7-s2-54-t1",
+         "user.gmd-soul-d7-s2-54-t9",
+         "user.gmd-soul-d7-s2-54-t17",
+         "user.gmd-soul-d7-s2-54-t25",
+         "user.gmd-soul-d7-s2-54-t33",
+         "user.gmd-soul-d7-s2-54-t41",
+         "user.gmd-soul-d7-s2-54-t49",
+         "user.gmd-soul-d7-s2-54-t57",
+         "user.gmd-soul-d7-s2-63-t1",
+         "user.gmd-soul-d7-s2-63-t9",
+         "user.gmd-soul-d7-s2-106-t1",
+         "user.gmd-soul-d7-s2-106-t9",
+         "user.gmd-soul-d7-s2-108-t1",
+         "user.gmd-soul-d7-s2-108-t9"
+        ]
+       }
+      ],
+      "items": []
+     },
+     {
+      "name": "Afro und New Orleans",
+      "folders": [
+       {
+        "name": "Afro-Cuban",
+        "folders": [],
+        "items": [
+         "user.gmd-afrocuban-d1-s1-176-t49",
+         "user.gmd-afrocuban-d1-s1-176-t89",
+         "user.gmd-afrocuban-d1-s1-183-t9",
+         "user.gmd-afrocuban-d1-s1-183-t49",
+         "user.gmd-afrocuban-d5-s1-18-t1",
+         "user.gmd-afrocuban-d5-s1-18-t9",
+         "user.gmd-afrocuban-d5-s1-18-t17",
+         "user.gmd-afrocuban-d5-s1-18-t25",
+         "user.gmd-afrocuban-d5-s1-18-t33",
+         "user.gmd-afrocuban-d5-s1-18-t41",
+         "user.gmd-afrocuban-d5-s1-18-t49",
+         "user.gmd-afrocuban-d5-s1-18-t57",
+         "user.gmd-afrocuban-d5-s1-18-t65",
+         "user.gmd-afrocuban-d5-s1-18-t73",
+         "user.gmd-afrocuban-d5-s1-18-t81",
+         "user.gmd-afrocuban-d5-s1-18-t89",
+         "user.gmd-afrocuban-d5-s1-18-t97",
+         "user.gmd-afrocuban-d5-s1-18-t105",
+         "user.gmd-afrocuban-d5-s1-18-t113"
+        ]
+       },
+       {
+        "name": "Afro-Cuban Bembe",
+        "folders": [],
+        "items": [
+         "user.gmd-afrocuban-d1-s2-112-t65",
+         "user.gmd-afrocuban-d1-s2-112-t73"
+        ]
+       },
+       {
+        "name": "Afro-Cuban Calypso",
+        "folders": [],
+        "items": [
+         "user.gmd-afrocuban-d1-s3-17-t1",
+         "user.gmd-afrocuban-d1-s3-17-t9",
+         "user.gmd-afrocuban-d1-s3-17-t17",
+         "user.gmd-afrocuban-d1-s3-17-t25",
+         "user.gmd-afrocuban-d1-s3-17-t33",
+         "user.gmd-afrocuban-d1-s3-17-t41",
+         "user.gmd-afrocuban-d1-s3-17-t49",
+         "user.gmd-afrocuban-d1-s3-17-t57",
+         "user.gmd-afrocuban-d1-s3-17-t65",
+         "user.gmd-afrocuban-d1-s3-17-t73",
+         "user.gmd-afrocuban-d1-s3-17-t81",
+         "user.gmd-afrocuban-d1-s3-17-t89",
+         "user.gmd-afrocuban-d1-s3-17-t97",
+         "user.gmd-afrocuban-d1-s3-17-t105",
+         "user.gmd-afrocuban-d5-s1-13-t81",
+         "user.gmd-afrocuban-d5-s1-13-t121",
+         "user.gmd-afrocuban-d5-s1-13-t129",
+         "user.gmd-afrocuban-d5-s1-13-t137",
+         "user.gmd-afrocuban-d5-s1-13-t153",
+         "user.gmd-afrocuban-d5-s1-13-t169"
+        ]
+       },
+       {
+        "name": "Afro-Cuban Rhumba",
+        "folders": [],
+        "items": [
+         "user.gmd-afrocuban-d1-s2-161-t81",
+         "user.gmd-afrocuban-d1-s2-161-t89"
+        ]
+       },
+       {
+        "name": "Afrobeat",
+        "folders": [],
+        "items": [
+         "user.gmd-afrobeat-d1-s3-11-t57",
+         "user.gmd-afrobeat-d1-s3-11-t81",
+         "user.gmd-afrobeat-d8-s1-16-t17",
+         "user.gmd-afrobeat-d8-s1-16-t57",
+         "user.gmd-afrobeat-d8-s1-17-t33",
+         "user.gmd-afrobeat-d8-s1-17-t49",
+         "user.gmd-afrobeat-d8-s1-26-t49",
+         "user.gmd-afrobeat-d8-s1-26-t65",
+         "user.gmd-afrobeat-d8-s2-3-t49",
+         "user.gmd-afrobeat-d8-s2-3-t73",
+         "user.gmd-afrobeat-d8-s2-4-t25",
+         "user.gmd-afrobeat-d8-s2-4-t49",
+         "user.gmd-afrobeat-d8-s2-13-t49",
+         "user.gmd-afrobeat-d8-s2-13-t57",
+         "user.gmd-afrobeat-d8-s2-14-t25",
+         "user.gmd-afrobeat-d8-s2-14-t33",
+         "user.gmd-afrobeat-d8-s2-17-t17",
+         "user.gmd-afrobeat-d8-s2-17-t65",
+         "user.gmd-afrobeat-d8-s2-18-t25",
+         "user.gmd-afrobeat-d8-s2-18-t33",
+         "user.gmd-afrobeat-d8-s2-21-t41",
+         "user.gmd-afrobeat-d8-s2-21-t65",
+         "user.gmd-afrobeat-d8-s2-30-t41",
+         "user.gmd-afrobeat-d8-s2-30-t49",
+         "user.gmd-afrobeat-d8-s2-31-t1",
+         "user.gmd-afrobeat-d8-s2-31-t33"
+        ]
+       },
+       {
+        "name": "New Orleans Cha-Cha",
+        "folders": [],
+        "items": [
+         "user.gmd-neworleans-d5-s2-8-t9",
+         "user.gmd-neworleans-d5-s2-8-t49"
+        ]
+       },
+       {
+        "name": "New Orleans Funk",
+        "folders": [],
+        "items": [
+         "user.gmd-neworleans-d1-s1-82-t33",
+         "user.gmd-neworleans-d1-s1-82-t41",
+         "user.gmd-neworleans-d5-s2-10-t65",
+         "user.gmd-neworleans-d5-s2-10-t73",
+         "user.gmd-neworleans-d7-s3-67-t33",
+         "user.gmd-neworleans-d7-s3-67-t41",
+         "user.gmd-neworleans-d7-s3-91-t1",
+         "user.gmd-neworleans-d8-s1-10-t17",
+         "user.gmd-neworleans-d8-s1-10-t33",
+         "user.gmd-neworleans-d8-s1-11-t25",
+         "user.gmd-neworleans-d8-s1-11-t33",
+         "user.gmd-neworleans-d8-s2-19-t9",
+         "user.gmd-neworleans-d8-s2-19-t41",
+         "user.gmd-neworleans-d8-s2-20-t9",
+         "user.gmd-neworleans-d8-s2-20-t17"
+        ]
+       },
+       {
+        "name": "New Orleans Second Line",
+        "folders": [],
+        "items": [
+         "user.gmd-neworleans-d1-s1-100-t9",
+         "user.gmd-neworleans-d1-s1-100-t41",
+         "user.gmd-neworleans-d5-s2-6-t1",
+         "user.gmd-neworleans-d5-s2-6-t9",
+         "user.gmd-neworleans-d5-s2-6-t17",
+         "user.gmd-neworleans-d5-s2-6-t25",
+         "user.gmd-neworleans-d5-s2-6-t33",
+         "user.gmd-neworleans-d5-s2-6-t41",
+         "user.gmd-neworleans-d5-s2-6-t49",
+         "user.gmd-neworleans-d5-s2-6-t57",
+         "user.gmd-neworleans-d5-s2-6-t65",
+         "user.gmd-neworleans-d5-s2-6-t73",
+         "user.gmd-neworleans-d5-s2-6-t81",
+         "user.gmd-neworleans-d5-s2-6-t89",
+         "user.gmd-neworleans-d5-s2-6-t97",
+         "user.gmd-neworleans-d5-s2-6-t105",
+         "user.gmd-neworleans-d5-s2-7-t1",
+         "user.gmd-neworleans-d5-s2-7-t9"
+        ]
+       },
+       {
+        "name": "New Orleans Shuffle",
+        "folders": [],
+        "items": [
+         "user.gmd-neworleans-d5-s2-9-t17",
+         "user.gmd-neworleans-d5-s2-9-t25"
+        ]
+       }
+      ],
+      "items": []
+     },
+     {
+      "name": "Weitere",
+      "folders": [
+       {
+        "name": "Blues Shuffle",
+        "folders": [],
+        "items": [
+         "user.gmd-blues-d5-s1-17-t49",
+         "user.gmd-blues-d5-s1-17-t65"
+        ]
+       },
+       {
+        "name": "Country",
+        "folders": [],
+        "items": [
+         "user.gmd-country-d1-s2-10-t33",
+         "user.gmd-country-d1-s2-10-t57",
+         "user.gmd-country-d7-s2-80-t9",
+         "user.gmd-country-d7-s2-80-t25"
+        ]
+       },
+       {
+        "name": "Dance Breakbeat",
+        "folders": [],
+        "items": [
+         "user.gmd-dance-d1-s1-80-t49",
+         "user.gmd-dance-d1-s1-80-t65",
+         "user.gmd-dance-d1-s1-81-t1",
+         "user.gmd-dance-d1-s1-81-t33"
+        ]
+       },
+       {
+        "name": "Dance Disco",
+        "folders": [],
+        "items": [
+         "user.gmd-dance-d1-s1-101-t9",
+         "user.gmd-dance-d1-s1-101-t33",
+         "user.gmd-dance-d1-s3-6-t1",
+         "user.gmd-dance-d1-s3-6-t9",
+         "user.gmd-dance-d1-s3-6-t17",
+         "user.gmd-dance-d1-s3-6-t25",
+         "user.gmd-dance-d1-s3-6-t33",
+         "user.gmd-dance-d1-s3-6-t41",
+         "user.gmd-dance-d1-s3-6-t49",
+         "user.gmd-dance-d1-s3-6-t57",
+         "user.gmd-dance-d1-s3-6-t65",
+         "user.gmd-dance-d1-s3-6-t73",
+         "user.gmd-dance-d1-s3-6-t81",
+         "user.gmd-dance-d1-s3-6-t89",
+         "user.gmd-dance-d1-s3-6-t97",
+         "user.gmd-dance-d1-s3-6-t105",
+         "user.gmd-dance-d1-s3-7-t9",
+         "user.gmd-dance-d1-s3-7-t17",
+         "user.gmd-dance-d8-s2-26-t73",
+         "user.gmd-dance-d8-s2-26-t105",
+         "user.gmd-dance-d8-s2-27-t41",
+         "user.gmd-dance-d8-s2-27-t57"
+        ]
+       },
+       {
+        "name": "Gospel",
+        "folders": [],
+        "items": [
+         "user.gmd-gospel-d1-s2-142-t49",
+         "user.gmd-gospel-d1-s2-142-t57"
+        ]
+       },
+       {
+        "name": "Highlife",
+        "folders": [],
+        "items": [
+         "user.gmd-highlife-d8-s2-41-t25",
+         "user.gmd-highlife-d8-s2-41-t41",
+         "user.gmd-highlife-d8-s2-42-t33",
+         "user.gmd-highlife-d8-s2-42-t41"
+        ]
+       },
+       {
+        "name": "Middle Eastern",
+        "folders": [],
+        "items": [
+         "user.gmd-middleeastern-d5-s1-19-t1",
+         "user.gmd-middleeastern-d5-s1-19-t9",
+         "user.gmd-middleeastern-d5-s1-19-t17",
+         "user.gmd-middleeastern-d5-s1-19-t25",
+         "user.gmd-middleeastern-d5-s1-19-t33",
+         "user.gmd-middleeastern-d5-s1-19-t41",
+         "user.gmd-middleeastern-d5-s1-19-t49",
+         "user.gmd-middleeastern-d5-s1-19-t57",
+         "user.gmd-middleeastern-d5-s1-19-t65",
+         "user.gmd-middleeastern-d5-s1-19-t73",
+         "user.gmd-middleeastern-d5-s1-19-t81",
+         "user.gmd-middleeastern-d5-s1-19-t89",
+         "user.gmd-middleeastern-d5-s1-19-t97",
+         "user.gmd-middleeastern-d5-s1-19-t105",
+         "user.gmd-middleeastern-d5-s1-19-t113"
+        ]
+       },
+       {
+        "name": "Pop",
+        "folders": [],
+        "items": [
+         "user.gmd-pop-d7-s2-96-t9",
+         "user.gmd-pop-d7-s2-96-t17",
+         "user.gmd-pop-d7-s2-97-t1",
+         "user.gmd-pop-d7-s2-97-t9",
+         "user.gmd-pop-d7-s2-100-t1",
+         "user.gmd-pop-d7-s2-100-t9",
+         "user.gmd-pop-d7-s2-101-t9",
+         "user.gmd-pop-d7-s2-101-t17",
+         "user.gmd-pop-d7-s2-103-t9",
+         "user.gmd-pop-d7-s2-103-t17",
+         "user.gmd-pop-d7-s2-104-t1",
+         "user.gmd-pop-d7-s2-104-t9",
+         "user.gmd-pop-d7-s2-105-t1"
+        ]
+       },
+       {
+        "name": "Pop Groove7",
+        "folders": [],
+        "items": [
+         "user.gmd-pop-d1-es-7-t1",
+         "user.gmd-pop-d1-es-7-t9",
+         "user.gmd-pop-d5-es-7-t1",
+         "user.gmd-pop-d5-es-7-t9",
+         "user.gmd-pop-d7-es-7-t1",
+         "user.gmd-pop-d7-es-7-t9",
+         "user.gmd-pop-d8-es-7-t1",
+         "user.gmd-pop-d8-es-7-t9"
+        ]
+       },
+       {
+        "name": "Pop Soft",
+        "folders": [],
+        "items": [
+         "user.gmd-pop-d7-s3-11-t25",
+         "user.gmd-pop-d7-s3-11-t33",
+         "user.gmd-pop-d7-s3-22-t1",
+         "user.gmd-pop-d7-s3-22-t9",
+         "user.gmd-pop-d7-s3-23-t1"
+        ]
+       },
+       {
+        "name": "Punk",
+        "folders": [],
+        "items": [
+         "user.gmd-punk-d1-s2-32-t41",
+         "user.gmd-punk-d1-s2-32-t57",
+         "user.gmd-punk-d1-s2-35-t9",
+         "user.gmd-punk-d1-s2-35-t17",
+         "user.gmd-punk-d1-s2-62-t33",
+         "user.gmd-punk-d1-s2-62-t49"
+        ]
+       },
+       {
+        "name": "Reggae",
+        "folders": [],
+        "items": [
+         "user.gmd-reggae-d1-s1-184-t17",
+         "user.gmd-reggae-d1-s1-184-t25",
+         "user.gmd-reggae-d5-s2-4-t1",
+         "user.gmd-reggae-d5-s2-4-t9",
+         "user.gmd-reggae-d5-s2-4-t17",
+         "user.gmd-reggae-d5-s2-4-t25",
+         "user.gmd-reggae-d5-s2-4-t33",
+         "user.gmd-reggae-d5-s2-4-t41",
+         "user.gmd-reggae-d5-s2-4-t49",
+         "user.gmd-reggae-d5-s2-4-t57",
+         "user.gmd-reggae-d5-s2-4-t65",
+         "user.gmd-reggae-d5-s2-4-t73",
+         "user.gmd-reggae-d5-s2-4-t81",
+         "user.gmd-reggae-d5-s2-4-t89",
+         "user.gmd-reggae-d5-s2-4-t97",
+         "user.gmd-reggae-d5-s2-4-t105",
+         "user.gmd-reggae-d5-s2-4-t113",
+         "user.gmd-reggae-d5-s2-5-t1",
+         "user.gmd-reggae-d5-s2-5-t73"
+        ]
+       },
+       {
+        "name": "Reggae Slow",
+        "folders": [],
+        "items": [
+         "user.gmd-reggae-d1-s1-201-t9",
+         "user.gmd-reggae-d1-s1-201-t17"
+        ]
+       }
+      ],
+      "items": []
+     }
+    ],
+    "items": []
+   },
+   {
+    "name": "R.P. Bardet",
+    "folders": [
+     {
+      "name": "Rock, Pop",
+      "folders": [
+       {
+        "name": "Rock",
+        "folders": [
+         {
+          "name": "4 Takte",
+          "folders": [],
+          "items": [
+           "user.bardet-rock-4t-01",
+           "user.bardet-rock-4t-02",
+           "user.bardet-rock-4t-03",
+           "user.bardet-rock-4t-04",
+           "user.bardet-rock-4t-05",
+           "user.bardet-rock-4t-06",
+           "user.bardet-rock-4t-07",
+           "user.bardet-rock-4t-08",
+           "user.bardet-rock-4t-09",
+           "user.bardet-rock-4t-10",
+           "user.bardet-rock-4t-11",
+           "user.bardet-rock-4t-12",
+           "user.bardet-rock-4t-13",
+           "user.bardet-rock-4t-14",
+           "user.bardet-rock-4t-15"
+          ]
+         }
+        ],
+        "items": [
+         "user.bardet-rock-01",
+         "user.bardet-rock-02",
+         "user.bardet-rock-03",
+         "user.bardet-rock-04",
+         "user.bardet-rock-05",
+         "user.bardet-rock-06",
+         "user.bardet-rock-07",
+         "user.bardet-rock-08",
+         "user.bardet-rock-09",
+         "user.bardet-rock-10",
+         "user.bardet-rock-11",
+         "user.bardet-rock-12",
+         "user.bardet-rock-13",
+         "user.bardet-rock-14",
+         "user.bardet-rock-15",
+         "user.bardet-rock-16",
+         "user.bardet-rock-17",
+         "user.bardet-rock-18",
+         "user.bardet-rock-19",
+         "user.bardet-rock-20",
+         "user.bardet-rock-21",
+         "user.bardet-rock-22",
+         "user.bardet-rock-23",
+         "user.bardet-rock-24",
+         "user.bardet-rock-25",
+         "user.bardet-rock-26",
+         "user.bardet-rock-27"
+        ]
+       },
+       {
+        "name": "Pop",
+        "folders": [
+         {
+          "name": "4 Takte",
+          "folders": [],
+          "items": [
+           "user.bardet-pop-4t-01",
+           "user.bardet-pop-4t-02",
+           "user.bardet-pop-4t-03",
+           "user.bardet-pop-4t-04",
+           "user.bardet-pop-4t-05",
+           "user.bardet-pop-4t-06",
+           "user.bardet-pop-4t-07",
+           "user.bardet-pop-4t-08",
+           "user.bardet-pop-4t-09",
+           "user.bardet-pop-4t-10",
+           "user.bardet-pop-4t-11",
+           "user.bardet-pop-4t-12"
+          ]
+         }
+        ],
+        "items": [
+         "user.bardet-pop-01",
+         "user.bardet-pop-02",
+         "user.bardet-pop-03",
+         "user.bardet-pop-04",
+         "user.bardet-pop-05",
+         "user.bardet-pop-06",
+         "user.bardet-pop-07",
+         "user.bardet-pop-08",
+         "user.bardet-pop-09",
+         "user.bardet-pop-10",
+         "user.bardet-pop-11",
+         "user.bardet-pop-12",
+         "user.bardet-pop-13",
+         "user.bardet-pop-14",
+         "user.bardet-pop-15",
+         "user.bardet-pop-17",
+         "user.bardet-pop-18"
+        ]
+       },
+       {
+        "name": "Slow",
+        "folders": [
+         {
+          "name": "4 Takte",
+          "folders": [],
+          "items": [
+           "user.bardet-slow-4t-01",
+           "user.bardet-slow-4t-02",
+           "user.bardet-slow-4t-03",
+           "user.bardet-slow-4t-04",
+           "user.bardet-slow-4t-05",
+           "user.bardet-slow-4t-06",
+           "user.bardet-slow-4t-07",
+           "user.bardet-slow-4t-08",
+           "user.bardet-slow-4t-09",
+           "user.bardet-slow-4t-10",
+           "user.bardet-slow-4t-11",
+           "user.bardet-slow-4t-12"
+          ]
+         }
+        ],
+        "items": [
+         "user.bardet-slow-01",
+         "user.bardet-slow-02",
+         "user.bardet-slow-03",
+         "user.bardet-slow-04",
+         "user.bardet-slow-05",
+         "user.bardet-slow-06",
+         "user.bardet-slow-07",
+         "user.bardet-slow-08",
+         "user.bardet-slow-09",
+         "user.bardet-slow-10",
+         "user.bardet-slow-11",
+         "user.bardet-slow-12",
+         "user.bardet-slow-13",
+         "user.bardet-slow-14",
+         "user.bardet-slow-15",
+         "user.bardet-slow-16",
+         "user.bardet-slow-17",
+         "user.bardet-slow-18"
+        ]
+       },
+       {
+        "name": "Boogie",
+        "folders": [
+         {
+          "name": "4 Takte",
+          "folders": [],
+          "items": [
+           "user.bardet-boogie-4t-01",
+           "user.bardet-boogie-4t-02",
+           "user.bardet-boogie-4t-03"
+          ]
+         }
+        ],
+        "items": [
+         "user.bardet-boogie-01",
+         "user.bardet-boogie-02",
+         "user.bardet-boogie-03",
+         "user.bardet-boogie-04",
+         "user.bardet-boogie-05",
+         "user.bardet-boogie-06"
+        ]
+       },
+       {
+        "name": "Twist",
+        "folders": [
+         {
+          "name": "4 Takte",
+          "folders": [],
+          "items": [
+           "user.bardet-twist-4t-01",
+           "user.bardet-twist-4t-02",
+           "user.bardet-twist-4t-03"
+          ]
+         }
+        ],
+        "items": [
+         "user.bardet-twist-01",
+         "user.bardet-twist-02",
+         "user.bardet-twist-03",
+         "user.bardet-twist-04",
+         "user.bardet-twist-05",
+         "user.bardet-twist-06"
+        ]
+       },
+       {
+        "name": "Ending",
+        "folders": [],
+        "items": [
+         "user.bardet-ending-01",
+         "user.bardet-ending-02",
+         "user.bardet-ending-03"
+        ]
+       }
+      ],
+      "items": []
+     },
+     {
+      "name": "Funk, Disco, R&B",
+      "folders": [
+       {
+        "name": "Funk",
+        "folders": [
+         {
+          "name": "4 Takte",
+          "folders": [],
+          "items": [
+           "user.bardet-funk-4t-01",
+           "user.bardet-funk-4t-02",
+           "user.bardet-funk-4t-03",
+           "user.bardet-funk-4t-04",
+           "user.bardet-funk-4t-05",
+           "user.bardet-funk-4t-06",
+           "user.bardet-funk-4t-07",
+           "user.bardet-funk-4t-08",
+           "user.bardet-funk-4t-09",
+           "user.bardet-funk-4t-10",
+           "user.bardet-funk-4t-11",
+           "user.bardet-funk-4t-12",
+           "user.bardet-funk-4t-13",
+           "user.bardet-funk-4t-14",
+           "user.bardet-funk-4t-15"
+          ]
+         }
+        ],
+        "items": [
+         "user.bardet-funk-01",
+         "user.bardet-funk-02",
+         "user.bardet-funk-03",
+         "user.bardet-funk-04",
+         "user.bardet-funk-05",
+         "user.bardet-funk-06",
+         "user.bardet-funk-07",
+         "user.bardet-funk-08",
+         "user.bardet-funk-09",
+         "user.bardet-funk-10",
+         "user.bardet-funk-11",
+         "user.bardet-funk-12",
+         "user.bardet-funk-13",
+         "user.bardet-funk-14",
+         "user.bardet-funk-15",
+         "user.bardet-funk-16",
+         "user.bardet-funk-17",
+         "user.bardet-funk-18",
+         "user.bardet-funk-19",
+         "user.bardet-funk-20",
+         "user.bardet-funk-21",
+         "user.bardet-funk-22",
+         "user.bardet-funk-23",
+         "user.bardet-funk-24",
+         "user.bardet-funk-25",
+         "user.bardet-funk-26",
+         "user.bardet-funk-27",
+         "user.bardet-funk-28",
+         "user.bardet-funk-29",
+         "user.bardet-funk-30"
+        ]
+       },
+       {
+        "name": "Disco",
+        "folders": [
+         {
+          "name": "4 Takte",
+          "folders": [],
+          "items": [
+           "user.bardet-disco-4t-01",
+           "user.bardet-disco-4t-02",
+           "user.bardet-disco-4t-03",
+           "user.bardet-disco-4t-04",
+           "user.bardet-disco-4t-05",
+           "user.bardet-disco-4t-06",
+           "user.bardet-disco-4t-07",
+           "user.bardet-disco-4t-08",
+           "user.bardet-disco-4t-09",
+           "user.bardet-disco-4t-10",
+           "user.bardet-disco-4t-11",
+           "user.bardet-disco-4t-12"
+          ]
+         }
+        ],
+        "items": [
+         "user.bardet-disco-01",
+         "user.bardet-disco-02",
+         "user.bardet-disco-03",
+         "user.bardet-disco-04",
+         "user.bardet-disco-05",
+         "user.bardet-disco-06",
+         "user.bardet-disco-07",
+         "user.bardet-disco-08",
+         "user.bardet-disco-09",
+         "user.bardet-disco-10",
+         "user.bardet-disco-11",
+         "user.bardet-disco-12",
+         "user.bardet-disco-13",
+         "user.bardet-disco-14",
+         "user.bardet-disco-15",
+         "user.bardet-disco-16",
+         "user.bardet-disco-17",
+         "user.bardet-disco-18",
+         "user.bardet-disco-19",
+         "user.bardet-disco-20",
+         "user.bardet-disco-21"
+        ]
+       },
+       {
+        "name": "R&B",
+        "folders": [
+         {
+          "name": "4 Takte",
+          "folders": [],
+          "items": [
+           "user.bardet-r-b-4t-01",
+           "user.bardet-r-b-4t-02",
+           "user.bardet-r-b-4t-03",
+           "user.bardet-r-b-4t-04",
+           "user.bardet-r-b-4t-05",
+           "user.bardet-r-b-4t-06",
+           "user.bardet-r-b-4t-07",
+           "user.bardet-r-b-4t-08",
+           "user.bardet-r-b-4t-09",
+           "user.bardet-r-b-4t-10",
+           "user.bardet-r-b-4t-11",
+           "user.bardet-r-b-4t-12"
+          ]
+         }
+        ],
+        "items": [
+         "user.bardet-r-b-01",
+         "user.bardet-r-b-02",
+         "user.bardet-r-b-03",
+         "user.bardet-r-b-04",
+         "user.bardet-r-b-05",
+         "user.bardet-r-b-06",
+         "user.bardet-r-b-07",
+         "user.bardet-r-b-08",
+         "user.bardet-r-b-09",
+         "user.bardet-r-b-10",
+         "user.bardet-r-b-11",
+         "user.bardet-r-b-12",
+         "user.bardet-r-b-13",
+         "user.bardet-r-b-14",
+         "user.bardet-r-b-15",
+         "user.bardet-r-b-16",
+         "user.bardet-r-b-17",
+         "user.bardet-r-b-18"
+        ]
+       }
+      ],
+      "items": []
+     },
+     {
+      "name": "Jazz, Swing, Blues",
+      "folders": [
+       {
+        "name": "Jazz",
+        "folders": [
+         {
+          "name": "4 Takte",
+          "folders": [],
+          "items": [
+           "user.bardet-jazz-4t-01",
+           "user.bardet-jazz-4t-02",
+           "user.bardet-jazz-4t-03",
+           "user.bardet-jazz-4t-04",
+           "user.bardet-jazz-4t-05",
+           "user.bardet-jazz-4t-06"
+          ]
+         }
+        ],
+        "items": [
+         "user.bardet-jazz-01",
+         "user.bardet-jazz-02",
+         "user.bardet-jazz-03",
+         "user.bardet-jazz-04",
+         "user.bardet-jazz-05",
+         "user.bardet-jazz-06",
+         "user.bardet-jazz-07",
+         "user.bardet-jazz-08",
+         "user.bardet-jazz-09"
+        ]
+       },
+       {
+        "name": "Swing",
+        "folders": [
+         {
+          "name": "4 Takte",
+          "folders": [],
+          "items": [
+           "user.bardet-swing-4t-01",
+           "user.bardet-swing-4t-02",
+           "user.bardet-swing-4t-03",
+           "user.bardet-swing-4t-04",
+           "user.bardet-swing-4t-05",
+           "user.bardet-swing-4t-06"
+          ]
+         }
+        ],
+        "items": [
+         "user.bardet-swing-01",
+         "user.bardet-swing-02",
+         "user.bardet-swing-03",
+         "user.bardet-swing-04",
+         "user.bardet-swing-05",
+         "user.bardet-swing-06",
+         "user.bardet-swing-07",
+         "user.bardet-swing-08",
+         "user.bardet-swing-09"
+        ]
+       },
+       {
+        "name": "Shuffle",
+        "folders": [
+         {
+          "name": "4 Takte",
+          "folders": [],
+          "items": [
+           "user.bardet-shuffle-4t-01",
+           "user.bardet-shuffle-4t-02",
+           "user.bardet-shuffle-4t-03",
+           "user.bardet-shuffle-4t-04",
+           "user.bardet-shuffle-4t-05",
+           "user.bardet-shuffle-4t-06"
+          ]
+         }
+        ],
+        "items": [
+         "user.bardet-shuffle-01",
+         "user.bardet-shuffle-02",
+         "user.bardet-shuffle-03",
+         "user.bardet-shuffle-04",
+         "user.bardet-shuffle-05",
+         "user.bardet-shuffle-06",
+         "user.bardet-shuffle-07",
+         "user.bardet-shuffle-08",
+         "user.bardet-shuffle-09"
+        ]
+       },
+       {
+        "name": "Blues",
+        "folders": [
+         {
+          "name": "4 Takte",
+          "folders": [],
+          "items": [
+           "user.bardet-blues-4t-01",
+           "user.bardet-blues-4t-02",
+           "user.bardet-blues-4t-03",
+           "user.bardet-blues-4t-04",
+           "user.bardet-blues-4t-05",
+           "user.bardet-blues-4t-06"
+          ]
+         }
+        ],
+        "items": [
+         "user.bardet-blues-01",
+         "user.bardet-blues-02",
+         "user.bardet-blues-03",
+         "user.bardet-blues-04",
+         "user.bardet-blues-05",
+         "user.bardet-blues-06",
+         "user.bardet-blues-07",
+         "user.bardet-blues-08",
+         "user.bardet-blues-09"
+        ]
+       }
+      ],
+      "items": []
+     },
+     {
+      "name": "Latin",
+      "folders": [
+       {
+        "name": "AfroCub",
+        "folders": [
+         {
+          "name": "4 Takte",
+          "folders": [],
+          "items": [
+           "user.bardet-afrocub-4t-01",
+           "user.bardet-afrocub-4t-02",
+           "user.bardet-afrocub-4t-03",
+           "user.bardet-afrocub-4t-04",
+           "user.bardet-afrocub-4t-05",
+           "user.bardet-afrocub-4t-06",
+           "user.bardet-afrocub-4t-07",
+           "user.bardet-afrocub-4t-08",
+           "user.bardet-afrocub-4t-09"
+          ]
+         }
+        ],
+        "items": [
+         "user.bardet-afrocub-01",
+         "user.bardet-afrocub-02",
+         "user.bardet-afrocub-03",
+         "user.bardet-afrocub-04",
+         "user.bardet-afrocub-05",
+         "user.bardet-afrocub-06",
+         "user.bardet-afrocub-07",
+         "user.bardet-afrocub-08",
+         "user.bardet-afrocub-09",
+         "user.bardet-afrocub-10",
+         "user.bardet-afrocub-11",
+         "user.bardet-afrocub-12",
+         "user.bardet-afrocub-13",
+         "user.bardet-afrocub-14",
+         "user.bardet-afrocub-15"
+        ]
+       },
+       {
+        "name": "Bossa",
+        "folders": [
+         {
+          "name": "4 Takte",
+          "folders": [],
+          "items": [
+           "user.bardet-bossa-4t-01",
+           "user.bardet-bossa-4t-02",
+           "user.bardet-bossa-4t-03",
+           "user.bardet-bossa-4t-04",
+           "user.bardet-bossa-4t-05",
+           "user.bardet-bossa-4t-06"
+          ]
+         }
+        ],
+        "items": [
+         "user.bardet-bossa-01",
+         "user.bardet-bossa-02",
+         "user.bardet-bossa-03",
+         "user.bardet-bossa-04",
+         "user.bardet-bossa-05",
+         "user.bardet-bossa-06",
+         "user.bardet-bossa-07",
+         "user.bardet-bossa-08",
+         "user.bardet-bossa-09"
+        ]
+       },
+       {
+        "name": "Samba",
+        "folders": [
+         {
+          "name": "4 Takte",
+          "folders": [],
+          "items": [
+           "user.bardet-samba-4t-01",
+           "user.bardet-samba-4t-02",
+           "user.bardet-samba-4t-03",
+           "user.bardet-samba-4t-04",
+           "user.bardet-samba-4t-05",
+           "user.bardet-samba-4t-06"
+          ]
+         }
+        ],
+        "items": [
+         "user.bardet-samba-01",
+         "user.bardet-samba-03",
+         "user.bardet-samba-04",
+         "user.bardet-samba-05",
+         "user.bardet-samba-06",
+         "user.bardet-samba-07",
+         "user.bardet-samba-08",
+         "user.bardet-samba-09"
+        ]
+       },
+       {
+        "name": "Chacha",
+        "folders": [
+         {
+          "name": "4 Takte",
+          "folders": [],
+          "items": [
+           "user.bardet-chacha-4t-01",
+           "user.bardet-chacha-4t-02",
+           "user.bardet-chacha-4t-03"
+          ]
+         }
+        ],
+        "items": [
+         "user.bardet-chacha-01",
+         "user.bardet-chacha-02",
+         "user.bardet-chacha-03",
+         "user.bardet-chacha-04",
+         "user.bardet-chacha-05",
+         "user.bardet-chacha-06"
+        ]
+       }
+      ],
+      "items": []
+     },
+     {
+      "name": "Reggae, Ska",
+      "folders": [
+       {
+        "name": "Reggae",
+        "folders": [
+         {
+          "name": "4 Takte",
+          "folders": [],
+          "items": [
+           "user.bardet-reggae-4t-01",
+           "user.bardet-reggae-4t-02",
+           "user.bardet-reggae-4t-03",
+           "user.bardet-reggae-4t-04",
+           "user.bardet-reggae-4t-05",
+           "user.bardet-reggae-4t-06",
+           "user.bardet-reggae-4t-07",
+           "user.bardet-reggae-4t-08",
+           "user.bardet-reggae-4t-09",
+           "user.bardet-reggae-4t-10",
+           "user.bardet-reggae-4t-11",
+           "user.bardet-reggae-4t-12"
+          ]
+         }
+        ],
+        "items": [
+         "user.bardet-reggae-01",
+         "user.bardet-reggae-02",
+         "user.bardet-reggae-03",
+         "user.bardet-reggae-04",
+         "user.bardet-reggae-05",
+         "user.bardet-reggae-06",
+         "user.bardet-reggae-07",
+         "user.bardet-reggae-08",
+         "user.bardet-reggae-09",
+         "user.bardet-reggae-10",
+         "user.bardet-reggae-11",
+         "user.bardet-reggae-12",
+         "user.bardet-reggae-13",
+         "user.bardet-reggae-14",
+         "user.bardet-reggae-15",
+         "user.bardet-reggae-16",
+         "user.bardet-reggae-17",
+         "user.bardet-reggae-18",
+         "user.bardet-reggae-19",
+         "user.bardet-reggae-20",
+         "user.bardet-reggae-21"
+        ]
+       },
+       {
+        "name": "Ska",
+        "folders": [
+         {
+          "name": "4 Takte",
+          "folders": [],
+          "items": [
+           "user.bardet-ska-4t-01",
+           "user.bardet-ska-4t-02",
+           "user.bardet-ska-4t-03"
+          ]
+         }
+        ],
+        "items": [
+         "user.bardet-ska-01",
+         "user.bardet-ska-02",
+         "user.bardet-ska-03",
+         "user.bardet-ska-04",
+         "user.bardet-ska-05",
+         "user.bardet-ska-06"
+        ]
+       }
+      ],
+      "items": []
+     },
+     {
+      "name": "Tänze",
+      "folders": [
+       {
+        "name": "March and Tango",
+        "folders": [
+         {
+          "name": "4 Takte",
+          "folders": [],
+          "items": [
+           "user.bardet-march-and-tango-4t-01",
+           "user.bardet-march-and-tango-4t-02",
+           "user.bardet-march-and-tango-4t-03"
+          ]
+         }
+        ],
+        "items": [
+         "user.bardet-march-and-tango-01",
+         "user.bardet-march-and-tango-02",
+         "user.bardet-march-and-tango-03",
+         "user.bardet-march-and-tango-04",
+         "user.bardet-march-and-tango-05",
+         "user.bardet-march-and-tango-06"
+        ]
+       },
+       {
+        "name": "Paso and Charleston",
+        "folders": [
+         {
+          "name": "4 Takte",
+          "folders": [],
+          "items": [
+           "user.bardet-paso-and-charleston-4t-01",
+           "user.bardet-paso-and-charleston-4t-02",
+           "user.bardet-paso-and-charleston-4t-03"
+          ]
+         }
+        ],
+        "items": [
+         "user.bardet-paso-and-charleston-01",
+         "user.bardet-paso-and-charleston-02",
+         "user.bardet-paso-and-charleston-03",
+         "user.bardet-paso-and-charleston-04",
+         "user.bardet-paso-and-charleston-05",
+         "user.bardet-paso-and-charleston-06"
+        ]
+       },
+       {
+        "name": "Waltz",
+        "folders": [
+         {
+          "name": "4 Takte",
+          "folders": [],
+          "items": [
+           "user.bardet-waltz-4t-01",
+           "user.bardet-waltz-4t-02",
+           "user.bardet-waltz-4t-03"
+          ]
+         }
+        ],
+        "items": [
+         "user.bardet-waltz-01",
+         "user.bardet-waltz-02",
+         "user.bardet-waltz-03",
+         "user.bardet-waltz-04",
+         "user.bardet-waltz-05",
+         "user.bardet-waltz-06"
+        ]
+       }
+      ],
+      "items": []
+     }
+    ],
+    "items": []
+   }
+  ],
+  "items": []
+ }
+}

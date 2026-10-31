@@ -307,7 +307,7 @@ juce::String Library::styleTitle (const std::string& tag)
     static const std::map<std::string, const char*> titles {
         { "d-beat", "D-Beat" }, { "thrash", "Thrash" }, { "death", "Death Metal" }, { "grind", "Grind / Blast" },
         { "tech-death", "Tech-Death" }, { "doom", "Doom / Sludge" }, { "prog", "Prog / ungerade" }, { "jazz", "Jazz / Fusion" },
-        { "lernen", "Lernen / Beispiele" }, { "hardcore", "Hardcore / Crossover" },
+        { "lernen", "Lernen / Beispiele" }, { "hardcore", "Hardcore / Crossover" }, { "groove", "Groove" },
     };
     auto it = titles.find (tag);
     return it != titles.end() ? juce::String (juce::CharPointer_UTF8 (it->second)) : juce::String (tag);
@@ -349,4 +349,36 @@ juce::String Library::groupOf (const hz::Pattern& p)
     const juce::String name (p.name);
     const auto dash = name.indexOf (enDash);
     return dash > 0 ? name.substring (0, dash) : juce::String();
+}
+
+int Library::installStartPackage()
+{
+    const auto patterns = userPatternFolder(), songs = songFolder();
+    if (patterns.exists() || songs.exists())
+        return 0;   // not the first start: the user's own data stays as it is
+    const auto community = findAppFolder ("community"), start = findAppFolder ("startpaket");
+    int copied = 0;
+    auto copyAll = [&copied] (const juce::File& from, const juce::File& to)
+    {
+        if (! from.isDirectory())
+            return;
+        to.createDirectory();
+        for (const auto& f : from.findChildFiles (juce::File::findFiles | juce::File::ignoreHiddenFiles, false, "*.json"))
+            if (const auto target = to.getChildFile (f.getFileName()); ! target.exists() && f.copyFileTo (target))
+                ++copied;
+    };
+    if (community.isDirectory())
+        for (const auto& set : community.findChildFiles (juce::File::findDirectories, false))
+        {
+            copyAll (set, patterns);
+            copyAll (set.getChildFile ("songs"), songs);
+        }
+    copyAll (start.getChildFile ("songs"), songs);
+    if (const auto tree = start.getChildFile ("ordner.json"), target = patterns.getSiblingFile ("ordner.json");
+        tree.existsAsFile() && ! target.exists() && tree.copyFileTo (target))
+        ++copied;
+    patterns.createDirectory();   // also without a package: from now on it is no first start any more
+    songs.createDirectory();
+    juce::Logger::writeToLog ("Erster Start: Startpaket mit " + juce::String (copied) + " Dateien in den Datenordner gelegt");
+    return copied;
 }

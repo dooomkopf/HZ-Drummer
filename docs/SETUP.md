@@ -12,8 +12,13 @@ Hinweis: JACK über PipeWire ist optional. Unter Ubuntu 22.04 heißt das Paket d
 
 ## Guitar-Pro-Import (optional)
 
-`tools/gpdrums` liest Schlagzeugspuren aus Guitar-Pro-Dateien (GP3/4/5) über die TuxGuitar-Bibliothek:
+`tools/gpdrums` liest Schlagzeugspuren aus Guitar-Pro-Dateien (GP3/4/5) über die TuxGuitar-Bibliothek. Der
+Band-Import (`import_band.py`) und System › Quellen nutzen den Leser `GpDrums156.java` für **TuxGuitar 1.5.6**:
+das Linux-Archiv von der TuxGuitar-Projektseite (SourceForge) nach `/opt/tuxguitar` entpacken oder die Variable
+`TUXGUITAR=<ordner>` setzen. Dazu Java und Python:
 
 ```bash
-sudo apt install -y tuxguitar default-jdk python3
+sudo apt install -y default-jdk python3
 ```
+
+Der ältere Leser `GpDrums.java` passt zum TuxGuitar-Paket von Ubuntu (`sudo apt install tuxguitar`).

@@ -62,6 +62,10 @@ public:
 
     static juce::File userPatternFolder();   // ~/.config/HZ-Drummer/patterns
     static juce::File songFolder();          // ~/.config/HZ-Drummer/songs
+    // First start (neither patterns nor songs folder there yet): the start package goes into the data folder:
+    // the community sets (community/*/ *.json, their arrangements community/*/songs), the example arrangements
+    // and the folder tree (startpaket/). Never overwrites anything. Returns how many files were put there.
+    static int installStartPackage();
     static juce::File folderFile();          // ~/.config/HZ-Drummer/ordner.json
 
     // Display helpers
