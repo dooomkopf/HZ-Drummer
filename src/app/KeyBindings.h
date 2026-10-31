@@ -27,5 +27,5 @@ struct KeyActions
 
 std::vector<KeyBinding> makeKeyBindings (const KeyActions&);
 
-// Transport keys that also work in other windows (editor): space, tempo up/down, tap
+// Keys that also work in other windows (the workshop): space, tempo up/down, tap, M for the mixer
 bool isTransportKey (const juce::KeyPress&);

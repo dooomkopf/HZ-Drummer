@@ -132,7 +132,10 @@ void PatternEditor::save (bool asNew)
             candidate.name = newName.toStdString();
         if (createNew)   // a new own pattern stands at the top of the Bausteine, not in the folder of its source
             candidate.tags.erase (std::remove_if (candidate.tags.begin(), candidate.tags.end(), [] (const std::string& t)
-                                                  { return t.rfind ("band:", 0) == 0 || t.rfind ("song:", 0) == 0; }),
+                                                  {
+                                                      const juce::String tag (t);   // in any spelling, as Library::bandOf reads them
+                                                      return tag.startsWithIgnoreCase ("band:") || tag.startsWithIgnoreCase ("song:");
+                                                  }),
                                   candidate.tags.end());
 
         if (auto err = safe->host.savePattern (candidate, createNew); err.isNotEmpty())

@@ -150,6 +150,19 @@ class MenuFoldersPanel : public juce::Component
 public:
     explicit MenuFoldersPanel (Library& lib) : library (lib)
     {
+        // on top: the green pop-up menus while browsing with the arrow keys (GhostMenu), and how long they stay
+        addAndMakeVisible (ghostToggle);
+        ghostToggle.setColour (juce::ToggleButton::textColourId, theme::textMain);
+        ghostToggle.setColour (juce::ToggleButton::tickColourId, theme::textMain);
+        ghostToggle.onClick = [this] { ghostSeconds.setEnabled (ghostToggle.getToggleState()); if (onGhostChanged) onGhostChanged(); };
+        addAndMakeVisible (ghostLabel);
+        ghostLabel.setColour (juce::Label::textColourId, theme::textDim);
+        addAndMakeVisible (ghostSeconds);
+        ghostSeconds.setRange (0.5, 5.0, 0.1);
+        ghostSeconds.setTextValueSuffix (" s");
+        ghostSeconds.getProperties().set ("pill", true);   // value box drawn by HZLook as a pill
+        ghostSeconds.setTextBoxStyle (juce::Slider::TextBoxRight, false, 64, 24);
+        ghostSeconds.onValueChange = [this] { if (onGhostChanged) onGhostChanged(); };
         addAndMakeVisible (hint);
         hint.setText ("Haken weg: Der Ordner fehlt im Baustein-Menü des Hauptfensters. Suchen (Strg+K) und der Arranger finden seine Bausteine weiterhin."_u,
                       juce::dontSendNotification);
@@ -202,11 +215,21 @@ public:
     void resized() override
     {
         auto r = getLocalBounds().reduced (12);
+        ghostToggle.setBounds (r.removeFromTop (28));
+        auto duration = r.removeFromTop (30).withTrimmedLeft (28);
+        ghostLabel.setBounds (duration.removeFromLeft (60));
+        ghostSeconds.setBounds (duration.removeFromLeft (260));
+        r.removeFromTop (12);
         hint.setBounds (r.removeFromTop (44));
         r.removeFromTop (6);
         viewport.setBounds (r);
         refresh();   // the rows follow the width
     }
+
+    juce::ToggleButton ghostToggle { "Grüne Einblend-Menüs aktiv"_u };
+    juce::Label ghostLabel { {}, "Dauer" };
+    juce::Slider ghostSeconds;
+    std::function<void()> onGhostChanged;   // reads ghostToggle and ghostSeconds
 
 private:
     Library& library;

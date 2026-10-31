@@ -23,17 +23,17 @@ Zwei Betriebsarten:
 - **Baustein:** spielt einen Baustein (aus der Bibliothek oder selbst gebaut) oder ein Arrangement.
 - **Metronom:** spielt nur die Taktart, als Klick, Bassdrum, Snare oder Bass+Snare.
 
-Im Menü einen Baustein wählen schaltet auf Baustein, eine Taktart wählen schaltet auf Metronom. Das Baustein-Menü zeigt **Arrangements (Songs)**, **Bausteine (Pattern)** und **Bibliothek-Bausteine**.
+Im Menü einen Baustein wählen schaltet auf Baustein, eine Taktart wählen schaltet auf Metronom. Das Taktart-Menü öffnest du mit dem Knopf **Taktart ▾**, dort gibt es auch „Eigene Taktart eingeben …“, z.B. `17/16 4+4+4+5`. Das Baustein-Menü zeigt **Arrangements (Songs)**, **Bausteine (Pattern)** und **Bibliothek-Bausteine**.
 
-**Suchen** (Strg+K oder /) findet Bausteine, Arrangements und Taktarten nach Name, Band, Stil, Taktart (`7/8`) und Tempo (`160-190 bpm`), außerdem nach den Spuren, die ein Baustein benutzt: `besen`, `sidestick`, `china`, `glocke`, `pedal`, `flam` … Vor jedem Treffer steht das Kurzwort (Arrangement, Pattern, Bibliothek, Metronom). Fährt die Maus über eine Zeile, erscheint hinter dem Kurzwort ein **▶**: Klick spielt den Baustein an, ohne die Suche zu schließen, nochmal Klick stoppt. Enter oder Klick auf die Zeile übernimmt ihn, Esc schließt und stellt wieder her, was vorher lief.
+**Suchen** (Strg+K oder /) findet Bausteine, Arrangements und Taktarten nach Name, Band, Stil, Taktart (`7/8`) und Tempo (`160-190 bpm`), außerdem nach den Spuren, die ein Baustein benutzt: `besen`, `sidestick`, `china`, `glocke`, `pedal`, `flam` … Vor jedem Treffer steht das Kurzwort (Arrangement, Pattern, Bibliothek, Metronom). Fährt die Maus über eine Zeile, erscheint hinter dem Kurzwort ein **▶**: Klick spielt den Baustein an, ohne die Suche zu schließen, nochmal Klick stoppt. Enter oder Klick auf die Zeile übernimmt ihn, Esc schließt und stellt wieder her, was vorher lief. Hast du das Anspielen selbst gestoppt, bleibt es nach Esc still, wie im Baustein-Menü.
 
 **Umbenennen:** Rechtsklick im Baustein-Menü auf einen Baustein oder ein Arrangement, oder der Knopf **Umbenennen** neben dem Titel. Ein umbenannter Baustein heißt auch in den gespeicherten Arrangements, im Arbeitsstand des Arrangers und in der Ablage neu; Blöcke, die im Arranger einen lokalen Namen bekommen haben, behalten ihn. Bibliothek-Bausteine lassen sich nicht umbenennen. Ordner benennst du unter **System › Ordnerstruktur** um.
 
 **Bausteine und Arrangements löschen:** Rechtsklick auf den Eintrag im Baustein-Menü, der Knopf **Löschen** neben dem Titel, oder unter **System › Ordnerstruktur**. Nichts wird endgültig gelöscht: Die Datei wandert in den Papierkorb (**System › Papierkorb**, dort „Wiederherstellen“ oder „Papierkorb leeren“). Ein Baustein, den ein gespeichertes Arrangement, der Ablauf oder die Ablage noch verwendet, lässt sich nicht löschen; die Meldung sagt, wo er steckt. Bibliothek-Bausteine lassen sich nicht löschen.
 
-**Ordner:** Unter **System › Ordnerstruktur** stehen Arrangements, Bausteine und die Bibliothek als Baum. Dort legst du Ordner an, auch beliebig verschachtelt, benennst sie um und löschst leere. Bekommt ein Ordner den Namen eines Ordners daneben, werden beide zu einem zusammengelegt, etwa „techdeath“ in „Tech-Death“; auch eine reine Änderung der Groß- und Kleinschreibung geht. Einträge und Ordner ziehst du mit der Maus an ihren neuen Platz; **Hoch** und **Runter** ändern die Reihenfolge. Solange ein Eintrag keinem Ordner zugeordnet ist, steht er wie bisher: Arrangements oben, Bausteine mit Band-Angabe nach Band und Song, die anderen oben, die Bibliothek nach Stil. Die Ordner stehen in `ordner.json`, die Baustein- und Arrangement-Dateien bleiben dabei unverändert. Unter **System › Menü-Ordner** wählst du mit Haken, welche Ordner der obersten Ebene das Baustein-Menü zeigt; Suchen (Strg+K) und der Arranger kennen weiterhin alle Bausteine.
+**Ordner:** Unter **System › Ordnerstruktur** stehen Arrangements, Bausteine und die Bibliothek als Baum. Dort legst du Ordner an, auch beliebig verschachtelt, benennst sie um und löschst leere. Bekommt ein Ordner den Namen eines Ordners daneben, werden beide zu einem zusammengelegt, etwa „techdeath“ in „Tech-Death“; auch eine reine Änderung der Groß- und Kleinschreibung geht. Einträge und Ordner ziehst du mit der Maus an ihren neuen Platz; **Hoch** und **Runter** ändern die Reihenfolge. Solange ein Eintrag keinem Ordner zugeordnet ist, steht er wie bisher: Arrangements oben, Bausteine mit Band-Angabe nach Band und Song, die anderen oben, die Bibliothek nach Stil. Die Ordner stehen in `ordner.json`, die Baustein- und Arrangement-Dateien bleiben dabei unverändert. Unter **System › Menü-Ordner** wählst du mit Haken, welche Ordner der obersten Ebene das Baustein-Menü zeigt; Suchen (Strg+K) und der Arranger kennen weiterhin alle Bausteine. Ganz oben schaltet „Grüne Einblend-Menüs aktiv“ das Geister-Menü beim Blättern ein oder aus, „Dauer“ legt fest, wie lange es stehen bleibt (0,5 bis 5 s).
 
-**System** zeigt außerdem die Audio-Einstellungen, die freien Abzeichen und die Log-Dateien (App-Protokoll und Startprotokoll), ganz unten die Versionsnummer. Sie lautet v0.1.X; X ist die Zahl der Commits und wird beim Bauen automatisch gesetzt.
+**System** zeigt außerdem die Audio-Einstellungen, die freien Abzeichen und die Log-Dateien (App-Protokoll und Startprotokoll), ganz unten die Versionsnummer. Sie lautet v0.2.X; X ist die Zahl der Commits und wird beim Bauen automatisch gesetzt.
 
 **Abzeichen:** Jeder Baustein trägt ein Abzeichen aus Farbe und Form. Die Formen sind 17 eigene geometrische Marken und die Google-Symbole aus `assets/material-symbols/auswahl.txt`. Unter der Abzeichen-Zeile in **System** wählt **Verteilung**, welche Art ein neuer Baustein bekommt: *Erst eigene, dann Google* gibt den kleinsten Ordnern die eigenen Marken, solange ein ganzer Ordner noch hineinpasst; alle anderen bekommen Google-Symbole. *Gemischt* verteilt die eigenen Marken gleichmäßig über alle Ordner. Vergebene Abzeichen bleiben, bis du **Neu verteilen** drückst. Dann bekommt jeder Baustein eines nach der gewählten Regel, jedes Mal neu ausgewürfelt: Gefällt dir das Ergebnis nicht, drück einfach noch einmal. Die alte Zuordnung liegt vorher in `~/.cache/HZ-Drummer/abzeichen/`, die letzten zehn bleiben.
 
@@ -41,25 +41,26 @@ Im Menü einen Baustein wählen schaltet auf Baustein, eine Taktart wählen scha
 
 ## Tasten
 
+Beim Blättern mit den Pfeiltasten zeigt ein **Geister-Menü** kurz, wo du bist. Es steht linksbündig direkt unter dem Titel und reicht bis zum unteren Fensterrand; was darunter liegt, blendet solange aus. Oben steht der Baum bis zum aktuellen Ordner, etwa „R.P. Bardet › Funk, Disco, R&B › Latin“, darunter so viele Einträge, wie hineinpassen, meist der ganze Ordner, mit dem aktuellen hell sowie „Anfang“ und „Ende“. Beim Ordnerwechsel mit Strg zeigt es die Nachbar-Ordner mit der Zahl ihrer Bausteine. Es ist neongrün, nimmt keine Klicks an und blendet nach einer Sekunde aus.
+
 | Taste | Funktion |
 |---|---|
 | Leertaste | Start / Stop |
 | ↑ / ↓ | Tempo ±1 (mit Shift ±5) |
 | T | Tap-Tempo: mehrmals im Takt tippen |
-| ← / → | nächster / voriger **Baustein** bzw. nächste / vorige **Taktart** (im Metronom); während der Wiedergabe wechselt es am nächsten Taktende |
-| Shift + ← / → | dasselbe, nur durch die Favoriten |
-| Strg + ← / → | Baustein-Stil wechseln (D-Beat, Thrash, Death, Doom …) |
-| Bild ↑ / Bild ↓ | Bausteine durchblättern (auch im Metronom-Modus) |
+| ← / → | nächster / voriger **Baustein im selben Ordner**, so wie das Baustein-Menü sortiert; am Ende des Ordners ist Schluss. Im Metronom nächste / vorige **Taktart**. Während der Wiedergabe wechselt es am nächsten Taktende |
+| Strg + ← / → | nächster / voriger **Ordner**, wie im Baustein-Menü; man landet auf seinem ersten Baustein. Reine Sortier-Ordner führen in ihren ersten Unterordner, im Menü ausgeblendete Ordner werden übersprungen. Aus dem Metronom geht es in die Bausteine |
+| Shift + ← / → | durch die **Favoriten**, in der Reihenfolge des Favoriten-Abschnitts im Menü (im Metronom: Taktart-Favoriten) |
 | P | Baustein-Menü |
-| M | Taktart-Menü (inkl. „Eigene Taktart eingeben …“, z.B. `17/16 4+4+4+5`) |
+| M | Mixer an/aus, auch in der Werkstatt und im Mixer selbst |
 | Strg + F (oder *) | aktueller Baustein bzw. aktuelle Taktart als Favorit (goldener Stern) |
 | K | Metronom-Klang wechseln |
-| E | Werkstatt öffnen: Editor (Baustein) bzw. Arranger (Arrangement) |
+| E | Werkstatt öffnen: Editor (Baustein) bzw. Arranger (Arrangement); in der Werkstatt schließt E sie wieder, solange im Editor nichts ungespeichert ist |
 | F1 oder ? | Tastenübersicht |
 
 ## Editor (Werkstatt › Reiter „Editor“, Taste E)
 
-- **Zeilen** sind Instrumente (Becken, HiHat, Snare, Toms, Bass), **Spalten** die Rasterschritte. Ein **Klick auf den Spurnamen** spielt einen Probeklang des Instruments, ohne etwas zu setzen. Die Namen zeigen, was das Kit wirklich spielt (beim Aasimonster: „Zil-Bel“ statt Kuhglocke, „China 8"“ für den Splash). Spuren ohne Klang im Kit (etwa die Besen bei einem Kit ohne Besen) oder mit demselben Klang wie eine andere (HiHat halb) erscheinen nur, wenn der Baustein sie benutzt, dann kursiv. Zusatzspuren wie Sidestick, HiHat-Pedal und die Besen (Snare-Schlag, Wischer kurz und lang, Ride, Tom 2) zeigt „Alle Spuren“. Dicke Linien sind Taktstriche, mittlere die Zählzeiten.
+- **Zeilen** sind Instrumente (Becken, HiHat, Snare, Toms, Bass), **Spalten** die Rasterschritte. Ein **Klick auf den Spurnamen** spielt einen Probeklang des Instruments, ohne etwas zu setzen; unter der Maus wird der Name grün. Die Namen zeigen, was das Kit wirklich spielt (beim Aasimonster: „Zil-Bel“ statt Kuhglocke, „China 8"“ für den Splash). Spuren ohne Klang im Kit (etwa die Besen bei einem Kit ohne Besen) oder mit demselben Klang wie eine andere (HiHat halb) erscheinen nur, wenn der Baustein sie benutzt, dann kursiv. Zusatzspuren wie Sidestick, HiHat-Pedal und die Besen (Snare-Schlag, Wischer kurz und lang, Ride, Tom 2) zeigt „Alle Spuren“. Dicke Linien sind Taktstriche, mittlere die Zählzeiten.
 - **Rechtsklick auf den Spurnamen**, dann „Übertragen auf“: Alle Schläge dieser Spur wandern in die gewählte, über alle Takte, zum Beispiel von der Hi-Hat aufs Ride oder auf die China. Lautstärke, Versatz und Flam bleiben; wo beide Spuren einen Schlag haben, bleibt der lautere. Strg+Z macht es rückgängig.
 - **Klick** in ein leeres Feld setzt einen Schlag, ein Klick auf einen Schlag löscht ihn.
   - **Shift + Klick** setzt einen Akzent, **Alt + Klick** eine Ghost-Note.
@@ -85,7 +86,7 @@ Im Menü einen Baustein wählen schaltet auf Baustein, eine Taktart wählen scha
   - **Speichern unter …** (Strg+Shift+S) legt einen **neuen Baustein** an, Vorschlag „Name mod1“ (die nächste freie Nummer). Er steht oben bei den Bausteinen, nicht im Ordner seiner Quelle, damit man ihn wiederfindet. Bibliothek-Bausteine bleiben immer unverändert.
   - Eigene Bausteine: **Speichern** (Strg+S) überschreibt sie, **Löschen** verschiebt sie in den Papierkorb (siehe Hauptfenster). Der Editor wird danach leer, die Werkstatt bleibt offen.
   - Neue Bausteine erscheinen im Baustein-Menü unter „Bausteine (Pattern)“.
-- Während der Editor offen ist, **hörst du die bearbeitete Fassung sofort**. Leertaste, Tempo und Tap funktionieren auch im Editor.
+- Während der Editor offen ist, **hörst du die bearbeitete Fassung sofort**. Leertaste, Tempo, Tap und M für den Mixer funktionieren auch im Editor.
 
 ## Dateien
 

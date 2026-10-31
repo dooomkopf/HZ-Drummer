@@ -100,6 +100,28 @@ void PatternEditor::mouseDown (const juce::MouseEvent& e)
         }
 }
 
+void PatternEditor::mouseMove (const juce::MouseEvent& e)
+{
+    // over a lane name, not over its M / S boxes
+    int lane = -1;
+    for (int i = 0; i < (int) lanes.size(); ++i)
+        if (juce::Rectangle<int> (8, viewport.getY() + headerH + i * rowH, laneNameW - 12, rowH)
+                .withTrimmedRight (2 * laneSwitch (i, false).getWidth() + 8).contains (e.getPosition()))
+            lane = i;
+    if (pattern.bars.empty())
+        lane = -1;
+    if (lane != hoveredLane)
+    {
+        hoveredLane = lane;
+        repaint (0, viewport.getY() + headerH, laneNameW, rowH * (int) lanes.size());
+    }
+}
+
+void PatternEditor::mouseExit (const juce::MouseEvent& e)
+{
+    mouseMove (e.withNewPosition (juce::Point<float> (-1.0f, -1.0f)));
+}
+
 void PatternEditor::showLaneMenu (int lane)
 {
     const auto from = lanes[(size_t) lane].voice;
@@ -213,7 +235,8 @@ void PatternEditor::paint (juce::Graphics& g)
         g.fillRoundedRectangle (r.removeFromLeft (5).reduced (0, 5).toFloat(), 2.0f);
         // no sound in the kit: dim and italic (it only shows because the pattern uses it)
         const bool noSound = laneSilent (lanes[(size_t) i]);
-        g.setColour (silent || noSound ? textDim : textMain);
+        g.setColour (i == hoveredLane ? juce::Colour (0xff3cc6b4)   // green as in the main window while auditioning: a click plays it
+                                      : silent || noSound ? textDim : textMain);
         g.setFont (juce::FontOptions (15.0f, noSound ? juce::Font::italic : juce::Font::plain));
         g.drawText (laneLabel (lanes[(size_t) i]), r.withTrimmedLeft (6).withTrimmedRight (2 * laneSwitch (i, false).getWidth() + 10),
                     juce::Justification::centredLeft);
@@ -247,7 +270,8 @@ void PatternEditor::paint (juce::Graphics& g)
 
 juce::String PatternEditor::defaultHelp() const
 {
-    return "Klick: Schlag setzen/löschen  ·  Shift+Klick: Akzent  ·  Alt+Klick: Ghost  ·  Strg(+Shift)+Klick: später (früher), je 10 ms bis 100  ·  hoch/runter ziehen: Lautstärke\n"
-           "Rechtsklick: Ghost/Normal/Akzent, nachträglich Strg+Rechtsklick: Flam  ·  M/S an der Spur: stumm/solo (Reset darüber)  ·  Klick auf Spurname: Probeklang, Rechtsklick: übertragen  ·  Kopfzeile: Taktart, Raster, Takt-Menü  ·  Strg+Mausrad: Breite  ·  Strg+Z/Y  ·  Strg+S "_u
-           + (cardMode ? juce::String ("in Ablage übernehmen"_u) : blockMode ? juce::String ("in Ablauf übernehmen"_u) : juce::String ("speichern"));
+    // what one forgets; what the screen shows anyway (M / S, the bar header) stays out
+    return "Shift+Klick: Akzent  ·  Alt+Klick: Ghost  ·  Rechtsklick: Ghost/Normal/Akzent oder klicken und nach oben oder unten ziehen  ·  Strg+Rechtsklick: Flam\n"
+           "Strg+Klick: 10 ms später, Strg+Shift+Klick: 10 ms früher, bis 100 ms  ·  Rechtsklick auf Spurname: übertragen  ·  Strg+Mausrad: Breite  ·  M: Mixer  ·  E: schließen"_u
+           + (cardMode ? "  ·  Strg+S: in Ablage übernehmen"_u : blockMode ? "  ·  Strg+S: in Ablauf übernehmen"_u : juce::String());
 }

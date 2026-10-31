@@ -20,6 +20,8 @@
 #include "app/views/SongStrip.h"
 #include "app/views/StatusPanels.h"
 #include "app/views/Watermark.h"
+#include "app/views/GhostMenu.h"
+#include "app/BrowseOrder.h"
 
 #include <juce_audio_utils/juce_audio_utils.h>
 
@@ -105,6 +107,13 @@ private:
     void stepPattern (int dir, bool favoritesOnly);
     void stepCurrent (int dir, bool favoritesOnly);
     void stepStyle (int dir);
+    // browsing as in the pattern menu (BrowseOrder.h); every key shows where one is (GhostMenu)
+    void browseInFolder (int dir);                    // left/right: within the current entry's folder, stops at its ends
+    void browseFolder (int dir);                      // Ctrl+left/right: the first entry of the next visible folder
+    void browseFavorites (int dir);                   // Shift+left/right: the Favoriten section, stops at its ends
+    void browseMeters (int dir, bool favoritesOnly);  // the metronome: the meters, stops at the ends
+    std::vector<BrowseFolder> browseOrder() const;
+    void showGhost (const GhostMenu::Content&);
     void toggleFavorite();
     void sendCurrentPlan();
     void updateButtons();
@@ -124,6 +133,7 @@ private:
     juce::String removeLibraryEntry (const std::string&);   // to the trash; "" = OK, else why not
     void showHelp (bool show);
     void showMixer();
+    void toggleMixer();              // key M: open, or close if it is showing
     void setMix (int channel, mix::Setting);
     bool channelInUse (int channel) const;   // mixer: does this channel sound in what is selected?
     void showAudioSettings();
@@ -201,6 +211,12 @@ private:
 
     // windows and widgets
     juce::TooltipWindow tooltipWindow { nullptr, 700 };   // shows the setTooltip texts, in every window of the app
+    // M inside the mixer window closes it again (declared before the windows, so it outlives them)
+    struct WindowKey : juce::KeyListener
+    {
+        std::function<bool (const juce::KeyPress&)> onKey;
+        bool keyPressed (const juce::KeyPress& k, juce::Component*) override { return onKey != nullptr && onKey (k); }
+    } mixerKeys;
     std::unique_ptr<WorkshopWindow> editorWindow;
     std::unique_ptr<juce::DialogWindow> mixerWindow, audioWindow, trashWindow, logsWindow, foldersWindow, menuFoldersWindow;
     juce::TextButton playButton { "Start" }, tapButton { "Tap" }, audioButton { "System" },
@@ -214,6 +230,9 @@ private:
     SongStrip songStrip;
     BeatDisplay beatDisplay;
     HelpOverlay helpOverlay;
+    GhostMenu ghostMenu;
+    bool ghostEnabled = true;     // System > Menü-Ordner: "Grüne Einblend-Menüs aktiv"
+    double ghostSeconds = 1.0;    // how long it stays
     QuickSearch quickSearch;
     ActiveGlow activeGlow;
     std::vector<KeyBinding> keyBindings;

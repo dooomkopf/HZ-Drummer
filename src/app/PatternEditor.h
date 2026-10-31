@@ -76,6 +76,8 @@ public:
     void paint (juce::Graphics&) override;
     bool keyPressed (const juce::KeyPress&) override;
     void mouseDown (const juce::MouseEvent&) override;   // the M / S switches of the lane column
+    void mouseMove (const juce::MouseEvent&) override;   // a lane name under the mouse turns green: a click plays it
+    void mouseExit (const juce::MouseEvent&) override;
 
 private:
     void load (const hz::Pattern&, bool isUserPattern);   // setPattern without touching the main tempo (blocks)
@@ -130,6 +132,7 @@ private:
     hz::Pattern tempoBefore;
     bool tempoDragging = false;
     int rowH = 26;
+    int hoveredLane = -1;          // its name is green (see mouseMove)
     float stretch = 1.0f;          // how much wider than usual the bars are drawn; only for the pattern in hand
     bool userPattern = false;
     bool dirty = false;

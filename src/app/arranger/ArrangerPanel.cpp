@@ -17,7 +17,7 @@ namespace
     juce::String defaultHint()
     {
         return "Klick in Liste: Play/Pause   ·   Drag 'n Drop in Ablage/Ablauf   ·   Rechtsklick im Ablauf: Lokale Umbenennung   ·   "
-               "Strg+K Suche   ·   Strg+S Speichern   ·   Strg+Z/Y Rückgängig/Wiederholen   ·   Alt+←/→ Block verschieben   ·   +/-   ·   Esc Stopp"_u;
+               "Strg+K Suche   ·   Strg+S Speichern   ·   Strg+Z/Y Rückgängig/Wiederholen   ·   Alt+←/→ Block verschieben   ·   +/-   ·   M Mixer   ·   E schließen   ·   Esc Stopp"_u;
     }
 
 }

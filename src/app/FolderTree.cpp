@@ -175,6 +175,23 @@ void FolderTree::setHidden (Area area, const juce::String& folder, bool hide)
         list.add (folder);
 }
 
+void FolderTree::followTopLevel (Area area, const juce::StringArray& before, const juce::StringArray& after)
+{
+    auto& list = hidden[(size_t) area];
+    juce::StringArray gone, came;
+    for (const auto& name : before)
+        if (! after.contains (name, true))
+            gone.add (name);
+    for (const auto& name : after)
+        if (! before.contains (name, true))
+            came.add (name);
+    if (gone.size() == 1 && came.size() == 1 && list.contains (gone[0], true))   // renamed
+        list.add (came[0]);
+    for (int i = list.size(); --i >= 0;)
+        if (! after.contains (list[i], true))   // removed, merged into another, moved down, or renamed
+            list.remove (i);
+}
+
 juce::String FolderTree::load (const juce::File& file)
 {
     roots = {};

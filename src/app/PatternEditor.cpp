@@ -443,12 +443,19 @@ void PatternEditor::resized()
     tempoSlider.setBounds (row1.removeFromLeft (200));
     row1.removeFromLeft (10);
     swingBox.setBounds (row1.removeFromLeft (190));   // room for "Achtel triolisch (67 %)"
-    row1.removeFromLeft (10);
-    humanizeLabel.setBounds (row1.removeFromLeft (90));
-    humanizeSlider.setBounds (row1.removeFromLeft (190));   // a little shorter, room for the tempo slider
-    row1.removeFromLeft (16);
-    stretchLabel.setBounds (row1.removeFromLeft (juce::jmin (60, row1.getWidth())));
-    stretchSlider.setBounds (row1.removeFromLeft (juce::jmin (200, row1.getWidth())));   // a narrow window: Strg+Mausrad still works
+
+    // "Menschlich" and "Breite" behind the swing box; if they do not fit there, in a row of their own below the buttons
+    auto placeSliders = [this] (juce::Rectangle<int> row)
+    {
+        humanizeLabel.setBounds (row.removeFromLeft (90));
+        humanizeSlider.setBounds (row.removeFromLeft (190));
+        row.removeFromLeft (16);
+        stretchLabel.setBounds (row.removeFromLeft (60));
+        stretchSlider.setBounds (row.removeFromLeft (200));
+    };
+    const bool slidersBelow = row1.getWidth() < 10 + 90 + 190 + 16 + 60 + 200;
+    if (! slidersBelow)
+        placeSliders (row1.withTrimmedLeft (10));
 
     area.removeFromTop (8);
     auto row2 = area.removeFromTop (32);
@@ -466,6 +473,11 @@ void PatternEditor::resized()
     deleteButton.setBounds (row2.removeFromRight (90));
     row2.removeFromRight (10);
     infoLabel.setBounds (row2);
+    if (slidersBelow)
+    {
+        area.removeFromTop (8);
+        placeSliders (area.removeFromTop (32));
+    }
 
     area.removeFromTop (10);
     help.setBounds (getLocalBounds().reduced (12, 6).removeFromBottom (40));

@@ -165,7 +165,16 @@ EditorHost::Playhead MainComponent::getPlayhead() const
 
 bool MainComponent::handleTransportKey (const juce::KeyPress& key)
 {
-    // in the workshop only transport keys work (left/right would switch the pattern). Space never
+    // E in the workshop closes it again (E in the main window opened it), but only with nothing unsaved in the
+    // raster; the arranger keeps its working state on disk anyway. Otherwise E does nothing here.
+    if (! key.getModifiers().isCommandDown() && juce::CharacterFunctions::toLowerCase (key.getTextCharacter()) == 'e')
+    {
+        if (editorWindow != nullptr && ! editorWindow->getEditor().hasUnsavedChanges())
+            editorClosed();
+        return true;
+    }
+
+    // in the workshop only transport keys and M (mixer) work (left/right would switch the pattern). Space never
     // starts the main window's selection there (nor its count-in): it pauses what sounds and
     // resumes only what the workshop put into the transport
     if (! isTransportKey (key))

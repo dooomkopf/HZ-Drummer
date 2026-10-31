@@ -33,9 +33,21 @@ juce::String HelpLine::text() const
 
 void HelpLine::paint (juce::Graphics& g)
 {
-    g.setColour (hintRed);
-    g.setFont (juce::FontOptions (fontSize));
-    g.drawFittedText (text(), getLocalBounds().withTrimmedRight (48), juce::Justification::centredLeft, maxLines);
+    // too long for the width, the lines wrap once more and stick out at top and bottom: then smaller letters
+    const auto area = getLocalBounds().withTrimmedRight (48).toFloat();
+    for (float size = fontSize;; size -= 0.5f)
+    {
+        juce::GlyphArrangement glyphs;
+        glyphs.addFittedText (juce::Font (juce::FontOptions (size)), text(), area.getX(), area.getY(), area.getWidth(), area.getHeight(),
+                              juce::Justification::centredLeft, maxLines);
+        const auto box = glyphs.getBoundingBox (0, -1, true);
+        if (size <= 9.0f || (box.getY() >= area.getY() - 0.5f && box.getBottom() <= area.getBottom() + 0.5f))
+        {
+            g.setColour (hintRed);
+            glyphs.draw (g);
+            return;
+        }
+    }
 }
 
 void HelpLine::resized()

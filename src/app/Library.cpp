@@ -240,10 +240,19 @@ FolderNode Library::folders (FolderTree::Area area) const
 
 juce::String Library::editFolders (FolderTree::Area area, const std::function<juce::String (FolderNode&)>& edit)
 {
+    auto topLevel = [] (const FolderNode& node)
+    {
+        juce::StringArray names;
+        for (const auto& f : node.folders)
+            names.add (f.name);
+        return names;
+    };
     auto root = folders (area);
+    const auto before = topLevel (root);
     if (const auto error = edit (root); error.isNotEmpty())
         return error;
     auto changed = folderTree;
+    changed.followTopLevel (area, before, topLevel (root));   // System > Menü-Ordner: hidden folders keep up
     changed.set (area, std::move (root));
     if (const auto error = changed.save (folderFile()); error.isNotEmpty())
         return error;

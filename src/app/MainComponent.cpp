@@ -34,6 +34,7 @@ MainComponent::MainComponent()
     audioButton.getProperties().set ("system", true);     // drawn by HZLook
     editButton.onClick  = [this] { openEditor(); };
     mixerButton.onClick = [this] { showMixer(); };
+    mixerButton.setTooltip ("Mixer: Lautstärke der Spuren (M)");
     mixerButton.getProperties().set ("mixer", true);      // drawn by HZLook
     addAndMakeVisible (countInButton);
     countInButton.onClick = [this] { cycleCountIn(); };
@@ -111,6 +112,13 @@ MainComponent::MainComponent()
     addChildComponent (helpOverlay);
     addAndMakeVisible (activeGlow);
     addChildComponent (quickSearch);
+    addChildComponent (ghostMenu);
+    ghostMenu.onAlpha = [this] (float a)   // the ghost takes their place while it shows
+    {
+        for (auto* c : { (juce::Component*) &songStrip, (juce::Component*) &statusPanels, (juce::Component*) &beatDisplay,
+                         (juce::Component*) &kitLabel, (juce::Component*) &helpLabel })
+            c->setAlpha (1.0f - a);
+    };
 
     // keyboard focus stays with the main window, so space & co. never end up in a widget
     for (juce::Component* c : { (juce::Component*) &playButton, (juce::Component*) &tapButton, (juce::Component*) &audioButton,
@@ -165,6 +173,9 @@ void MainComponent::loadSettings()
     currentMeter = juce::jmax (0, meters.fromKey (props.getValue ("meter", "4/4")));
     control.tempoTenths = (std::uint16_t) juce::jlimit (300, 3200, props.getIntValue ("tempoTenths", 1200));
     sound = (MetronomeSound) juce::jlimit (0, 3, props.getIntValue ("sound", (int) MetronomeSound::Kick));
+    ghostEnabled = props.getBoolValue ("ghostMenu", true);
+    ghostSeconds = juce::jlimit (0.5, 5.0, props.getDoubleValue ("ghostSeconds", 1.0));
+    ghostMenu.setHoldSeconds (ghostSeconds);
     countIn = (CountIn) juce::jlimit (0, 2, props.getIntValue ("countIn", 0));
     beatDisplay.setShowHits (props.getBoolValue ("showBeats", true));
     library.favoritesFromString (props.getValue ("patternFavorites"));
@@ -184,6 +195,8 @@ void MainComponent::saveSettings()
     props.setValue ("meter", MeterLibrary::key (meters.get (currentMeter)));
     props.setValue ("tempoTenths", (int) control.tempoTenths);
     props.setValue ("sound", (int) sound);
+    props.setValue ("ghostMenu", ghostEnabled);
+    props.setValue ("ghostSeconds", ghostSeconds);
     props.setValue ("countIn", (int) countIn);
     props.setValue ("pattern", patternMode() ? juce::String (library.get (currentPattern).id) : juce::String());
     props.setValue ("patternFavorites", library.favoritesToString());
@@ -388,6 +401,169 @@ void MainComponent::stepStyle (int dir)
             --first;
     }
     selectPattern (first);
+}
+
+//==============================================================================
+// Browsing with the keys, as the pattern menu is ordered
+
+std::vector<BrowseFolder> MainComponent::browseOrder() const
+{
+    std::vector<BrowseArea> areas;
+    for (auto area : { FolderTree::Songs, FolderTree::Patterns, FolderTree::Bundled })   // as buildPatternMenu
+        areas.push_back ({ library.folders (area), [this, area] (const juce::String& folder) { return library.folderHidden (area, folder); } });
+    return browseFolders (areas);
+}
+
+namespace
+{
+    const char* areaTitle (int area) { return area == 0 ? "Arrangements" : area == 1 ? "Bausteine" : "Bibliothek"; }
+
+    // the tree down to a folder: its folders from the top; the area's own name only where there is no folder
+    juce::StringArray treeOf (int area, const FolderPath& path)
+    {
+        return path.isEmpty() ? juce::StringArray (areaTitle (area)) : path;
+    }
+
+    juce::String counter (int at, int total) { return juce::String (at + 1) + " / " + juce::String (total); }
+}
+
+void MainComponent::showGhost (const GhostMenu::Content& content)
+{
+    if (! ghostEnabled)
+        return;
+    // left-aligned just below the title, as far down as the window goes; what lies beneath fades (see the constructor)
+    const int top = titleLabel.getBottom() + 4;
+    ghostMenu.show (content, { titleLabel.getX(), top, getWidth() - titleLabel.getX() - 24, getHeight() - top });
+}
+
+void MainComponent::browseInFolder (int dir)
+{
+    const auto order = browseOrder();
+    const auto id = library.get (currentPattern).id;
+    const int f = browseFolderOf (order, id);
+    if (f < 0)
+        return;
+    const auto& folder = order[(size_t) f];
+    int at = (int) (std::find (folder.ids.begin(), folder.ids.end(), id) - folder.ids.begin());
+    if (const int to = at + dir; to >= 0 && to < (int) folder.ids.size())   // at an end: it stops, the ghost shows why
+        if (const int i = library.indexOf (folder.ids[(size_t) to]); i >= 0)
+        {
+            selectPattern (i);
+            at = to;
+        }
+
+    GhostMenu::Content c;
+    c.path = treeOf (folder.area, folder.path);
+    for (const auto& entry : folder.ids)
+        if (const int i = library.indexOf (entry); i >= 0)
+            c.list.add (folders::shortName (juce::String (library.get (i).name), folder.path));
+    c.current = at;
+    c.count = counter (at, (int) folder.ids.size());
+    showGhost (c);
+}
+
+void MainComponent::browseFolder (int dir)
+{
+    const auto order = browseOrder();
+    const int from = patternMode() ? browseFolderOf (order, library.get (currentPattern).id) : -1;
+    const int to = nextBrowseFolder (order, from >= 0 ? from : (dir > 0 ? -1 : (int) order.size()), dir);
+    if (to >= 0)
+        if (const int i = library.indexOf (order[(size_t) to].ids.front()); i >= 0)
+            selectPattern (i);
+    const int shownFolder = to >= 0 ? to : from;
+    if (shownFolder < 0)
+        return;
+
+    // the tree down to the parent folder, below it the folders beside the one now in hand (visible ones,
+    // with the number of entries in and below them); entries in no folder appear as "ohne Ordner"
+    const auto& folder = order[(size_t) shownFolder];
+    auto parent = folder.path;
+    if (! parent.isEmpty())
+        parent.remove (parent.size() - 1);
+    const int depth = parent.size();
+    GhostMenu::Content c;
+    c.path = treeOf (folder.area, parent);
+    std::vector<int> counts;
+    auto add = [&] (const juce::String& name, int entries)
+    {
+        int k = c.list.indexOf (name);
+        if (k < 0)
+        {
+            c.list.add (name);
+            counts.push_back (0);
+            k = c.list.size() - 1;
+        }
+        counts[(size_t) k] += entries;
+    };
+    const auto noFolder = juce::String ("ohne Ordner");
+    for (const auto& stop : order)
+        if (stop.area == folder.area && ! stop.hidden)
+        {
+            if (stop.path.size() > depth && folders::startsWith (stop.path, parent))
+                add (stop.path[depth], (int) stop.ids.size());
+            else if (depth == 0 && stop.path.isEmpty())
+                add (noFolder, (int) stop.ids.size());
+        }
+    c.current = c.list.indexOf (folder.path.size() > depth ? folder.path[depth] : noFolder);
+    for (int k = 0; k < c.list.size(); ++k)
+        c.list.set (k, c.list[k] + "  (" + juce::String (counts[(size_t) k]) + ")");
+    int visible = 0, index = -1;
+    for (int k = 0; k < (int) order.size(); ++k)
+        if (! order[(size_t) k].hidden)
+        {
+            if (k == shownFolder)
+                index = visible;
+            ++visible;
+        }
+    c.count = index >= 0 ? "Ordner " + counter (index, visible) : juce::String();
+    showGhost (c);
+}
+
+void MainComponent::browseFavorites (int dir)
+{
+    // in the order of the menu's Favoriten section
+    std::vector<int> favorites;
+    for (int i = 0; i < library.size(); ++i)
+        if (library.isFavorite (library.get (i).id))
+            favorites.push_back (i);
+    if (favorites.empty())
+        return;
+    const auto it = std::find (favorites.begin(), favorites.end(), currentPattern);
+    int at = it != favorites.end() ? (int) (it - favorites.begin()) : -1;
+    const int to = at >= 0 ? at + dir : (dir > 0 ? 0 : (int) favorites.size() - 1);
+    if (to >= 0 && to < (int) favorites.size())
+    {
+        selectPattern (favorites[(size_t) to]);
+        at = to;
+    }
+
+    GhostMenu::Content c;
+    c.path.add ("Favoriten");
+    for (int i : favorites)
+        c.list.add (juce::String (library.get (i).name));
+    c.current = at;
+    c.count = at >= 0 ? counter (at, (int) favorites.size()) : juce::String();
+    showGhost (c);
+}
+
+void MainComponent::browseMeters (int dir, bool favoritesOnly)
+{
+    const int next = favoritesOnly ? meters.stepFavorite (currentMeter, dir) : meters.step (currentMeter, dir);
+    const bool wrapped = next < 0 || (dir > 0 ? next <= currentMeter : next >= currentMeter);
+    if (! wrapped)   // at an end: it stops
+        selectMeter (next);
+
+    GhostMenu::Content c;
+    c.path.add (favoritesOnly ? "Taktart-Favoriten" : "Taktarten");
+    for (int i = 0; i < meters.size(); ++i)
+        if (! favoritesOnly || meters.isFavorite (i))
+        {
+            if (i == currentMeter)
+                c.current = c.list.size();
+            c.list.add (meters.label (i));
+        }
+    c.count = c.current >= 0 ? counter (c.current, c.list.size()) : juce::String();
+    showGhost (c);
 }
 
 void MainComponent::toggleFavorite()

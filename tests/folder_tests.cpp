@@ -1,6 +1,7 @@
 // Tests für die Ordnerstruktur (System → Ordnerstruktur): Standardplätze, gespeicherte Plätze,
 // Ordner anlegen/umbenennen/löschen, Verschieben, Reihenfolge, Datei lesen und schreiben
 #include "app/FolderTree.h"
+#include "app/BrowseOrder.h"
 
 #include <cstdio>
 
@@ -191,6 +192,16 @@ static void testFolderFile()
     CHECK (loaded.isHidden (FolderTree::Patterns, "carcass") && ! loaded.isHidden (FolderTree::Patterns, "Exhorder"));
     loaded.setHidden (FolderTree::Patterns, "CARCASS", false);
     CHECK (! loaded.isHidden (FolderTree::Patterns, "Carcass"));
+
+    // renamed: still hidden under the new name; a later folder with the old name is not; gone: forgotten
+    loaded.setHidden (FolderTree::Patterns, "Carcass", true);
+    loaded.followTopLevel (FolderTree::Patterns, { "Carcass", "Exhorder" }, { "Carcass Live", "Exhorder" });
+    CHECK (loaded.isHidden (FolderTree::Patterns, "Carcass Live") && ! loaded.isHidden (FolderTree::Patterns, "Carcass"));
+    loaded.followTopLevel (FolderTree::Patterns, { "Carcass Live", "Exhorder" }, { "Exhorder" });   // merged or removed
+    CHECK (! loaded.isHidden (FolderTree::Patterns, "Carcass Live"));
+    loaded.setHidden (FolderTree::Patterns, "Exhorder", true);
+    loaded.followTopLevel (FolderTree::Patterns, { "Exhorder" }, { "Exhorder", "Neu" });   // a new folder: nothing else changes
+    CHECK (loaded.isHidden (FolderTree::Patterns, "Exhorder") && ! loaded.isHidden (FolderTree::Patterns, "Neu"));
     const auto back = loaded.resolve (FolderTree::Patterns, patterns());
     CHECK (folders::find (back, path ({ "Carcass", "Übungen" })) != nullptr);
     CHECK (loaded.resolve (FolderTree::Bundled, bundled).folders.size() == 1);   // bleibt zusammengelegt
@@ -218,8 +229,44 @@ static void testShortName()
     CHECK (folders::shortName (deep, path ({ "R.P. Bardet", "Rock, Pop" })) == juce::String::fromUTF8 ("Rock – 4 Takte – Pattern 1 + Break 1"));
 }
 
+// Blättern wie im Menü: Halte sind Ordner mit eigenen Einträgen, Unterordner vor den eigenen Einträgen,
+// reine Sortier-Ordner führen in den ersten Unterordner, ausgeblendete werden übersprungen, nichts läuft im Kreis
+static void testBrowseOrder()
+{
+    FolderNode root;
+    root.items = { "user.oben" };
+    FolderNode a { "A", {}, { "user.a1", "user.a2" } };
+    FolderNode hidden { "Versteckt", {}, { "user.h1" } };
+    FolderNode leer { "Leer", {}, {} };
+    FolderNode fusion { "Fusion", {}, { "user.f1", "user.f2", "user.f3" } };
+    FolderNode jazz { "Jazz", { fusion }, {} };   // only sorts
+    FolderNode groove { "Groove", { jazz }, { "user.g1" } };
+    root.folders = { a, hidden, leer, groove };
+    FolderNode library;
+    library.folders = { FolderNode { "Thrash", {}, { "lib.t1" } } };
+
+    const auto order = browseFolders ({ { root, [] (const juce::String& f) { return f == "Versteckt"; } },
+                                        { library, nullptr } });
+    CHECK (order.size() == 6);   // A, Versteckt, Groove > Jazz > Fusion, Groove, oben, Thrash
+    CHECK (order[0].path == path ({ "A" }) && order[0].ids.size() == 2 && ! order[0].hidden);
+    CHECK (order[1].hidden);
+    CHECK (order[2].path == path ({ "Groove", "Jazz", "Fusion" }) && order[2].ids.size() == 3);
+    CHECK (order[3].path == path ({ "Groove" }) && order[3].ids.front() == "user.g1");
+    CHECK (order[4].path.isEmpty() && order[4].ids.front() == "user.oben");
+    CHECK (order[5].area == 1 && order[5].ids.front() == "lib.t1");
+
+    CHECK (browseFolderOf (order, "user.f2") == 2 && browseFolderOf (order, "user.x") < 0);
+    CHECK (nextBrowseFolder (order, 0, 1) == 2);        // the hidden one is passed over
+    CHECK (nextBrowseFolder (order, 2, -1) == 0);
+    CHECK (nextBrowseFolder (order, 5, 1) == -1);       // no wrapping
+    CHECK (nextBrowseFolder (order, 0, -1) == -1);
+    CHECK (nextBrowseFolder (order, -1, 1) == 0);       // from outside: the first and the last one
+    CHECK (nextBrowseFolder (order, (int) order.size(), -1) == 5);
+}
+
 void runFolderTests()
 {
+    testBrowseOrder();
     testDefaultPlaces();
     testStoredPlaces();
     testFolderEdits();

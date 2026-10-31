@@ -38,13 +38,21 @@ void MainComponent::setupKeys()
     a.toggleBeatDisplay = [this] { beatDisplay.setShowHits (! beatDisplay.getShowHits()); saveSettings(); };
     a.changeTempo       = [this] (double d) { changeTempo (d); };
     a.stepPattern       = [this] (int dir, bool fav) { stepPattern (dir, fav); };
-    a.stepCurrent       = [this] (int dir, bool fav) { stepCurrent (dir, fav); };
-    a.stepStyle         = [this] (int dir) { stepStyle (dir); };
+    a.stepCurrent       = [this] (int dir, bool fav)   // as the pattern menu is ordered (BrowseOrder.h)
+    {
+        if (! patternMode())
+            browseMeters (dir, fav);
+        else if (fav)
+            browseFavorites (dir);
+        else
+            browseInFolder (dir);
+    };
+    a.stepStyle         = [this] (int dir) { browseFolder (dir); };
     a.seekPart          = [this] (int dir) { seekPart (dir); };
     a.patternMenu       = [this] { showPatternMenu(); };
     a.meterMenu         = [this] { showMeterMenu(); };
     a.editor            = [this] { openEditor(); };
-    a.mixer             = [this] { showMixer(); };
+    a.mixer             = [this] { toggleMixer(); };
     a.search            = [this] { openSearch(); };
     a.help              = [this] { showHelp (true); };
     keyBindings = makeKeyBindings (a);
@@ -288,9 +296,25 @@ void MainComponent::showMixer()
         o.useNativeTitleBar = true;
         o.resizable = true;
         mixerWindow.reset (o.create());
+        mixerKeys.onKey = [this] (const juce::KeyPress& k)
+        {
+            if (k.getModifiers().isCommandDown() || juce::CharacterFunctions::toLowerCase (k.getTextCharacter()) != 'm')
+                return false;
+            toggleMixer();
+            return true;
+        };
+        mixerWindow->addKeyListener (&mixerKeys);
     }
     mixerWindow->setVisible (true);
     mixerWindow->toFront (true);
+}
+
+void MainComponent::toggleMixer()
+{
+    if (mixerWindow != nullptr && mixerWindow->isVisible())
+        mixerWindow->setVisible (false);   // M again: away with it
+    else
+        showMixer();
 }
 
 void MainComponent::showAudioSettings()
@@ -429,14 +453,23 @@ void MainComponent::showAudioSettings()
 
 void MainComponent::redistributeBadges()
 {
-    // the old assignment first into the cache folder (the last ten stay), then every pattern by the rule
+    // the old assignment first into the cache folder (the last ten stay), then every pattern by the rule;
+    // without a copy nothing changes
     const auto file = Library::songFolder().getSiblingFile ("abzeichen.json");
     const auto backups = juce::File::getSpecialLocation (juce::File::userHomeDirectory).getChildFile (".cache/HZ-Drummer/abzeichen");
-    if (file.existsAsFile() && backups.createDirectory())
+    if (file.existsAsFile())
     {
-        file.copyFileTo (backups.getChildFile ("abzeichen-" + juce::Time::getCurrentTime().formatted ("%Y%m%d-%H%M%S") + ".json"));
+        const auto now = juce::Time::getCurrentTime();
+        const auto copy = backups.getNonexistentChildFile ("abzeichen-" + now.formatted ("%Y%m%d-%H%M%S-")
+                                                           + juce::String (now.getMilliseconds()).paddedLeft ('0', 3), ".json", true);
+        if (! backups.createDirectory() || ! file.copyFileTo (copy))
+        {
+            juce::AlertWindow::showMessageBoxAsync (juce::MessageBoxIconType::WarningIcon, "Neu verteilen",
+                "Die bisherige Zuordnung ließ sich nicht sichern, deshalb bleibt alles, wie es ist.\n\n"_u + backups.getFullPathName());
+            return;
+        }
         auto old = backups.findChildFiles (juce::File::findFiles, false, "abzeichen-*.json");
-        old.sort();
+        old.sort();   // the names carry the time: oldest first
         for (int i = 0; i < old.size() - 10; ++i)
             old.getReference (i).deleteFile();
     }
@@ -473,7 +506,23 @@ void MainComponent::showDataTools (int tab)
             });
         }
         else if (tab == 1) panel = new LogPanel();
-        else if (tab == 3) panel = new MenuFoldersPanel (library);
+        else if (tab == 3)
+        {
+            auto* menuFolders = new MenuFoldersPanel (library);
+            menuFolders->ghostToggle.setToggleState (ghostEnabled, juce::dontSendNotification);
+            menuFolders->ghostSeconds.setValue (ghostSeconds, juce::dontSendNotification);
+            menuFolders->ghostSeconds.setEnabled (ghostEnabled);
+            menuFolders->onGhostChanged = [safe = juce::Component::SafePointer<MainComponent> (this), menuFolders]
+            {
+                if (safe == nullptr)
+                    return;
+                safe->ghostEnabled = menuFolders->ghostToggle.getToggleState();
+                safe->ghostSeconds = menuFolders->ghostSeconds.getValue();
+                safe->ghostMenu.setHoldSeconds (safe->ghostSeconds);
+                safe->saveSettings();
+            };
+            panel = menuFolders;
+        }
         else
         {
             auto* folders = new FolderPanel (library);

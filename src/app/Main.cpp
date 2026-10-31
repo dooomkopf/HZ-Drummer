@@ -1,6 +1,8 @@
 #include "app/MainComponent.h"
 #include "Version.h"
 #include "app/views/HZLook.h"
+#include "app/views/Theme.h"
+#include "app/views/Watermark.h"
 
 #include <juce_gui_extra/juce_gui_extra.h>
 
@@ -18,20 +20,20 @@ public:
         logger = std::make_unique<juce::FileLogger> (logFile, "HZ-Drummer v" HZ_VERSION " gestartet", 1024 * 1024);
         juce::Logger::setCurrentLogger (logger.get());
         juce::LookAndFeel::setDefaultLookAndFeel (&look);
-        mainWindow = std::make_unique<MainWindow> (getApplicationName());
 
-        // --editor: open the grid editor directly (for tests and screenshots)
-        if (auto* mc = dynamic_cast<MainComponent*> (mainWindow->getContentComponent()))
+        // the window first shows a splash, then builds the main component (the library takes a second or two)
+        mainWindow = std::make_unique<MainWindow> (getApplicationName(), [commandLine] (MainComponent& mc)
         {
+            // --editor: open the grid editor directly (for tests and screenshots)
             if (commandLine.contains ("--editor"))
-                mc->openEditorForTesting();
+                mc.openEditorForTesting();
             if (commandLine.contains ("--arranger"))
-                mc->openArrangerForTesting();
+                mc.openArrangerForTesting();
             if (commandLine.contains ("--play"))   // play immediately (tests/screenshots)
-                mc->startForTesting();
+                mc.startForTesting();
             if (commandLine.contains ("--mixer"))
-                mc->openMixerForTesting();
-        }
+                mc.openMixerForTesting();
+        });
     }
 
     void shutdown() override
@@ -62,17 +64,82 @@ public:
     }
 
 private:
+    // What the main window shows while the main component is built: the kit exactly where the main window's
+    // watermark sits (same size, same place, only stronger), "Initializing" above and "Drummer" below it,
+    // so that it reads "Initializing HZ Drummer". It fades in, then asks for the main component.
+    class SplashContent : public juce::Component, private juce::Timer
+    {
+    public:
+        explicit SplashContent (std::function<void()> whenShown) : onShown (std::move (whenShown))
+        {
+            setOpaque (true);
+            setSize (1000, 700);   // the main component's size
+            startTimerHz (60);
+        }
+
+        void paint (juce::Graphics& g) override
+        {
+            g.fillAll (theme::background);
+            watermark.draw (g, getLocalBounds(), 0.45f * fade);   // as MainComponent::paint, stronger
+            const auto h = (float) getHeight();
+            g.setColour (juce::Colour (0xff8a8a92).withMultipliedAlpha (fade));
+            g.setFont (juce::FontOptions (h * 0.045f));
+            g.drawText ("Initializing", getLocalBounds().removeFromTop ((int) (h * 0.17f)), juce::Justification::centred);
+            // "Drummer" heavier than the font's bold: the letters as outlines, filled and thickened by a stroke
+            const juce::Font drummerFont (juce::FontOptions (h * 0.18f, juce::Font::bold));
+            const auto line = getLocalBounds().removeFromBottom ((int) (h * 0.24f)).toFloat();
+            juce::GlyphArrangement glyphs;
+            glyphs.addFittedText (drummerFont, "Drummer", line.getX(), line.getY(), line.getWidth(), line.getHeight(),
+                                  juce::Justification::centred, 1);
+            juce::Path letters;
+            glyphs.createPath (letters);
+            g.setColour (juce::Colour (0xffb8b8be).withMultipliedAlpha (fade));
+            g.fillPath (letters);
+            g.strokePath (letters, juce::PathStrokeType (drummerFont.getHeight() * 0.065f, juce::PathStrokeType::curved,
+                                                         juce::PathStrokeType::rounded));
+        }
+
+    private:
+        void timerCallback() override
+        {
+            fade = juce::jmin (1.0f, fade + 0.125f);   // about 130 ms
+            repaint();
+            if (fade < 1.0f)
+                return;
+            stopTimer();
+            if (auto* peer = getPeer())
+                peer->performAnyPendingRepaintsNow();   // fully there before the long build blocks the program
+            juce::MessageManager::callAsync (onShown);
+        }
+
+        std::function<void()> onShown;
+        Watermark watermark;
+        float fade = 0.0f;
+    };
+
     class MainWindow : public juce::DocumentWindow
     {
     public:
-        explicit MainWindow (const juce::String& name)
-            : DocumentWindow (name, juce::Colour (0xff121214), DocumentWindow::allButtons)
+        MainWindow (const juce::String& name, std::function<void (MainComponent&)> whenReady)
+            : DocumentWindow (name, juce::Colour (0xff121214), DocumentWindow::allButtons, false)
         {
+            // onto the desktop only once size and place are known: on Linux, switching a window that is
+            // already there to the native title bar (or to resizable) shows it at once, small and empty
+            // in the top left corner
             setUsingNativeTitleBar (true);
-            setContentOwned (new MainComponent(), true);
+            setContentOwned (new SplashContent ([safe = juce::Component::SafePointer<MainWindow> (this), whenReady]
+            {
+                if (safe == nullptr)
+                    return;   // quit during the splash
+                auto* main = new MainComponent();
+                safe->setContentOwned (main, false);   // the window keeps its size: the kit stays where it was
+                if (whenReady)
+                    whenReady (*main);
+            }), true);
             setResizable (true, true);
             setResizeLimits (640, 420, 4000, 3000);
             centreWithSize (getWidth(), getHeight());
+            addToDesktop();
             setVisible (true);
         }
 

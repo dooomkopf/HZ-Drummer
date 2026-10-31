@@ -8,7 +8,8 @@
 class Watermark
 {
 public:
-    void draw (juce::Graphics&, juce::Rectangle<int> area);
+    void draw (juce::Graphics&, juce::Rectangle<int> area);                  // as faint as behind the main window
+    void draw (juce::Graphics&, juce::Rectangle<int> area, float opacity);   // stronger, e.g. the splash at start
 
 private:
     juce::Image source, scaled;

@@ -30,12 +30,22 @@ namespace
 
 void Watermark::draw (juce::Graphics& g, juce::Rectangle<int> area)
 {
+    draw (g, area, strength);
+}
+
+void Watermark::draw (juce::Graphics& g, juce::Rectangle<int> area, float opacity)
+{
     if (source.isNull())
     {
-        const auto picture = juce::ImageCache::getFromMemory (BinaryData::drumkit_png, BinaryData::drumkit_pngSize);
-        if (picture.isNull())
+        // extracted once for the whole program: the splash and the main window share it
+        static const juce::Image shared = []
+        {
+            const auto picture = juce::ImageCache::getFromMemory (BinaryData::drumkit_png, BinaryData::drumkit_pngSize);
+            return picture.isNull() ? juce::Image() : extract (picture);
+        }();
+        if (shared.isNull())
             return;
-        source = extract (picture);
+        source = shared;
     }
 
     const float scale = juce::jmin ((float) area.getWidth() * fill / (float) source.getWidth(),
@@ -48,7 +58,7 @@ void Watermark::draw (juce::Graphics& g, juce::Rectangle<int> area)
 
     // centred, a bit low: the cymbals sit behind the title, the drums behind the displays
     const auto at = juce::Rectangle<int> (w, h).withCentre (area.getCentre().translated (0, area.getHeight() / 20));
-    g.setOpacity (strength);
+    g.setOpacity (opacity);
     g.drawImageAt (scaled, at.getX(), at.getY());
     g.setOpacity (1.0f);
 }
