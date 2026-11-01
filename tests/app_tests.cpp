@@ -443,8 +443,13 @@ static int dumpAlbumView (const juce::File& data, const juce::File& shipped)
     return 0;
 }
 
+int runInboxProbe (const juce::File& source, const juce::File& script);   // inbox_probe.cpp
+
 int main (int argc, char* argv[])
 {
+    if (argc > 2 && juce::String (argv[1]) == "eingang")   // the import folder end to end, HOME set to a sandbox
+        return runInboxProbe (juce::File (juce::String::fromUTF8 (argv[2])),
+                              juce::File::getCurrentWorkingDirectory().getChildFile ("tools/import/eingang.py")) == 0 ? 0 : 1;
     if (argc > 2 && juce::String (argv[1]) == "alben")   // the shipped list: given, else alben/alben.json of the working folder
         return dumpAlbumView (juce::File (juce::String (argv[2])), argc > 3 ? juce::File (juce::String (argv[3]))
                                                                              : juce::File::getCurrentWorkingDirectory().getChildFile ("alben/alben.json"));

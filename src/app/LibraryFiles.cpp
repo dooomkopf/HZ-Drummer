@@ -1,6 +1,7 @@
 #include "app/Library.h"
 #include "app/Text.h"
 #include <algorithm>
+#include <optional>
 
 namespace
 {
@@ -22,6 +23,56 @@ namespace
                     return true;
         }
         return false;
+    }
+
+    // into dataFolder/trash/<uuid> as data.json with metadata.json, the way the trash window lists and restores it
+    juce::String moveToTrash (const juce::File& file, const juce::String& id, bool song, const juce::File& dataFolder)
+    {
+        const auto entry = dataFolder.getChildFile ("trash").getChildFile (juce::Uuid().toString());
+        if (! entry.createDirectory())
+            return "Papierkorb nicht anlegbar.";
+        auto* metadata = new juce::DynamicObject();
+        metadata->setProperty ("libraryId", id);
+        metadata->setProperty ("originalPath", file.getRelativePathFrom (dataFolder));
+        metadata->setProperty ("name", juce::JSON::parse (file.loadFileAsString())["name"].toString());
+        metadata->setProperty ("deletedAt", juce::Time::getCurrentTime().toISO8601 (true));
+        metadata->setProperty ("song", song);
+        if (! entry.getChildFile ("metadata.json").replaceWithText (juce::JSON::toString (juce::var (metadata))))
+            return "Papierkorb-Metadaten nicht schreibbar. Original unverändert."_u;
+        if (! file.moveFileTo (entry.getChildFile ("data.json")))
+            return "Datei nicht in Papierkorb verschiebbar: " + file.getFullPathName();
+        juce::Logger::writeToLog (juce::Time::getCurrentTime().toISO8601 (true) + " Papierkorb: " + id);
+        return {};
+    }
+
+    // the files of a folder by the id inside them (files may live in subfolders or have names unrelated to their ids)
+    std::map<juce::String, juce::Array<juce::File>> filesById (const juce::File& folder)
+    {
+        std::map<juce::String, juce::Array<juce::File>> found;
+        for (const auto& file : folder.findChildFiles (juce::File::findFiles | juce::File::ignoreHiddenFiles, true, "*.json"))
+        {
+            const auto json = juce::JSON::parse (file.loadFileAsString());
+            if (json.isObject())
+                found[json["id"].toString()].add (file);
+        }
+        return found;
+    }
+
+    // what may still use a pattern: the saved songs, the arranger's state and the shelf; "" or the file not readable
+    juce::String usersOfPatterns (const juce::File& dataFolder, std::vector<std::pair<juce::File, juce::var>>& users)
+    {
+        auto files = dataFolder.getChildFile ("songs").findChildFiles (juce::File::findFiles | juce::File::ignoreHiddenFiles, true, "*.json");
+        for (const auto* name : { "arranger.json", "ablage.json" })
+            if (const auto file = dataFolder.getChildFile (name); file.existsAsFile())
+                files.add (file);
+        for (const auto& file : files)
+        {
+            juce::var json;
+            if (juce::JSON::parse (file.loadFileAsString(), json).failed() || (! json.isObject() && ! json.isArray()))
+                return file.getFileName();
+            users.push_back ({ file, json });
+        }
+        return {};
     }
 }
 
@@ -67,21 +118,55 @@ juce::String removeOwnLibraryFile (const std::string& libraryId, const juce::Fil
                      + " verwendet. Zuerst dort aus dem Ablauf bzw. der Ablage entfernen.";
         }
     }
-    const auto entry = dataFolder.getChildFile ("trash").getChildFile (juce::Uuid().toString());
-    if (! entry.createDirectory())
-        return "Papierkorb nicht anlegbar.";
-    auto* metadata = new juce::DynamicObject();
-    metadata->setProperty ("libraryId", id);
-    metadata->setProperty ("originalPath", matches[0].getRelativePathFrom (dataFolder));
-    metadata->setProperty ("name", juce::JSON::parse (matches[0].loadFileAsString())["name"].toString());
-    metadata->setProperty ("deletedAt", juce::Time::getCurrentTime().toISO8601 (true));
-    metadata->setProperty ("song", song);
-    if (! entry.getChildFile ("metadata.json").replaceWithText (juce::JSON::toString (juce::var (metadata))))
-        return "Papierkorb-Metadaten nicht schreibbar. Original unverändert."_u;
-    if (! matches[0].moveFileTo (entry.getChildFile ("data.json")))
-        return "Datei nicht in Papierkorb verschiebbar: " + matches[0].getFullPathName();
-    juce::Logger::writeToLog (juce::Time::getCurrentTime().toISO8601 (true) + " Papierkorb: " + id);
-    return {};
+    return moveToTrash (matches[0], id, song, dataFolder);
+}
+
+std::map<std::string, juce::String> removeOwnLibraryFiles (const std::vector<std::string>& libraryIds, const juce::File& dataFolder)
+{
+    std::map<std::string, juce::String> result;
+    auto songs = filesById (dataFolder.getChildFile ("songs")), patterns = filesById (dataFolder.getChildFile ("patterns"));
+    std::vector<std::string> ordered;   // the songs first: a pattern only they used is free afterwards
+    for (const bool songsNow : { true, false })
+        for (const auto& id : libraryIds)
+            if (juce::String (id).startsWith ("song.") == songsNow)
+                ordered.push_back (id);
+    std::vector<std::pair<juce::File, juce::var>> users;
+    std::optional<juce::String> unreadable;   // read once, after the songs of this call went
+    for (const auto& libraryId : ordered)
+    {
+        const juce::String id (libraryId);
+        const bool song = id.startsWith ("song.");
+        if (! song && ! id.startsWith ("user."))
+        {
+            result[libraryId] = "Bibliothek-Bausteine können nicht gelöscht werden."_u;
+            continue;
+        }
+        const auto& files = (song ? songs : patterns)[song ? id.substring (5) : id];
+        if (files.size() != 1)
+        {
+            result[libraryId] = files.isEmpty() ? "Eintrag nicht mehr auf dem Datenträger gefunden."_u
+                                                : "Mehrere Dateien mit derselben Kennung gefunden. Nichts gelöscht."_u;
+            continue;
+        }
+        if (! song)
+        {
+            if (! unreadable)
+                unreadable = usersOfPatterns (dataFolder, users);
+            if (unreadable->isNotEmpty())
+            {
+                result[libraryId] = "Referenzen nicht prüfbar: "_u + *unreadable + ". Nichts gelöscht."_u;
+                continue;
+            }
+            const auto user = std::find_if (users.begin(), users.end(), [&id] (const auto& u) { return referencesPattern (u.second, id); });
+            if (user != users.end())
+            {
+                result[libraryId] = "wird in " + user->first.getFileName() + " verwendet";
+                continue;
+            }
+        }
+        result[libraryId] = moveToTrash (files[0], id, song, dataFolder);
+    }
+    return result;
 }
 
 std::vector<LibraryTrashEntry> listOwnTrash (const juce::File& dataFolder)

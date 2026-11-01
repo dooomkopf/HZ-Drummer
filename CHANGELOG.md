@@ -10,12 +10,17 @@
 - Blättern nach Ordnern mit Geister-Menü, Startbild, Tooltips abschaltbar
 - Abzeichen mit Material Symbols, Menü-Ordner ein- und ausblendbar (Liste alphabetisch, zehn Konfigurationen
   zum Abrufen: Minimal, Maximal und eigene)
-- Ordnerstruktur: Knopf Sortieren (alphabetisch, wahlweise mit Unterordnern)
+- Ordnerstruktur: Knopf Sortieren (alphabetisch, wahlweise mit Unterordnern); mehrere Einträge markieren
+  (Umschalt-/Strg-Klick, Strg+A) und auf einmal in den Papierkorb legen
 - Ansicht Band › „jjjj - Album“ › „nn. Titel“ als zweite Ordnung im Baustein-Menü (die Zeile „Ansicht“ oben im
   Menü, Taste O im Menü oder das Plattensymbol in der Baustein-Pille schalten um),
   Alben aus `alben/alben.json` (MusicBrainz) und eigener `alben.json`; `tools/import/alben_musicbrainz.py` holt die
   Alben einer Band, Quellen-Import und `install_band.py` ergänzen neue Bands von selbst
 - Band-Import nach Spielweise, MIDI, Guitar Pro 6/7/8 und MuseScore als Quelle, Import-Vorlagen unter `tools/import`
+- Eingangsordner `~/HZ-Drummer-Import`: Guitar Pro, MuseScore oder MIDI hineinkopieren (Band und Titel aus dem
+  Namen „Band - Titel.endung“ oder aus der Datei),
+  HZ-Drummer wandelt um, sucht das Album und spielt den Song ohne Neustart ein (Anleitung `HOWTOIMPORT.txt` im Ordner);
+  ein Punkt rechts unten zeigt, dass gelesen wird und dass es neue Meldungen gibt (Klick: die Liste)
 - Player: jede Runde spielt genau ihre Schläge, nichts doppelt oder verloren bei Pause, Sprung und Tempowechsel
 
 ## v0.1 (29.–30.10.2026)

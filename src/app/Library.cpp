@@ -402,6 +402,21 @@ juce::String Library::remove (const hz::Pattern& p)
     return {};
 }
 
+std::map<std::string, juce::String> Library::removeMany (const std::vector<std::string>& ids)
+{
+    auto result = removeOwnLibraryFiles (ids, userPatternFolder().getParentDirectory());
+    bool any = false;
+    for (const auto& [id, error] : result)
+        if (error.isEmpty())
+        {
+            favorites.erase (id);
+            any = true;
+        }
+    if (any)
+        reload();
+    return result;
+}
+
 void Library::toggleFavorite (const std::string& id)
 {
     if (! favorites.erase (id))

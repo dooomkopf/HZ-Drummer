@@ -1,5 +1,7 @@
 #include "app/FolderPanel.h"
 
+#include <algorithm>
+
 #include "app/Library.h"
 #include "app/views/InWindowDialog.h"
 #include "app/FolderSort.h"
@@ -129,7 +131,7 @@ private:
 FolderPanel::FolderPanel (Library& lib) : library (lib)
 {
     addAndMakeVisible (hint);
-    hint.setText ("Ziehen: Einträge und Ordner verschieben   ·   Hoch/Runter/Sortieren: Reihenfolge   ·   "
+    hint.setText ("Ziehen: Einträge und Ordner verschieben   ·   Umschalt-/Strg-Klick, Strg+A: mehrere markieren   ·   "
                   "Löschen: Bausteine und Arrangements in den Papierkorb, Ordner nur wenn leer"_u,
                   juce::dontSendNotification);
     hint.setColour (juce::Label::textColourId, juce::Colour (0xffe07a70));   // the light red of all help lines
@@ -137,6 +139,7 @@ FolderPanel::FolderPanel (Library& lib) : library (lib)
 
     addAndMakeVisible (tree);
     tree.setRootItemVisible (false);
+    tree.setMultiSelectEnabled (true);   // Shift+click, Strg+click as in a file manager
     tree.setIndentSize (22);
     tree.setColour (juce::TreeView::backgroundColourId, theme::background);
     tree.setColour (juce::TreeView::selectedItemBackgroundColourId, selectedColour);
@@ -154,7 +157,14 @@ FolderPanel::FolderPanel (Library& lib) : library (lib)
     newButton.setTooltip ("Neuer Ordner im gewählten Ordner");
     newButton.onClick = [this] { addFolder(); };
     renameButton.onClick = [this] { renameFolder(); };
-    removeButton.onClick = [this] { if (const auto* item = selected(); item != nullptr && item->kind == Item::Kind::Entry) removeEntry(); else removeFolder(); };
+    removeButton.onClick = [this]
+    {
+        const auto items = selectedItems();
+        if (std::any_of (items.begin(), items.end(), [] (const Item* i) { return i->kind == Item::Kind::Entry; }))
+            removeEntries();
+        else
+            removeFolder();
+    };
     upButton.onClick = [this] { shift (-1); };
     downButton.onClick = [this] { shift (1); };
 
@@ -271,14 +281,41 @@ FolderPanel::Item* FolderPanel::selected() const
     return dynamic_cast<Item*> (tree.getSelectedItem (0));
 }
 
+std::vector<FolderPanel::Item*> FolderPanel::selectedItems() const
+{
+    std::vector<Item*> items;
+    for (int i = 0; i < tree.getNumSelectedItems(); ++i)
+        if (auto* item = dynamic_cast<Item*> (tree.getSelectedItem (i)))
+            items.push_back (item);
+    return items;
+}
+
+bool FolderPanel::keyPressed (const juce::KeyPress& key)
+{
+    if (key != juce::KeyPress ('a', juce::ModifierKeys::commandModifier, 0))
+        return false;
+    auto* item = selected();
+    auto* folder = item != nullptr && item->kind == Item::Kind::Entry ? item->getParentItem() : item;
+    if (folder == nullptr)
+        return true;
+    tree.clearSelectedItems();
+    folder->setOpen (true);
+    for (int i = 0; i < folder->getNumSubItems(); ++i)
+        if (auto* sub = static_cast<Item*> (folder->getSubItem (i)); sub->kind == Item::Kind::Entry)
+            sub->setSelected (true, false);
+    return true;
+}
+
 void FolderPanel::updateButtons()
 {
-    const auto* item = selected();
+    const auto items = selectedItems();
+    const auto* item = items.size() == 1 ? items.front() : nullptr;   // making, renaming, moving: one at a time
     const auto kind = item != nullptr ? item->kind : Item::Kind::Root;
     newButton.setEnabled (item != nullptr);
     renameButton.setEnabled (kind == Item::Kind::Folder);
     removeButton.setEnabled ((kind == Item::Kind::Folder && item->count == 0)
-                             || (kind == Item::Kind::Entry && deletableEntry (item->place.id)));
+                             || std::any_of (items.begin(), items.end(), [this] (const Item* i)
+                                             { return i->kind == Item::Kind::Entry && deletableEntry (i->place.id); }));
 
     // up/down among the siblings of the same kind (folders and entries are sorted apart)
     int index = -1, siblings = 0;
@@ -391,28 +428,39 @@ bool FolderPanel::deletableEntry (const std::string& id) const
 {
     // own patterns and songs; the bundled library stays
     const int i = library.indexOf (id);
-    return onDeleteEntry != nullptr && i >= 0 && (library.isUserPattern (i) || library.isSong (i));
+    return onDeleteEntries != nullptr && i >= 0 && (library.isUserPattern (i) || library.isSong (i));
 }
 
-void FolderPanel::removeEntry()
+void FolderPanel::removeEntries()
 {
-    const auto* item = selected();
-    if (item == nullptr || item->kind != Item::Kind::Entry || ! deletableEntry (item->place.id))
-        return;
-    const auto id = item->place.id;
-    const int i = library.indexOf (id);
-    const bool song = library.isSong (i);
-    // asked here, in this window: a question in the main window could hide behind it
-    juce::AlertWindow::showOkCancelBox (juce::MessageBoxIconType::QuestionIcon, song ? "Arrangement löschen"_u : "Baustein löschen"_u,
-        "\"" + juce::String (library.get (i).name) + "\" in den Papierkorb verschieben?\n\n"_u
-            + (song ? "Die verwendeten Bausteine bleiben erhalten."
-                    : "Bausteine, die noch in einem Ablauf oder der Ablage verwendet werden, können nicht gelöscht werden."_u),
-        "In Papierkorb", "Abbrechen", this,
-        juce::ModalCallbackFunction::create ([safe = juce::Component::SafePointer<FolderPanel> (this), id] (int r)
+    std::vector<std::string> ids;
+    int songs = 0;
+    for (const auto* item : selectedItems())
+        if (item->kind == Item::Kind::Entry && deletableEntry (item->place.id))
         {
-            if (safe == nullptr || r != 1 || ! safe->onDeleteEntry)
+            ids.push_back (item->place.id);
+            songs += library.isSong (library.indexOf (item->place.id)) ? 1 : 0;
+        }
+    if (ids.empty())
+        return;
+    const int patterns = (int) ids.size() - songs;
+    const auto count = [] (int n, const char* one, const char* many) { return juce::String (n) + " " + (n == 1 ? one : many); };
+    const auto what = ids.size() == 1 ? "\"" + juce::String (library.get (library.indexOf (ids.front())).name) + "\""
+                                      : (songs > 0 ? count (songs, "Arrangement", "Arrangements") : juce::String())
+                                            + (songs > 0 && patterns > 0 ? " und " : "")
+                                            + (patterns > 0 ? count (patterns, "Baustein", "Bausteine") : juce::String());
+    // asked here, in this window: a question in the main window could hide behind it
+    juce::AlertWindow::showOkCancelBox (juce::MessageBoxIconType::QuestionIcon,
+        ids.size() == 1 ? (songs == 1 ? "Arrangement löschen"_u : "Baustein löschen"_u) : "Einträge löschen"_u,
+        what + " in den Papierkorb verschieben?\n\n"_u
+            + (patterns == 0 ? "Die verwendeten Bausteine bleiben erhalten."
+                             : "Bausteine, die noch in einem Ablauf oder der Ablage verwendet werden, bleiben stehen."_u),
+        "In Papierkorb", "Abbrechen", this,
+        juce::ModalCallbackFunction::create ([safe = juce::Component::SafePointer<FolderPanel> (this), ids] (int r)
+        {
+            if (safe == nullptr || r != 1 || ! safe->onDeleteEntries)
                 return;
-            if (const auto error = safe->onDeleteEntry (id); error.isNotEmpty())
+            if (const auto error = safe->onDeleteEntries (ids); error.isNotEmpty() && safe != nullptr)
                 juce::AlertWindow::showMessageBoxAsync (juce::MessageBoxIconType::WarningIcon, "Löschen nicht möglich"_u, error, "OK", safe.getComponent());
             if (safe != nullptr)
                 safe->refresh();

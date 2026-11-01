@@ -47,7 +47,9 @@ soweit sie hier nicht abweichen; überholte Stellen stehen im vorletzten Abschni
    dort lassen sie sich wiederherstellen. [Bed.]
 6. **Löschen ist gesperrt**, solange ein gespeichertes Arrangement, der Ablauf oder die Ablage den Baustein
    verwendet oder er im Editor offen ist. Die Meldung sagt, wo er steckt. Bibliothek-Bausteine lassen sich
-   nicht löschen. [Bed., Code]
+   nicht löschen. Mehrere markierte Einträge (Ordnerstruktur) gehen in einem Zug: erst die Arrangements, dann
+   die Bausteine, geprüft gegen das, was danach übrig ist (`removeOwnLibraryFiles`); einmal neu geladen, was
+   gesperrt ist, bleibt und steht in der Meldung. [Bed., Code]
 7. **Umbenennen** geht bei eigenen Bausteinen und Arrangements, nicht bei der Bibliothek. Kopien in
    gespeicherten Arrangements, im Arbeitsstand des Arrangers und in der Ablage heißen mit, solange sie noch
    den alten Namen tragen. Blöcke mit lokalem Namen behalten ihn. Ein Arrangement ändert dabei nur seinen
@@ -302,11 +304,22 @@ soweit sie hier nicht abweichen; überholte Stellen stehen im vorletzten Abschni
    „Ansicht: Band › Song“ (eigene Ordner) bzw. „Ansicht: Band › Album › Song“ im Baustein-Menü (unter
    „Metronom“) und O im offenen Menü (auch mit Feststelltaste; gehalten
    nur einmal) schalten um und öffnen das Menü neu, eine Hörprobe läuft weiter; das Plattensymbol in der
-   Menü-Pille schaltet bei geschlossenem Menü um (linke Maustaste); Einstellung `albumView` je Rechner. Quellen-Import (`quellen.py`, `installFromSource`) und
+   Menü-Pille schaltet bei geschlossenem Menü um (linke Maustaste); Einstellung `albumView` je Rechner. Eingangsordner (`ImportInbox`,
+   `tools/import/eingang.py`): alle 3 s ein Blick nach `~/HZ-Drummer-Import`, eine Datei gilt als fertig kopiert,
+   wenn Größe und Zeit seit dem letzten Blick gleich sind; eine nach der anderen im Hintergrund, eingespielt wird auf
+   dem Hauptthread über `installFromSource`, bevor die nächste beginnt (sie sieht die vorige schon). Band und Titel
+   aus dem Namen, sonst aus der Datei (Guitar Pro: Titel und Interpret; MuseScore: Titel und Komponist, Metadaten
+   oder Textrahmen); ohne beides Ergebnis 4, die Datei bleibt bis zum Umbenennen liegen, `Fehler` nur bei Ergebnis 3; eine schon vorhandene Kennung wird „-v2“ (nächste freie Nummer), der Tag `song:` bleibt. Rückgabe
+   2 (MusicBrainz nicht erreichbar): die Band kommt in `~/.cache/HZ-Drummer/eingang-alben-offen.txt` und wird nach
+   einer Minute und alle 30 Minuten neu gefragt. Der Punkt rechts unten (`ImportNoticeDot`) pulsiert ab dem Start
+   eines Auftrags, danach zeigt er ungelesene Meldungen (grün, orange bei einem Problem); gelesen sind sie, sobald
+   die Liste zugeht. Gespeichert: die letzten 50 in `~/.cache/HZ-Drummer/eingang-meldungen.json`. Quellen-Import (`quellen.py`, `installFromSource`) und
    `install_band.py` holen für Bands, die `alben/alben.json` nicht kennt, die Alben von MusicBrainz
    (`tools/import/alben_musicbrainz.py`) und ergänzen die eigene `alben.json` um Bands, die weder Liste
-   kennt; `install_band.py` (mit `import_band.py --alben`) trägt außerdem bei bekannten Bands die Songs des
-   Imports ohne Album einzeln mit Album und Nummer nach (`nummern`). Nichts wird überschrieben, ohne Netz
+   kennt; beim Einspielen (`installFromSource` mit `AlbumIndex::mergeAlbums`, also Quellen und Eingangsordner)
+   und in `install_band.py` (mit `import_band.py --alben`) kommen bei bekannten Bands die Songs des Imports ohne
+   Album einzeln mit Album und Nummer dazu (`nummern`; ein Album, das die Listen kennen, behält Name und Jahr,
+   außerhalb seiner Titelliste ist die Nummer 0). Nichts wird überschrieben, ohne Netz
    bleibt die Band flach. [Code] Gelb umrandet ist der Platz, dessen Auswahl genau den
    jetzigen Haken entspricht. [Code] Benennt man einen ausgeblendeten Ordner um, bleibt er ausgeblendet. Verschwindet ein Name
    von der obersten Ebene, vergisst die Liste ihn. [Bed., Code]

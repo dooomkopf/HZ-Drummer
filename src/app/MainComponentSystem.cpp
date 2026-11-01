@@ -1,5 +1,5 @@
-// MainComponent, part 4: the System windows for audio settings and for handing out the badges anew.
-// Moved out of MainComponentMenus.cpp as they were.
+// MainComponent, part 4: the System windows (audio settings, badges anew, trash, log files, folders, menu folders)
+// and deleting many entries at once from the folder view. Moved out of MainComponentMenus.cpp as they were.
 
 #include "app/MainComponent.h"
 #include "app/SystemDataViews.h"
@@ -204,4 +204,112 @@ void MainComponent::redistributeBadges()
     if (editorWindow != nullptr)
         editorWindow->getArranger().badgesChanged();
     repaint();
+}
+
+void MainComponent::showDataTools (int tab)
+{
+    auto& window = tab == 0 ? trashWindow : tab == 1 ? logsWindow : tab == 2 ? foldersWindow : menuFoldersWindow;
+    if (window == nullptr)
+    {
+        juce::Component* panel = nullptr;
+        if (tab == 0)
+        {
+            const juce::Component::SafePointer<MainComponent> safe (this);
+            panel = new TrashPanel (Library::userPatternFolder().getParentDirectory(), [safe]
+            {
+                if (safe == nullptr) return;
+                const auto selectedId = safe->patternMode() ? safe->library.get (safe->currentPattern).id : std::string();
+                safe->library.reload();
+                safe->currentPattern = safe->library.indexOf (selectedId);
+                safe->sendCurrentPlan(); safe->updateButtons();
+                if (safe->editorWindow != nullptr) safe->editorWindow->getArranger().libraryChanged();
+            });
+        }
+        else if (tab == 1) panel = new LogPanel();
+        else if (tab == 3)
+        {
+            auto* menuFolders = new MenuFoldersPanel (library);
+            menuFolders->ghostToggle.setToggleState (ghostEnabled, juce::dontSendNotification);
+            menuFolders->ghostSeconds.setValue (ghostSeconds, juce::dontSendNotification);
+            menuFolders->ghostSeconds.setEnabled (ghostEnabled);
+            menuFolders->onGhostChanged = [safe = juce::Component::SafePointer<MainComponent> (this), menuFolders]
+            {
+                if (safe == nullptr)
+                    return;
+                safe->ghostEnabled = menuFolders->ghostToggle.getToggleState();
+                safe->ghostSeconds = menuFolders->ghostSeconds.getValue();
+                safe->ghostMenu.setHoldSeconds (safe->ghostSeconds);
+                safe->saveSettings();
+            };
+            panel = menuFolders;
+        }
+        else
+        {
+            auto* folders = new FolderPanel (library);
+            folders->onDeleteEntries = [safe = juce::Component::SafePointer<MainComponent> (this)] (const std::vector<std::string>& ids)
+            {
+                return safe != nullptr ? safe->removeLibraryEntries (ids) : juce::String();
+            };
+            panel = folders;
+        }
+        panel->setSize (tab == 1 ? 1000 : tab == 2 ? 980 : tab == 3 ? 560 : 820, tab == 0 ? 500 : tab == 3 ? 800 : 640);
+        juce::DialogWindow::LaunchOptions options;
+        options.content.setOwned (new GlowFrame (panel));
+        options.dialogTitle = tab == 0 ? "Papierkorb" : tab == 1 ? "Log-Dateien" : tab == 3 ? "Menü-Ordner"_u : juce::String ("Ordnerstruktur");
+        options.dialogBackgroundColour = theme::panel; options.useNativeTitleBar = true; options.resizable = true;
+        window.reset (options.create());
+    }
+    auto* frame = dynamic_cast<GlowFrame*> (window->getContentComponent());
+    auto* content = frame != nullptr ? frame->content() : window->getContentComponent();
+    if (auto* trash = dynamic_cast<TrashPanel*> (content)) trash->refresh();
+    if (auto* logs = dynamic_cast<LogPanel*> (content)) logs->refresh();
+    if (auto* folderPanel = dynamic_cast<FolderPanel*> (content)) folderPanel->refresh();
+    if (auto* menuPanel = dynamic_cast<MenuFoldersPanel*> (content)) menuPanel->refresh();
+    window->setVisible (true); window->toFront (true);
+}
+
+juce::String MainComponent::removeLibraryEntries (const std::vector<std::string>& ids)
+{
+    // as removeLibraryEntry for each, with one reload at the end: thirty entries must not mean thirty reloads
+    juce::StringArray problems;
+    std::map<std::string, juce::String> names;
+    std::vector<std::string> go;
+    for (const auto& id : ids)
+    {
+        const int index = library.indexOf (id);
+        if (index < 0)
+            continue;
+        names[id] = juce::String (library.get (index).name);
+        if (const auto error = openInEditor (editorWindow.get(), id); error.isNotEmpty())
+            problems.add (names[id] + ": " + error);
+        else if (library.isUserPattern (index) && editorWindow != nullptr && editorWindow->getArranger().usesPattern (id))
+            problems.add (names[id] + ": noch im aktuellen Ablauf oder in der Ablage");
+        else
+            go.push_back (id);
+    }
+    cancelPreview();
+    const auto selectedId = patternMode() ? library.get (currentPattern).id : std::string();
+    for (const auto& [id, error] : library.removeMany (go))
+    {
+        if (error.isNotEmpty())
+        {
+            problems.add (names[id] + ": " + error);
+            continue;
+        }
+        badges.release (id);   // a restored pattern gets a badge again when the library reloads
+        if (editorWindow != nullptr)
+            editorWindow->getArranger().songDeleted (id);
+    }
+    currentPattern = library.indexOf (selectedId);
+    quickSearch.close();
+    sendCurrentPlan();
+    updateButtons();
+    saveSettings();
+    if (editorWindow != nullptr)
+        editorWindow->getArranger().libraryChanged();
+    if (problems.isEmpty())
+        return {};
+    const int shown = juce::jmin (8, problems.size());
+    return juce::String (problems.size()) + juce::String::fromUTF8 (" nicht gelöscht:\n") + problems.joinIntoString ("\n", 0, shown)
+           + (problems.size() > shown ? "\n…"_u : juce::String());
 }

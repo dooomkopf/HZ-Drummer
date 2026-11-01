@@ -31,8 +31,9 @@ für eigene Dateien (Guitar Pro, MuseScore, MIDI) und für neue Einträge unter 
 | | [`hydrogen/mt_import.py`](hydrogen/mt_import.py), [`hydrogen/mt_import_all.py`](hydrogen/mt_import_all.py) | MT-Power-Grooves (je Groove Original und Fassung mit Fill) |
 | | [`hydrogen/h2_dump.py`](hydrogen/h2_dump.py), [`hydrogen/h2scan.py`](hydrogen/h2scan.py), [`hydrogen/mtpower_decode.py`](hydrogen/mtpower_decode.py) | Patterns als JSON ausgeben, Dateien untersuchen, einen Takt dekodieren |
 | Gedruckt / PDF | [`papier/po_text_extract.py`](papier/po_text_extract.py) | Pocket Operations aus der Textebene des PDFs (`pdftotext -bbox`) |
-| Alben (für die Ansicht Band › Album › Song) | [`alben_musicbrainz.py`](alben_musicbrainz.py) | Alben, Jahre und Titelnummern einer Band aus MusicBrainz nach `alben.json`; siehe [docs/EIGENE-DATEIEN.md](../../docs/EIGENE-DATEIEN.md) |
 | | [`papier/po_to_tab.py`](papier/po_to_tab.py) | → HZ-Drummer-Tabs, danach `patternc` |
+| Alben (für die Ansicht Band › Album › Song) | [`alben_musicbrainz.py`](alben_musicbrainz.py) | Alben, Jahre und Titelnummern einer Band aus MusicBrainz nach `alben.json`; siehe [docs/EIGENE-DATEIEN.md](../../docs/EIGENE-DATEIEN.md) |
+| Eingangsordner `~/HZ-Drummer-Import` | [`eingang.py`](eingang.py) | eine Datei für die App vorbereiten (Band und Titel aus dem Namen oder der Datei): umwandeln, bei vorhandenem Song „-v2“, Alben; die App ruft es selbst auf |
 
 ## Ablauf am Beispiel einer Band in Guitar Pro
 

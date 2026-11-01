@@ -16,16 +16,13 @@
 #include "app/Text.h"
 #include "app/views/Theme.h"
 
-namespace
+// deleting from outside (main window, folder view) leaves a pattern open in the editor alone: the next
+// Strg+S there would write it back. The editor's own Löschen clears the editor and does not come here.
+juce::String MainComponent::openInEditor (WorkshopWindow* editorWindow, const std::string& id)
 {
-    // deleting from outside (main window, folder view) leaves a pattern open in the editor alone: the next
-    // Strg+S there would write it back. The editor's own Löschen clears the editor and does not come here.
-    juce::String openInEditor (WorkshopWindow* editorWindow, const std::string& id)
-    {
-        if (editorWindow != nullptr && editorWindow->getEditor().getPattern().id == id)
-            return "Dieser Baustein ist im Editor geöffnet. Zuerst dort schließen oder dort löschen."_u;
-        return {};
-    }
+    if (editorWindow != nullptr && editorWindow->getEditor().getPattern().id == id)
+        return "Dieser Baustein ist im Editor geöffnet. Zuerst dort schließen oder dort löschen."_u;
+    return {};
 }
 
 void MainComponent::setupKeys()
@@ -399,73 +396,6 @@ void MainComponent::toggleMixer()
         mixerWindow->setVisible (false);   // M again: away with it
     else
         showMixer();
-}
-
-void MainComponent::showDataTools (int tab)
-{
-    auto& window = tab == 0 ? trashWindow : tab == 1 ? logsWindow : tab == 2 ? foldersWindow : menuFoldersWindow;
-    if (window == nullptr)
-    {
-        juce::Component* panel = nullptr;
-        if (tab == 0)
-        {
-            const juce::Component::SafePointer<MainComponent> safe (this);
-            panel = new TrashPanel (Library::userPatternFolder().getParentDirectory(), [safe]
-            {
-                if (safe == nullptr) return;
-                const auto selectedId = safe->patternMode() ? safe->library.get (safe->currentPattern).id : std::string();
-                safe->library.reload();
-                safe->currentPattern = safe->library.indexOf (selectedId);
-                safe->sendCurrentPlan(); safe->updateButtons();
-                if (safe->editorWindow != nullptr) safe->editorWindow->getArranger().libraryChanged();
-            });
-        }
-        else if (tab == 1) panel = new LogPanel();
-        else if (tab == 3)
-        {
-            auto* menuFolders = new MenuFoldersPanel (library);
-            menuFolders->ghostToggle.setToggleState (ghostEnabled, juce::dontSendNotification);
-            menuFolders->ghostSeconds.setValue (ghostSeconds, juce::dontSendNotification);
-            menuFolders->ghostSeconds.setEnabled (ghostEnabled);
-            menuFolders->onGhostChanged = [safe = juce::Component::SafePointer<MainComponent> (this), menuFolders]
-            {
-                if (safe == nullptr)
-                    return;
-                safe->ghostEnabled = menuFolders->ghostToggle.getToggleState();
-                safe->ghostSeconds = menuFolders->ghostSeconds.getValue();
-                safe->ghostMenu.setHoldSeconds (safe->ghostSeconds);
-                safe->saveSettings();
-            };
-            panel = menuFolders;
-        }
-        else
-        {
-            auto* folders = new FolderPanel (library);
-            folders->onDeleteEntry = [safe = juce::Component::SafePointer<MainComponent> (this)] (const std::string& id)
-            {
-                if (safe == nullptr)
-                    return juce::String();
-                if (auto error = openInEditor (safe->editorWindow.get(), id); error.isNotEmpty())
-                    return error;
-                safe->cancelPreview();
-                return safe->removeLibraryEntry (id);
-            };
-            panel = folders;
-        }
-        panel->setSize (tab == 1 ? 1000 : tab == 2 ? 980 : tab == 3 ? 560 : 820, tab == 0 ? 500 : tab == 3 ? 800 : 640);
-        juce::DialogWindow::LaunchOptions options;
-        options.content.setOwned (new GlowFrame (panel));
-        options.dialogTitle = tab == 0 ? "Papierkorb" : tab == 1 ? "Log-Dateien" : tab == 3 ? "Menü-Ordner"_u : juce::String ("Ordnerstruktur");
-        options.dialogBackgroundColour = theme::panel; options.useNativeTitleBar = true; options.resizable = true;
-        window.reset (options.create());
-    }
-    auto* frame = dynamic_cast<GlowFrame*> (window->getContentComponent());
-    auto* content = frame != nullptr ? frame->content() : window->getContentComponent();
-    if (auto* trash = dynamic_cast<TrashPanel*> (content)) trash->refresh();
-    if (auto* logs = dynamic_cast<LogPanel*> (content)) logs->refresh();
-    if (auto* folderPanel = dynamic_cast<FolderPanel*> (content)) folderPanel->refresh();
-    if (auto* menuPanel = dynamic_cast<MenuFoldersPanel*> (content)) menuPanel->refresh();
-    window->setVisible (true); window->toFront (true);
 }
 
 //==============================================================================

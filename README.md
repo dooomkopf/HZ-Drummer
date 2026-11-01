@@ -38,10 +38,11 @@ Gedacht ist es zum Üben, nicht für Studioaufnahmen: Es soll ohne Umwege den ri
 - **Loop und Speed-Trainer**: einen Bereich ganzer Takte per Shift+Ziehen loopen, das Tempo nach jeder Runde stufenweise steigern; zehn benannte **Speicherplätze** für Übestellen mit Bereich und Trainer-Werten.
 - **Suche** über alles mit Filtern wie `7/8` oder `160-190 bpm`, Vorhören direkt im Menü.
 - **Einzählen** vor dem Start, Tap-Tempo, Mixer je Instrument mit Pegelanzeige, Metronom mit eigenen Taktarten.
-- **Ordnerstruktur** und **Papierkorb** für eigene Patterns und Songs.
+- **Ordnerstruktur** und **Papierkorb** für eigene Patterns und Songs, mit Mehrfachauswahl wie im Dateimanager.
+- **Ansicht Band › Album › Song** als zweite Ordnung im Baustein-Menü, Alben, Jahre und Titelnummern aus MusicBrainz; umschalten im Menü, mit Taste O oder dem Plattensymbol.
 - **Startpaket**: Groove MIDI (echte Einspielungen), R.P. Bardet, kurze Loops von Carcass und Exhorder und drei Beispiel-Arrangements, beim ersten Start schon da, siehe [community/](community/).
 - **Quellenimport** per Klick (System › Quellen): weitere Bausteine, die nicht mitgeliefert werden dürfen (MT Power, Band-Songs, Guitar-Pro-Tabs von Metallica bis Death, MIDI), lädt das Programm von der Originalquelle und wandelt sie auf dem eigenen Rechner um, mit Import-Log und Knöpfen, die die Ordner öffnen.
-- **Eigene Dateien** aus Guitar Pro (3 bis 8), MuseScore und MIDI werden zu Bausteinen und Arrangements, siehe [Eigene Dateien einspielen](docs/EIGENE-DATEIEN.md).
+- **Eigene Dateien** aus Guitar Pro (3 bis 8), MuseScore und MIDI werden zu Bausteinen und Arrangements: in den **Eingangsordner** `~/HZ-Drummer-Import` legen, das Programm wandelt um und sortiert ein, ein Punkt rechts unten meldet das Ergebnis; siehe [Eigene Dateien einspielen](docs/EIGENE-DATEIEN.md).
 - **Import-Vorlagen** für Guitar Pro (3 bis 8), MuseScore, MIDI, Hydrogen und gedruckte Pattern-Bücher unter [tools/import](tools/import/README.md), auch als Vorlage für KI-Assistenten.
 
 ## Voraussetzungen
@@ -54,8 +55,8 @@ Gedacht ist es zum Üben, nicht für Studioaufnahmen: Es soll ohne Umwege den ri
 | Git | Klonen, JUCE kommt als Submodul mit |
 | ALSA, JACK, FreeType, Fontconfig, X11 (Pakete im Schnellstart) | Audio und Oberfläche |
 | rund 140 MB für `build/`, rund 400 MB für das Drum-Kit | Platz |
-| Python 3 (bei Ubuntu dabei) | System › Quellen und die Import-Werkzeuge unter `tools/` |
-| optional Java und TuxGuitar 1.5.6 | Guitar-Pro-Dateien umwandeln, siehe [docs/SETUP.md](docs/SETUP.md) |
+| Python 3 (bei Ubuntu dabei) | System › Quellen, der Eingangsordner `~/HZ-Drummer-Import` und die Import-Werkzeuge unter `tools/` |
+| optional Java und TuxGuitar 1.5.6 | Guitar Pro 3 bis 5 umwandeln (6 bis 8 und MuseScore brauchen es nicht), siehe [docs/SETUP.md](docs/SETUP.md) |
 | optional Internet | System › Quellen lädt von den Originalquellen |
 
 ## Schnellstart
@@ -118,12 +119,14 @@ Das Programm legt außerhalb seines Ordners nur diese Dateien an:
 |---|---|
 | `~/.config/HZ-Drummer/` | Datenordner: `patterns/` (eigene Bausteine), `songs/` (Arrangements), `trash/` (Papierkorb), `ordner.json` (Ordnerstruktur), `abzeichen.json`, `ablage.json` und `arranger.json` (Arbeitsstand des Arrangers), `trainer.json` (Speicherplätze des Trainers), `menue-ordner.json` (Konfigurationen der Menü-Ordner) |
 | `~/.config/HZ-Drummer/HZ-Drummer.settings` | persönliche Einstellungen: Audio-Gerät, Tempo, Fensterlage, Favoriten, Trainer, Tooltips |
-| `~/.cache/HZ-Drummer/` | Protokolle `app.log` (auch Abstürze mit Aufrufstapel), `run.log` (Start), `import.log` (System › Quellen); `abzeichen/` (die letzten zehn Abzeichen-Verteilungen); `quellen/` (Downloads und Zwischenstände des Quellen-Imports) |
+| `~/.cache/HZ-Drummer/` | Protokolle `app.log` (auch Abstürze mit Aufrufstapel), `run.log` (Start), `import.log` (System › Quellen und Eingangsordner); `abzeichen/` (die letzten zehn Abzeichen-Verteilungen); `quellen/` (Downloads und Zwischenstände des Quellen-Imports); `eingang/` (Zwischenstände des Eingangsordners), `eingang-alben-offen.txt` (Bands, deren Alben ohne Netz offen blieben) und `eingang-meldungen.json` (die letzten 50 Meldungen des Punkts rechts unten) |
+| `~/HZ-Drummer-Import/` | Eingangsordner: hineinkopierte Tabs, danach in `erledigt/` bzw. `Fehler/`; `HOWTOIMPORT.txt` (Kurzanleitung, legt das Programm an) |
 | `~/.local/share/applications/hz-drummer.desktop` | Starter, nur wenn `tools/install-desktop.sh` lief |
 
 **Logik:**
 - **Erster Start:** Gibt es weder `patterns/` noch `songs/`, kopiert das Programm das Startpaket in den Datenordner: die Community-Sätze (Carcass, Exhorder, Groove MIDI, R.P. Bardet) mit ihren Ordnern und Arrangements sowie drei Beispiel-Arrangements (Thrash, Prog, Doom) aus Bibliothek-Bausteinen. Danach nie wieder; vorhandene Dateien werden nie überschrieben. Siehe [community/README.md](community/README.md) und [docs/QUELLEN.md](docs/QUELLEN.md).
 - **System › Quellen:** lädt Bausteine, die nicht mitgeliefert werden dürfen, von der Originalquelle, wandelt sie auf dem eigenen Rechner um und legt nur Neues in den Datenordner, die neuen Arrangements in einen Ordner je Band. Was schon da ist, ob selbst gemacht oder von einer älteren Installation, bleibt unverändert an seinem Platz. Was wegfällt oder vereinfacht wird, steht in `import.log` (System › Log-Dateien).
+- **Eingangsordner:** Eine Datei in `~/HZ-Drummer-Import` (Band und Titel aus dem Namen „Band - Titel.endung“ oder aus der Datei) wandelt das Programm im Hintergrund um und spielt sie ein wie eine Quelle, ohne Fenster; ein schon vorhandener Song wird zweite Fassung „-v2“. Die Datei wandert nach `erledigt` oder `Fehler`, Gründe stehen in `import.log`. Siehe [docs/EIGENE-DATEIEN.md](docs/EIGENE-DATEIEN.md).
 - **Abgleich:** Ist der Datenordner ein Git-Repo mit Remote `origin`, gleicht `tools/run.sh` ihn vor dem Start und nach dem Ende ab (`tools/sync-daten.sh`). Ohne Git passiert nichts.
 - Die Bibliothek (`library/`) gehört zum Programm und wird nie in den Datenordner kopiert.
 
@@ -133,6 +136,7 @@ Das Programm legt außerhalb seines Ordners nur diese Dateien an:
 rm -f ~/.local/share/applications/hz-drummer.desktop   # Starter
 rm -rf ~/.cache/HZ-Drummer                             # Protokolle und Downloads
 rm -rf ~/.config/HZ-Drummer                            # Datenordner samt Einstellungen
+rm -rf ~/HZ-Drummer-Import                             # Eingangsordner (vorher eigene Tabs herausnehmen)
 rm -rf ~/HZ-Drummer                                    # der Klon mit Build und Kit (Pfad anpassen)
 ```
 

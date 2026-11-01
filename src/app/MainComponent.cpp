@@ -134,6 +134,7 @@ MainComponent::MainComponent()
     setupKeys();
     addChildComponent (helpOverlay);
     addAndMakeVisible (activeGlow);
+    addChildComponent (noticeDot);   // shows itself when there is news
     addChildComponent (quickSearch);
     addChildComponent (ghostMenu);
     ghostMenu.onAlpha = [this] (float a)   // the ghost takes their place while it shows
@@ -174,10 +175,12 @@ MainComponent::MainComponent()
     }
 
     startTimerHz (60);
+    startInbox();
 }
 
 MainComponent::~MainComponent()
 {
+    inbox = nullptr;   // a conversion that runs is stopped, nothing calls back any more
     juce::PopupMenu::dismissAllActiveMenus();   // an open Baustein menu holds menuKeys
     if (auto* look = dynamic_cast<HZLook*> (&getLookAndFeel()))
         look->onPopupMenuWindow = nullptr;
@@ -822,6 +825,7 @@ void MainComponent::resized()
 
     // footer: kit status and key hint
     helpLabel.setBounds (area.removeFromBottom (32));
+    noticeDot.setBounds (helpLabel.getBounds().removeFromRight (40));   // over the end of the hint line, which stays centred
     kitLabel.setBounds (area.removeFromBottom (28));
 
     area.removeFromTop (8);

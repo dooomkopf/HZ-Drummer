@@ -1,9 +1,28 @@
 # Eigene Dateien einspielen: Guitar Pro, MuseScore, MIDI
 
-Eigene Abschriften und Tabs werden zu Bausteinen und Arrangements im eigenen Datenordner. Der Weg hat
-vier Schritte: Dateien einer Band in einen Ordner legen, in einen Vorbereitungsordner umwandeln,
-ansehen, bei geschlossenem HZ-Drummer einspielen. Fertige Quellen per Klick bietet dagegen
+Eigene Abschriften und Tabs werden zu Bausteinen und Arrangements im eigenen Datenordner. Am einfachsten
+geht das über den Eingangsordner (gleich unten). Von Hand hat der Weg vier Schritte: Dateien einer Band in einen
+Ordner legen, in einen Vorbereitungsordner umwandeln, ansehen, bei geschlossenem HZ-Drummer einspielen. Fertige Quellen per Klick bietet dagegen
 **System › Quellen** (siehe [Bedienung](BEDIENUNG.md)).
+
+## Der einfache Weg: Eingangsordner
+
+Datei nach `~/HZ-Drummer-Import` kopieren (Formate wie unten, MIDI auch `.midi`; nur Dateien direkt im Ordner).
+Band und Titel kommen aus dem Namen `Band - Titel.endung`, sonst aus der Datei selbst: bei Guitar Pro aus den Feldern
+Titel und Interpret (nicht Musik, dort steht oft der Komponist), bei MuseScore aus Titel und Komponist. Fehlt beides,
+etwa bei MIDI mit anderem Namen, bleibt die Datei liegen, das Log sagt es, und du benennst sie im Ordner um.
+
+HZ-Drummer erkennt die Datei nach ein paar Sekunden, auch während es läuft: umwandeln (Bausteine nach Spielweise),
+Album bei MusicBrainz suchen, einspielen, das Arrangement in den Ordner der Band; meist dauert das unter einer
+Minute. Steht die Band schon in anderer Schreibweise da („AC-DC“ für „AC/DC“), gilt die vorhandene. Ist gerade ein
+Menü offen, wartet das Einspielen, bis es zu ist. Danach liegt die Datei in `erledigt`; nach `Fehler` kommt nur, was
+sich nicht lesen lässt oder kein Schlagzeug hat (Umbenennen hilft da nicht). Gibt es den Song schon, entsteht eine
+zweite Fassung mit `-v2`. Ohne Netz kommt der Song erst ohne Album und bekommt es später (eine Minute nach dem
+nächsten Start, dann jede halbe Stunde). Es öffnet sich kein Fenster: ein Punkt rechts unten im Hauptfenster
+pulsiert, solange gelesen wird, und leuchtet grün oder bei Problemen orange, bis du die Meldungen per Klick gelesen
+hast. Alle Hinweise und Gründe stehen im Import-Log `~/.cache/HZ-Drummer/import.log`, die Kurzanleitung als
+`HOWTOIMPORT.txt` im Ordner. Die Schritte unten sind der
+Weg von Hand, etwa für eine ganze Band mit `--nur` oder `--ohne`.
 
 ## Was geht
 

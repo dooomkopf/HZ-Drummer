@@ -43,7 +43,7 @@ void MainComponent::showQuellen()
     quellenWindow->toFront (true);
 }
 
-juce::String MainComponent::installFromSource (const juce::File& staging)
+juce::String MainComponent::installFromSource (const juce::File& staging, bool writeLog)
 {
     int patterns = 0, songs = 0, skipped = 0;
     juce::StringArray newSongs;   // only what this import put there is filed into folders
@@ -66,10 +66,12 @@ juce::String MainComponent::installFromSource (const juce::File& staging)
     copyAll (staging.getChildFile ("patterns"), Library::userPatternFolder(), patterns, nullptr);
     copyAll (staging.getChildFile ("songs"), Library::songFolder(), songs, &newSongs);
 
-    // albums the import brought for a band nobody knows yet (alben_musicbrainz.py): into the own alben.json
-    int albumBands = 0;
-    const auto albumError = library.albumIndex().mergeNewBands (staging.getChildFile ("alben.json"),
-                                                                 Library::userPatternFolder().getParentDirectory().getChildFile ("alben.json"), albumBands);
+    // albums the import brought (alben_musicbrainz.py): a band nobody knows yet comes whole into the own alben.json,
+    // a song of a known band without an album there comes alone
+    int albumBands = 0, albumSongs = 0;
+    const auto albumError = library.albumIndex().mergeAlbums (staging.getChildFile ("alben.json"),
+                                                               Library::userPatternFolder().getParentDirectory().getChildFile ("alben.json"),
+                                                               AlbumIndex::importedSongs (staging.getChildFile ("patterns")), albumBands, albumSongs);
 
     // the library knows them now; the main window keeps its selection by id
     const auto selectedId = patternMode() ? library.get (currentPattern).id : std::string();
@@ -111,9 +113,12 @@ juce::String MainComponent::installFromSource (const juce::File& staging)
         report << " (" << skipped << " schon da)";
     if (albumBands > 0)
         report << ", Alben f\u00fcr "_u << albumBands << (albumBands == 1 ? " Band" : " Bands") << " in alben.json";
+    if (albumSongs > 0)
+        report << ", " << albumSongs << (albumSongs == 1 ? " Song" : " Songs") << " mit Album in alben.json";
     if (albumError.isNotEmpty())
         report << " (alben.json: " << albumError << ")";
-    juce::File::getSpecialLocation (juce::File::userHomeDirectory).getChildFile (".cache/HZ-Drummer/import.log")
-        .appendText ("Eingespielt: " + report + "\n");
+    if (writeLog)   // the import folder writes its own line, with the file's name
+        juce::File::getSpecialLocation (juce::File::userHomeDirectory).getChildFile (".cache/HZ-Drummer/import.log")
+            .appendText ("Eingespielt: " + report + "\n");
     return report;
 }

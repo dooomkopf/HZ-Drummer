@@ -17,6 +17,8 @@ einzeln mit Nummer ein (0, wenn sie nicht feststeht). Was es nicht findet, melde
 Ansicht unter „Sonstige“, bis es jemand von Hand einträgt (Aufbau in docs/FORMATE.md). Eine neue Quelle ohne Einträge
 zerschießt nichts: ihre Songs bleiben flach unter der Band.
 MusicBrainz: eine Anfrage je Sekunde, die Daten stehen unter CC0. Nur Standardbibliothek, braucht Internet.
+Rückgabe: 0 geschrieben bzw. ausgegeben; 1 nichts gefunden; 2 MusicBrainz nicht erreichbar oder eine Antwort fehlt,
+dann wird nichts geschrieben (ein halbes Ergebnis würde Songs falsch einsortieren).
 """
 import collections
 import glob
@@ -32,6 +34,7 @@ MB = "https://musicbrainz.org/ws/2/"
 SHIPPED = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "alben", "alben.json")
 NOT_STUDIO = ("Compilation", "Remix", "Soundtrack", "Demo", "DJ-mix", "Mixtape/Street")
 last_request = 0.0
+failed = 0   # requests without an answer after all attempts: the result would be incomplete
 
 
 # the same table as AlbumIndex::key in the app (src/app/AlbumIndex.cpp): a letter with signs as its base letter
@@ -56,7 +59,7 @@ def norm(s):
 
 
 def get(path, **params):
-    global last_request
+    global last_request, failed
     wait = 1.1 - (time.time() - last_request)
     if wait > 0:
         time.sleep(wait)
@@ -70,6 +73,7 @@ def get(path, **params):
             last_request = time.time()
             print(f"  Anfrage fehlgeschlagen ({e}), neuer Versuch", file=sys.stderr, flush=True)
             time.sleep(3 * (attempt + 1))
+    failed += 1
     return None
 
 
@@ -89,9 +93,17 @@ def songs_of(data, band):
 
 
 def artist(name):
+    """Id und Name bei MusicBrainz; es zählen auch die Aliasnamen dort und ein „The“ davor oder nicht
+    ("Black Dahlia Murder" findet "The Black Dahlia Murder")."""
     d = get("artist/", query=f'artist:"{name}"', limit=5)
-    for a in (d or {}).get("artists", []):
-        if norm(a["name"]) == norm(name):
+    want = norm(name)
+    artists = (d or {}).get("artists", [])
+    for a in artists:   # the exact name first: "Death" is Death, not a band that once was called so
+        if norm(a.get("name", "")) == want:
+            return a["id"], a["name"]
+    for a in artists:
+        names = [a.get("name", "")] + [al.get("name", "") for al in a.get("aliases", []) or [] if isinstance(al, dict)]
+        if any(norm(n) and (norm(n) == want or norm(n) == "the" + want or "the" + norm(n) == want) for n in names):
             return a["id"], a["name"]
     return None, None
 
@@ -161,12 +173,15 @@ def tracklist(rgid):
     return best
 
 
-def recording(artist_name, title):
+def recording(artist_name, title, aid=None):
     """Das früheste offizielle Album (auch live, keine Compilation, kein Bootleg), auf dem eine Aufnahme dieses Titels erschien."""
     d = get("recording/", query=f'recording:"{title}" AND artist:"{artist_name}"', limit=25)
     found = []
     for rec in (d or {}).get("recordings", []):
         if norm(rec.get("title", "")) != norm(title):
+            continue
+        credited = {c.get("artist", {}).get("id") for c in rec.get("artist-credit", []) if isinstance(c, dict)}
+        if aid and aid not in credited:   # the search also finds "Christian Death" for Death: only the band itself
             continue
         for rel in rec.get("releases", []):
             if rel.get("status") != "Official":   # a bootleg, a promo or an edition without status is no album of the band
@@ -204,7 +219,7 @@ def albums_for(band, songs, artist_name):
     for k, title in songs.items():
         if k in assigned:
             continue
-        hit = recording(aname, title)
+        hit = recording(aname, title, aid)
         if not hit:
             missing.append(title)
             continue
@@ -278,8 +293,19 @@ def main():
     bands = [a for a in args if not a.startswith("--")]
     if not bands:
         sys.exit(__doc__)
+    listed = {}   # bands that stay as they are: checked before asking MusicBrainz anything
+    if do_write and not replace and not staging:
+        for f in (os.path.join(data, "alben.json"), SHIPPED):
+            try:
+                listed.update({norm(k): f for k in json.load(open(f, encoding="utf-8")).get("bands", {})})
+            except (OSError, ValueError, AttributeError):
+                pass
     result = {}
     for band in bands:
+        if norm(band) in listed:
+            print(f"{band} steht schon in {listed[norm(band)]}, bleibt (--ersetzen überschreibt; neue Songs einer Band "
+                  f"trägt install_band.py einzeln nach)", file=sys.stderr)
+            continue
         songs = {norm(t): t.strip() for t in titles.split(";") if t.strip()} if titles else songs_of(data, band)
         if not songs:
             print(f"{band}: keine Songs mit Tag band:{band} im Datenordner {data}", file=sys.stderr)
@@ -287,7 +313,8 @@ def main():
         print(f"=== {band}: {len(songs)} Songs", file=sys.stderr, flush=True)
         albums, missing = albums_for(band, songs, artist_name)
         if albums is None:
-            print(f"{band}: bei MusicBrainz nicht gefunden (--kuenstler <Name> hilft bei anderer Schreibweise)", file=sys.stderr)
+            print(f"{band}: MusicBrainz nicht erreichbar" if failed else
+                  f"{band}: bei MusicBrainz nicht gefunden (--kuenstler <Name> hilft bei anderer Schreibweise)", file=sys.stderr)
             continue
         if not albums:
             print(f"HINWEIS: {band}: kein Album mit diesen Songs gefunden, die Band bleibt flach (von Hand eintragen)", file=sys.stderr)
@@ -295,6 +322,10 @@ def main():
         for title in missing:
             print(f"HINWEIS: {band} – {title}: kein Album gefunden, bleibt unter „Sonstige“ (von Hand eintragen)", file=sys.stderr)
         result[band] = albums
+    if failed:
+        print(f"HINWEIS: MusicBrainz nicht erreichbar oder unvollständig ({failed} Anfragen ohne Antwort), nichts "
+              f"geschrieben", file=sys.stderr)
+        sys.exit(2)
     if not result:
         sys.exit(1)
     if do_write:

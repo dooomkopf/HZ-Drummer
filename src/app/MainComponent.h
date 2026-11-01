@@ -4,6 +4,8 @@
 #include "app/Text.h"
 #include "app/BadgeRegistry.h"
 #include "app/HelpOverlay.h"
+#include "app/ImportInbox.h"
+#include "app/ImportNotices.h"
 #include "app/arranger/ArrangerHost.h"
 #include "app/views/ActiveGlow.h"
 #include "app/KeyBindings.h"
@@ -276,7 +278,14 @@ private:
     std::unique_ptr<WorkshopWindow> editorWindow;
     std::unique_ptr<juce::DialogWindow> mixerWindow, audioWindow, trashWindow, logsWindow, foldersWindow, menuFoldersWindow, quellenWindow;
     void showQuellen();                                       // System › Quellen (MainComponentQuellen.cpp)
-    juce::String installFromSource (const juce::File& staging);   // a loaded source into the data folder
+    juce::String installFromSource (const juce::File& staging, bool writeLog = true);   // a loaded source into the data folder
+    juce::String removeLibraryEntries (const std::vector<std::string>& ids);   // many to the trash, one reload; "" or what stayed
+    static juce::String openInEditor (WorkshopWindow*, const std::string& id);   // "" or why it may not be deleted from outside
+    // the import folder ~/HZ-Drummer-Import (MainComponentInbox.cpp): files put there come in by themselves
+    ImportNoticeDot noticeDot;   // bottom right: news of the import folder
+    std::unique_ptr<ImportInbox> inbox;
+    void startInbox();
+    void finishInboxJob (const ImportInbox::Result&);
     juce::TextButton playButton { "Start" }, tapButton { "Tap" }, audioButton { "System" },
                      editButton { "Bearbeiten" }, mixerButton { "Mixer" }, searchButton { "Suchen" }, deleteEntryButton { "Löschen"_u },
                      renameEntryButton { "Umbenennen" }, countInButton,

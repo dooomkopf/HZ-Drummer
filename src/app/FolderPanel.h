@@ -7,13 +7,15 @@
 
 #include <functional>
 #include <optional>
+#include <vector>
 
 class Library;
 
 // System → Ordnerstruktur: the folders of songs and own patterns as a tree. The buttons make,
-// rename, delete (empty ones only) and sort folders; "Löschen" on an own pattern or a song moves it
-// to the trash (onDeleteEntry, after asking). Entries and folders move by dragging them onto a
-// folder or between other entries. Every change is saved at once (Library::editFolders).
+// rename, delete (empty ones only) and sort folders; "Löschen" on own patterns and songs moves them
+// to the trash (onDeleteEntries, after asking once). Several entries are marked as in a file manager:
+// Shift+click a range, Strg+click one more or less, Strg+A all in the folder. Entries and folders move by
+// dragging them onto a folder or between other entries. Every change is saved at once (Library::editFolders).
 class FolderPanel : public juce::Component,
                     public juce::DragAndDropContainer
 {
@@ -23,11 +25,12 @@ public:
 
     void refresh();   // the library or the folders changed elsewhere
 
-    // moves an own pattern or a song to the trash; returns "" or why it cannot
-    std::function<juce::String (const std::string& id)> onDeleteEntry;
+    // moves own patterns and songs to the trash; returns "" or what stayed and why
+    std::function<juce::String (const std::vector<std::string>& ids)> onDeleteEntries;
 
     void paint (juce::Graphics&) override;
     void resized() override;
+    bool keyPressed (const juce::KeyPress&) override;   // Strg+A: every entry of the folder
 
 private:
     class Item;
@@ -48,12 +51,13 @@ private:
     void addFolder();
     void renameFolder();
     void removeFolder();
-    void removeEntry();   // an own pattern or a song: to the trash, after asking
+    void removeEntries();   // the marked own patterns and songs: to the trash, after asking once
     bool deletableEntry (const std::string& id) const;
     void shift (int delta);
     void sortSelected();   // the selected folder (an entry: its folder) alphabetically, after asking
     void updateButtons();
-    Item* selected() const;
+    Item* selected() const;                    // the first marked one
+    std::vector<Item*> selectedItems() const;
 
     Library& library;
     juce::TreeView tree;

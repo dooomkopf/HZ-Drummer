@@ -42,6 +42,7 @@ public:
     // Own patterns: save (new id or next revision) and delete. Return "" on success.
     juce::String save (hz::Pattern&, bool asNew);
     juce::String remove (const hz::Pattern&);
+    std::map<std::string, juce::String> removeMany (const std::vector<std::string>& ids);   // one reload; id -> "" or why not
     // Own pattern or song: a new name. A pattern's copies in songs, the arranger's working state
     // and the Ablage follow while they still carry the old name (see SongRename). "" on success.
     juce::String rename (const std::string& id, const juce::String& newName);
@@ -113,6 +114,8 @@ private:
 
 // Remove a user pattern or saved song from a data folder; protects unresolved references.
 juce::String removeOwnLibraryFile (const std::string& libraryId, const juce::File& dataFolder);
+// The same for many: each folder read once, songs first (a pattern only they used is free then); id -> "" or why not
+std::map<std::string, juce::String> removeOwnLibraryFiles (const std::vector<std::string>& libraryIds, const juce::File& dataFolder);
 
 struct LibraryTrashEntry
 {
