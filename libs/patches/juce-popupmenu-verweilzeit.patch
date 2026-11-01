@@ -1,0 +1,113 @@
+diff --git a/modules/juce_gui_basics/menus/juce_PopupMenu.cpp b/modules/juce_gui_basics/menus/juce_PopupMenu.cpp
+index 07f124c3c..399d02ad6 100644
+--- a/modules/juce_gui_basics/menus/juce_PopupMenu.cpp
++++ b/modules/juce_gui_basics/menus/juce_PopupMenu.cpp
+@@ -1538,6 +1538,13 @@ private:
+     uint32 lastScrollTime = 0, lastMoveTime = 0;
+     bool isDown = false;
+ 
++    // HZ-Drummer: an open submenu holds against brief passes over other items (highlightItemUnderMouse)
++    static constexpr uint32 submenuSwitchDelay = 300;
++    uint32 switchWaitingSince = 0;
++    ItemComponent* switchWaitingFor = nullptr;
++    ItemComponent* aimFromItem = nullptr;
++    Point<int> aimFrom;
++
+     // Although most mouse movements can be handled inside mouse event callbacks, scrolling of menus
+     // may happen while the mouse is not moving, so periodic timer callbacks are required in this
+     // scenario.
+@@ -1622,14 +1629,23 @@ private:
+             lastMoveTime = timeNow;
+         }
+ 
+-        if (! mouseHasMoved && ! mouseTimedOut)
++        // HZ-Drummer: a waiting switch (below) is checked while the mouse rests too; a press makes it at once
++        const auto buttonDown = ModifierKeys::getCurrentModifiers().isAnyMouseButtonDown()
++                             || ComponentPeer::getCurrentModifiersRealtime().isAnyMouseButtonDown();
++        const auto switchDue = switchWaitingSince != 0
++                            && (buttonDown || submenuSwitchDelay <= timeNow - switchWaitingSince);
++
++        if (! mouseHasMoved && ! mouseTimedOut && ! switchDue)
+             return;
+ 
+         if (window.disableMouseMoves)
+             return;
+ 
+         if (window.activeSubMenu != nullptr && window.activeSubMenu->isOverChildren())
++        {
++            switchWaitingSince = 0;
+             return;
++        }
+ 
+         const auto isMovingTowardsMenu = isMouseOver
+                                       && globalMousePos != lastMousePos
+@@ -1637,9 +1653,6 @@ private:
+ 
+         lastMousePos = globalMousePos;
+ 
+-        if (isMovingTowardsMenu)
+-            return;
+-
+         auto* componentUnderMouse = window.getComponentAt (localMousePos);
+         auto* childComponentUnderMouse = componentUnderMouse != &window ? componentUnderMouse : nullptr;
+ 
+@@ -1655,7 +1668,37 @@ private:
+         });
+ 
+         if (itemUnderMouse == window.currentChild)
++        {
++            switchWaitingSince = 0;
++            aimFrom = globalMousePos;   // HZ-Drummer: where the mouse leaves the item, the way to its submenu starts
++            aimFromItem = itemUnderMouse;
+             return;
++        }
++
++        // HZ-Drummer: while a submenu is open, another item takes over only once the mouse has been over it for
++        // submenuSwitchDelay ms and is not heading for the submenu: slipping over a neighbour on the way changes nothing
++        auto waited = false;
++
++        if (isMouseOver && window.isSubMenuVisible())
++        {
++            if (switchWaitingSince == 0 || switchWaitingFor != itemUnderMouse)
++            {
++                switchWaitingFor = itemUnderMouse;
++                switchWaitingSince = timeNow;
++            }
++
++            waited = submenuSwitchDelay <= timeNow - switchWaitingSince;
++
++            if (! buttonDown && (isMovingTowardsMenu || ! waited))
++                return;
++        }
++        else
++        {
++            switchWaitingSince = 0;
++
++            if (isMovingTowardsMenu)
++                return;
++        }
+ 
+         if (! isMouseOver && window.activeSubMenu != nullptr && window.activeSubMenu->isVisible())
+             return;
+@@ -1667,6 +1710,11 @@ private:
+             return;
+ 
+         window.setCurrentlyHighlightedChild (isMouseOver ? itemUnderMouse : nullptr);
++
++        if (waited)   // HZ-Drummer: it has waited long enough, its own submenu opens at once
++            window.timeEnteredCurrentChildComp = switchWaitingSince;
++
++        switchWaitingSince = 0;
+     }
+ 
+     bool isMovingTowardsSubmenu (Point<int> newGlobalPos) const
+@@ -1681,7 +1729,8 @@ private:
+         auto itemScreenBounds = window.activeSubMenu->getScreenBounds();
+         auto subX = (float) itemScreenBounds.getX();
+ 
+-        auto oldGlobalPos = lastMousePos;
++        // HZ-Drummer: measured from where the mouse left the item, not from its last small step
++        auto oldGlobalPos = aimFromItem == window.currentChild ? aimFrom : lastMousePos;
+ 
+         if (itemScreenBounds.getX() > window.getX())
+         {

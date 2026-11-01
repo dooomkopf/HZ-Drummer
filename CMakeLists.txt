@@ -4,6 +4,28 @@ project(HZDrummer VERSION 0.0.1 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# JUCE bleibt das Original-Submodul. Unsere Änderungen daran liegen als Patch in libs/patches und werden hier
+# vor dem Bauen eingespielt (schon eingespielt: nichts zu tun).
+# juce-popupmenu-verweilzeit.patch: ist ein Untermenü offen, wechselt das Menü erst, wenn die Maus 300 ms auf
+# einem anderen Eintrag bleibt; kurzes Verrutschen öffnet nichts anderes.
+find_package(Git REQUIRED)
+foreach(patch juce-popupmenu-verweilzeit.patch)
+    set(patchFile ${CMAKE_CURRENT_SOURCE_DIR}/libs/patches/${patch})
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${patchFile})
+    execute_process(COMMAND ${GIT_EXECUTABLE} apply --reverse --check ${patchFile}
+                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/libs/JUCE
+                    RESULT_VARIABLE notApplied OUTPUT_QUIET ERROR_QUIET)
+    if(notApplied)
+        execute_process(COMMAND ${GIT_EXECUTABLE} apply ${patchFile}
+                        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/libs/JUCE
+                        RESULT_VARIABLE failed)
+        if(failed)
+            message(FATAL_ERROR "libs/patches/${patch} passt nicht auf libs/JUCE (andere JUCE-Version?)")
+        endif()
+        message(STATUS "JUCE: ${patch} eingespielt")
+    endif()
+endforeach()
+
 add_subdirectory(libs/JUCE)
 
 # Engine: reines C++ ohne JUCE-Abhängigkeit, damit testbar und später in Plugin/Mobile wiederverwendbar
