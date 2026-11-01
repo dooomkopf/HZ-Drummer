@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 #include <juce_gui_basics/juce_gui_basics.h>
 
 // The program's look: pill-shaped buttons with a soft drop shadow on the dark background.
@@ -20,6 +22,10 @@ public:
                                bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown) override;
     void drawButtonText (juce::Graphics&, juce::TextButton&, bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown) override;
     juce::Font getTextButtonFont (juce::TextButton&, int buttonHeight) override;   // bold only with the property "bold"
+
+    // every popup menu window as it is made, submenus too: the main window hooks the key that switches the view
+    std::function<void (juce::Component&)> onPopupMenuWindow;
+    void preparePopupMenuWindow (juce::Component&) override;
 
     void drawComboBox (juce::Graphics&, int width, int height, bool isButtonDown,
                        int buttonX, int buttonY, int buttonW, int buttonH, juce::ComboBox&) override;

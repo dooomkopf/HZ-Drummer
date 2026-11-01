@@ -79,7 +79,7 @@ void ArrangerPanel::showLoadMenu()
         if (const int i = lib.indexOf (id); i >= 0)
         {
             ids.push_back (id);
-            m.addItem ((int) ids.size(), folders::shortName (juce::String (lib.get (i).name), folder));
+            m.addItem ((int) ids.size(), lib.entryLabel (i, folder));
         }
         return false;
     });

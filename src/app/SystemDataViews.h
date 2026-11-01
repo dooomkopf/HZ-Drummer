@@ -207,20 +207,23 @@ public:
             list.addAndMakeVisible (title);
             title->setBounds (0, y, width, 26);
             y += 28;
+            // the top-level names of both views, as the slots below count them: without its tick a name is hidden in both;
+            // alphabetical, so that one finds a folder; the menu keeps its own order
             const auto tree = library.folders (area);
-            std::vector<const FolderNode*> shown;   // alphabetical, so that one finds a folder; the menu keeps its own order
-            for (const auto& f : tree.folders)
-                shown.push_back (&f);
-            std::stable_sort (shown.begin(), shown.end(), [] (const FolderNode* a, const FolderNode* b) { return folders::sortsBefore (a->name, b->name); });
-            for (const auto* folder : shown)
+            const auto names = library.topLevelFolders (area);
+            std::vector<juce::String> shown (names.begin(), names.end());
+            std::stable_sort (shown.begin(), shown.end(), [] (const juce::String& a, const juce::String& b) { return folders::sortsBefore (a, b); });
+            for (const auto& name : shown)
             {
-                const auto& f = *folder;
-                auto* tick = new juce::ToggleButton (f.name + "   (" + juce::String (folders::countItems (f)) + ")");
+                const auto here = std::find_if (tree.folders.begin(), tree.folders.end(), [&] (const FolderNode& n) { return n.name.equalsIgnoreCase (name); });
+                const auto count = here != tree.folders.end() ? juce::String (folders::countItems (*here))
+                                 : library.view() == Library::View::Album ? juce::String ("nur eigene Ordner") : juce::String ("nur Album-Ansicht");
+                auto* tick = new juce::ToggleButton (name + "   (" + count + ")");
                 rows.add (tick);
                 tick->setColour (juce::ToggleButton::textColourId, theme::textMain);
                 tick->setColour (juce::ToggleButton::tickColourId, theme::textMain);
-                tick->setToggleState (! library.folderHidden (area, f.name), juce::dontSendNotification);
-                tick->onClick = [this, area, name = f.name, tick]
+                tick->setToggleState (! library.folderHidden (area, name), juce::dontSendNotification);
+                tick->onClick = [this, area, name, tick]
                 {
                     if (const auto error = library.setFolderHidden (area, name, ! tick->getToggleState()); error.isNotEmpty())
                         juce::AlertWindow::showMessageBoxAsync (juce::MessageBoxIconType::WarningIcon, "Nicht gespeichert", error);

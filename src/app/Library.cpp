@@ -91,6 +91,10 @@ void Library::reload()
 
     if (const auto error = folderTree.load (folderFile()); error.isNotEmpty())
         loadErrors.add (error);
+    if (const auto error = albums.load (findAppFolder ("alben").getChildFile ("alben.json"),
+                                        userPatternFolder().getParentDirectory().getChildFile ("alben.json")); error.isNotEmpty())
+        loadErrors.add (error);   // names the file itself
+    placeSongs();
 
     if (onReloaded)
         onReloaded (entries);
@@ -214,7 +218,90 @@ juce::String Library::rename (const std::string& id, const juce::String& newName
     return error;
 }
 
+void Library::placeSongs()
+{
+    songPlaces.clear();
+    std::map<std::string, const hz::Pattern*> byId;
+    for (const auto& p : entries)
+        byId.emplace (p.id, &p);
+    for (const auto& [id, s] : songsById)
+    {
+        // the pattern parts vote with their (band, song); a part's own copy counts, else its source pattern
+        std::vector<albumview::Vote> votes;
+        for (const auto& part : s.parts)
+        {
+            if (part.kind != PartKind::Pattern)
+                continue;
+            const hz::Pattern* p = part.copy.get();
+            if (p == nullptr)
+                if (const auto it = byId.find (part.sourceId); it != byId.end())
+                    p = it->second;
+            if (p != nullptr && bandOf (*p) != otherBand)
+                votes.push_back ({ bandOf (*p), groupOf (*p) });
+        }
+        if (const auto place = albumview::vote (votes))
+            songPlaces[id] = *place;
+    }
+}
+
+std::vector<albumview::Entry> Library::albumEntries (FolderTree::Area area) const
+{
+    std::vector<albumview::Entry> list;
+    for (const auto& p : entries)
+    {
+        if (areaOf (p.id) != area)
+            continue;
+        albumview::Entry e;
+        e.id = p.id;
+        e.name = juce::String (p.name);
+        if (area == FolderTree::Songs)
+        {
+            e.arrangement = true;
+            if (const auto it = songPlaces.find (p.id); it != songPlaces.end())
+                std::tie (e.band, e.song) = it->second;
+        }
+        else if (const auto band = bandOf (p); band != otherBand)
+        {
+            e.band = band;
+            e.song = groupOf (p);
+        }
+        list.push_back (std::move (e));
+    }
+    return list;
+}
+
 FolderNode Library::folders (FolderTree::Area area) const
+{
+    if (viewMode == View::Album && area != FolderTree::Bundled)
+        return albumview::build (albumEntries (area), albums);
+    return ownFolders (area);
+}
+
+juce::StringArray Library::topLevelFolders (FolderTree::Area area) const
+{
+    juce::StringArray names;
+    for (const auto& f : ownFolders (area).folders)
+        names.add (f.name);
+    if (area != FolderTree::Bundled)
+        for (const auto& band : albumview::topLevel (albumEntries (area)))
+            names.addIfNotAlreadyThere (band, true);
+    return names;
+}
+
+juce::String Library::entryLabel (int index, const FolderPath& folder) const
+{
+    const auto& p = entries[(size_t) index];
+    if (folder.isEmpty())
+        return juce::String (p.name);
+    auto label = folders::shortName (juce::String (p.name), folder);
+    if (viewMode == View::Album && areaOf (p.id) == FolderTree::Songs && folder.size() == 2)   // in its album: with the number
+        if (const auto it = songPlaces.find (p.id); it != songPlaces.end())
+            if (const auto place = albums.find (it->second.first, it->second.second); place && place->number > 0)
+                label = juce::String (place->number).paddedLeft ('0', 2) + ". " + label;
+    return label;
+}
+
+FolderNode Library::ownFolders (FolderTree::Area area) const
 {
     std::vector<FolderTree::Entry> list;
     for (int i = 0; i < size(); ++i)
@@ -249,13 +336,15 @@ juce::String Library::editFolders (FolderTree::Area area, const std::function<ju
             names.add (f.name);
         return names;
     };
-    auto root = folders (area);
+    auto root = ownFolders (area);
     const auto before = topLevel (root);
     if (const auto error = edit (root); error.isNotEmpty())
         return error;
     const auto after = topLevel (root);
+    // the bands on top of the album view: hidden ones stay hidden whatever happened to the own folders
+    const auto albumTops = area == FolderTree::Bundled ? juce::StringArray() : albumview::topLevel (albumEntries (area));
     auto changed = folderTree;
-    changed.followTopLevel (area, before, after);   // System > Menü-Ordner: hidden folders keep up
+    changed.followTopLevel (area, before, after, albumTops);   // System > Menü-Ordner: hidden folders keep up
     changed.set (area, std::move (root));
     if (const auto error = changed.save (folderFile()); error.isNotEmpty())
         return error;
@@ -278,7 +367,7 @@ juce::String Library::editFolders (FolderTree::Area area, const std::function<ju
             from = gone[0], to = came[0];
     }
     if (from.isNotEmpty() && to.isNotEmpty() && from != to)
-        menufolderslots::followRename (area, from, to);
+        menufolderslots::followRename (area, from, to, albumTops.contains (from, true));   // a band keeps its name there
     return {};
 }
 

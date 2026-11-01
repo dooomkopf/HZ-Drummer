@@ -171,6 +171,13 @@ private:
     void setupKeys();
     bool handleGlobalKey (const juce::KeyPress&);
     void showPatternMenu();
+    // the order of the Baustein menu: own folders or Band › Album › Song (Library::View); the disc in the menu
+    // button, the first menu line and O inside the open menu switch it
+    void setMenuView (Library::View);
+    void updateViewDisc();
+    int patternMenuSession = 0;          // counts the openings of the Baustein menu: O belongs to the current one
+    bool menuViewSwitchWanted = false;   // O was pressed: switch and reopen once the menu has closed
+    bool menuKeyHeld = false;            // O still down when the menu opened again: its repeats switch nothing
     void showMeterMenu();
     void openSearch();
     void confirmDeleteLibraryEntry (const std::string&);
@@ -183,6 +190,7 @@ private:
     void showAudioSettings();
     void showDataTools (int tab);    // 0 trash, 1 log files, 2 folders
     void refreshFolders();           // the folder window, if open, after the library changed
+    void refreshMenuFolders();       // the Menü-Ordner window, if open: its ticks and counts
     void redistributeBadges();       // System: every pattern a new badge by the chosen rule (old assignment backed up)
 
     // --- renaming (MainComponentRename.cpp): right click in the pattern menu
@@ -261,8 +269,10 @@ private:
     struct WindowKey : juce::KeyListener
     {
         std::function<bool (const juce::KeyPress&)> onKey;
+        std::function<void()> onKeyState;   // a key went down or up
         bool keyPressed (const juce::KeyPress& k, juce::Component*) override { return onKey != nullptr && onKey (k); }
-    } mixerKeys;
+        bool keyStateChanged (bool, juce::Component*) override { if (onKeyState) onKeyState(); return false; }
+    } mixerKeys, menuKeys;   // menuKeys: O inside the open Baustein menu
     std::unique_ptr<WorkshopWindow> editorWindow;
     std::unique_ptr<juce::DialogWindow> mixerWindow, audioWindow, trashWindow, logsWindow, foldersWindow, menuFoldersWindow, quellenWindow;
     void showQuellen();                                       // System › Quellen (MainComponentQuellen.cpp)

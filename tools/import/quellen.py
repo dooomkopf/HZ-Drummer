@@ -10,7 +10,9 @@ Aufruf (immer mit python3 -I):
                                             <staging>/ordner.json sagt, in welche Band-Ordner die Arrangements
                                             gehören. Fortschritt als Zeilen "SCHRITT …", Ende "FERTIG <bausteine>
                                             <arrangements>" oder "FEHLER …" (Ausgang 1)
-Downloads liegen in ~/.cache/HZ-Drummer/quellen/<id>/ und werden beim nächsten Mal wiederverwendet. Jeder Import
+Downloads liegen in ~/.cache/HZ-Drummer/quellen/<id>/ und werden beim nächsten Mal wiederverwendet. Für eine Band,
+die alben/alben.json nicht kennt, holt der Import ihre Alben von MusicBrainz (alben_musicbrainz.py) nach
+<staging>/alben.json; das Programm übernimmt sie beim Einspielen in die eigene alben.json, ohne Vorhandenes anzurühren. Jeder Import
 schreibt ins Import-Log ~/.cache/HZ-Drummer/import.log: was kam und was wegfiel oder vereinfacht wurde (die
 Zeilen "HINWEIS: …" der Umwandler). Nur Standardbibliothek.
 """
@@ -165,10 +167,52 @@ def run(args):
     return r.stdout
 
 
+ALBEN = REPO / "tools" / "import" / "alben_musicbrainz.py"
+SHIPPED_ALBUMS = REPO / "alben" / "alben.json"
+
+
+def albums_for(band, out):
+    """Die Alben einer Band, die die mitgelieferte Liste nicht kennt, von MusicBrainz nach <out>/alben.json
+    (alben_musicbrainz.py); beim Einspielen übernimmt das Programm sie in die eigene alben.json. Ohne Netz oder
+    Treffer bleibt es bei einer Zeile im Import-Log, die Songs stehen dann flach unter der Band."""
+    try:
+        shipped = json.load(open(SHIPPED_ALBUMS, encoding="utf-8")).get("bands", {})
+    except (OSError, ValueError):
+        shipped = {}
+    if any(k.lower() == band.lower() for k in shipped):
+        return
+    step(f"{band}: Alben bei MusicBrainz nachsehen")
+    try:
+        r = subprocess.run([sys.executable, "-I", str(ALBEN), band, "--daten", str(out), "--schreiben"],
+                           capture_output=True, text=True, timeout=900)
+    except subprocess.TimeoutExpired:
+        log_lines.append(f"HINWEIS: {band}: MusicBrainz antwortet nicht, die Alben bleiben offen (Songs flach unter der Band)")
+        return
+    for line in r.stderr.splitlines():
+        if line.startswith("HINWEIS") or "nicht gefunden" in line:
+            log_lines.append(line.rstrip())
+    if r.returncode != 0:
+        log_lines.append(f"HINWEIS: {band}: keine Alben von MusicBrainz, die Songs bleiben flach unter der Band")
+
+
 def collect(parts, staging):
-    """Ergebnisse der Umwandler (je patterns/ und songs/) nach staging zusammenführen; Arrangements nach Band."""
+    """Ergebnisse der Umwandler (je patterns/ und songs/) nach staging zusammenführen; Arrangements nach Band,
+    die Alben neuer Bands (alben.json je Teil) in eine alben.json."""
     folders = {}
+    albums = {}
     for src, band in parts:
+        found = Path(src) / "alben.json"
+        if found.exists():
+            try:
+                loaded = json.load(open(found, encoding="utf-8"))
+                entries = loaded.get("bands") if isinstance(loaded, dict) else None
+                if not isinstance(entries, dict):
+                    raise ValueError("kein Objekt bands")
+                for name, albums_of_band in entries.items():
+                    if isinstance(albums_of_band, list):
+                        albums.setdefault(name, albums_of_band)
+            except (OSError, ValueError) as e:
+                log_lines.append(f"HINWEIS: {found} nicht lesbar ({e}), Alben übergangen")
         for kind in ("patterns", "songs"):
             for f in glob.glob(os.path.join(src, kind, "*.json")):
                 (staging / kind).mkdir(parents=True, exist_ok=True)
@@ -181,6 +225,9 @@ def collect(parts, staging):
     (staging / "songs").mkdir(parents=True, exist_ok=True)
     with open(staging / "ordner.json", "w", encoding="utf-8") as f:
         json.dump({"arrangements": folders}, f, ensure_ascii=False, indent=1)
+    if albums:
+        with open(staging / "alben.json", "w", encoding="utf-8") as f:
+            json.dump({"formatVersion": 1, "bands": albums}, f, ensure_ascii=False, indent=1)
     patterns = len(glob.glob(str(staging / "patterns" / "*.json")))
     songs = len(glob.glob(str(staging / "songs" / "*.json")))
     write_log(CURRENT, f"Umgewandelt: {patterns} Bausteine, {songs} Arrangements")
@@ -234,6 +281,7 @@ def load_gp_bands(staging):
         out = cache / "out" / band
         shutil.rmtree(out, ignore_errors=True)
         run([REPO / "tools" / "gpdrums" / "import_band.py", cache / band, band, out, "--spielweise"])
+        albums_for(band, out)
         parts.append((out, band))
     collect(parts, staging)
 
@@ -251,6 +299,7 @@ def load_gp_list(band):
         out = cache / "out"
         shutil.rmtree(out, ignore_errors=True)
         run([REPO / "tools" / "gpdrums" / "import_band.py", cache / band, band, out, "--spielweise"])
+        albums_for(band, out)
         collect([(out, band)], staging)
     return load
 
@@ -281,6 +330,7 @@ def load_hendrix(staging):
     shutil.rmtree(out, ignore_errors=True)
     run([REPO / "tools" / "gpdrums" / "import_midi_band.py", midi, "Jimi Hendrix", out, "--spielweise",
          "--dateien", ";".join(HENDRIX)])
+    albums_for("Jimi Hendrix", out)
     collect([(out, "Jimi Hendrix")], staging)
 
 

@@ -201,7 +201,7 @@ void FolderPanel::rebuild (const std::optional<Place>& select)
     root = std::make_unique<Item> (*this, Item::Kind::Root, Place(), juce::String(), 0);
     for (auto area : { FolderTree::Songs, FolderTree::Patterns, FolderTree::Bundled })
     {
-        const auto node = library.folders (area);
+        const auto node = library.ownFolders (area);   // always the own folders: they are edited here
         auto* item = new Item (*this, Item::Kind::Area, Place { area, {}, {} },
                                area == FolderTree::Songs ? "Arrangements (Songs)"_u
                                : area == FolderTree::Patterns ? juce::String ("Bausteine (Pattern)") : juce::String ("Bibliothek-Bausteine"),

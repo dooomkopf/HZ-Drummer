@@ -1,5 +1,8 @@
 #include "app/NavigationMenus.h"
 
+#include <memory>
+#include <optional>
+
 #include "app/Library.h"
 #include "app/SearchIndex.h"
 #include "app/MeterLibrary.h"
@@ -37,6 +40,8 @@ namespace
         juce::String text;
     };
 
+    const juce::Colour albumTint { 0xffa9dfe8 };   // the album view: its folder rows in a light blue-green
+
     // runs after the menu has closed: an action from inside the menu must not delete it under itself
     std::function<void()> afterClosingMenus (std::function<void()> action)
     {
@@ -66,7 +71,7 @@ juce::PopupMenu buildPatternMenu (const Library& lib, int current, const Pattern
     {
         const auto& p = lib.get (i);
         const bool fav = lib.isFavorite (p.id);
-        const auto title = folders::shortName (juce::String (p.name), folder);
+        const auto title = lib.entryLabel (i, folder);
         // custom item: hover + P auditions it (see PreviewMenuItem); click/Enter selects as usual
         const auto text = title + "   " + Library::meterText (p) + ", " + juce::String ((int) p.tempo) + " BPM" + (fav ? star : juce::String());
         juce::PopupMenu::Item it;
@@ -102,6 +107,16 @@ juce::PopupMenu buildPatternMenu (const Library& lib, int current, const Pattern
                 item (menu, i);
             }
     };
+    // the first line: which order the folders below have; a click switches and the menu opens again
+    {
+        juce::PopupMenu::Item view (juce::String::fromUTF8 (actions.albumView ? "Ansicht: Band \xe2\x80\xba Album \xe2\x80\xba Song"
+                                                                              : "Ansicht: Band \xe2\x80\xba Song"));
+        view.setID (100010).setTicked (actions.albumView).setAction (afterClosingMenus ([toggle = actions.toggleView] { if (toggle) toggle(); }));
+        if (actions.albumView)
+            view.setColour (albumTint);
+        menu.addItem (std::move (view));
+        menu.addSeparator();
+    }
     section ("Favoriten", [&] (int i) { return lib.isFavorite (lib.get (i).id); });
 
     // songs, own patterns and the bundled library in the user's folders
@@ -127,7 +142,7 @@ juce::PopupMenu buildPatternMenu (const Library& lib, int current, const Pattern
             continue;
         menu.addSectionHeader (area == FolderTree::Songs ? "Arrangements (Songs)"_u
                                : area == FolderTree::Patterns ? juce::String ("Bausteine (Pattern)") : juce::String ("Bibliothek-Bausteine"));
-        addFolderMenu (menu, root, entry);
+        addFolderMenu (menu, root, entry, {}, actions.albumView ? std::optional (albumTint) : std::nullopt);
     }
 
     if (! lib.errors().isEmpty())
@@ -147,7 +162,7 @@ juce::PopupMenu buildPatternMenu (const Library& lib, int current, const Pattern
 
 bool addFolderMenu (juce::PopupMenu& menu, const FolderNode& node,
                     const std::function<bool (juce::PopupMenu&, const std::string&, const FolderPath&)>& addEntry,
-                    const FolderPath& path)
+                    const FolderPath& path, const std::optional<juce::Colour>& folderColour)
 {
     bool hasCurrent = false;
     for (auto& f : node.folders)
@@ -157,8 +172,13 @@ bool addFolderMenu (juce::PopupMenu& menu, const FolderNode& node,
         auto sub = path;
         sub.add (f.name);
         juce::PopupMenu subMenu;
-        const bool inside = addFolderMenu (subMenu, f, addEntry, sub);
-        menu.addSubMenu (f.name, subMenu, true, nullptr, inside);
+        const bool inside = addFolderMenu (subMenu, f, addEntry, sub, folderColour);
+        juce::PopupMenu::Item row (f.name);   // a folder row, in the view's colour if it has one
+        row.subMenu = std::make_unique<juce::PopupMenu> (std::move (subMenu));
+        row.setTicked (inside);
+        if (folderColour)
+            row.setColour (*folderColour);
+        menu.addItem (std::move (row));
         hasCurrent = hasCurrent || inside;
     }
     for (auto& id : node.items)

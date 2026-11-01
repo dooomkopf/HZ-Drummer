@@ -281,7 +281,33 @@ soweit sie hier nicht abweichen; überholte Stellen stehen im vorletzten Abschni
    Ordner (spätere bleiben aus); Namen ohne Groß- und Kleinschreibung, verschwundene werden übergangen.
    Abrufen setzt alle Haken in einem Schreibvorgang; die Ausblendliste wird dabei ganz ersetzt. Wird ein
    Ordner der obersten Ebene umbenannt, ziehen die gespeicherten Listen mit, auch wenn er dabei in einen
-   vorhandenen Ordner aufgeht. Gelb umrandet ist der Platz, dessen Auswahl genau den
+   vorhandenen Ordner aufgeht. Haken und Plätze kennen die obersten Namen **beider** Ansichten (eigene Ordner
+   und Album-Ansicht, `Library::topLevelFolders`): die Haken-Liste zeigt alle, die Anzahl aus der aktiven
+   Ansicht, sonst „nur Album-Ansicht“ / „nur eigene Ordner“; ohne Haken ist der Name in beiden ausgeblendet. Ein
+   Band-Name, den die Album-Ansicht oben führt, bleibt beim Aufräumen und beim Umbenennen erhalten; ein
+   eigener Ordner, der so heißt wie eine dort ausgeblendete Band, ist damit auch ausgeblendet.
+   **Album-Ansicht** (`Library::View::Album`, AlbumView, AlbumIndex): eine zweite, berechnete Ordnung derselben
+   Einträge, nichts davon wird gespeichert. Bausteine: Band › „jjjj - Album“ › „nn. Song“ aus den Tags `band:`/
+   `song:` und `alben.json` (mitgeliefert `alben/alben.json`, eigene Datei im Datenordner gewinnt; Schlüssel ohne
+   Groß/Klein und Zeichen, „&“ = „and“, Umlaute als Grundbuchstabe). Arrangements erhalten Band und Song beim
+   Laden aus den Baustein-Teilen (Kopie zuerst, sonst Quelle); es zählen nur Teile, deren Baustein eine Band
+   hat: mehr als die Hälfte davon mit demselben (Band, Song) → dieser Song; sonst nur bei einer einzigen Band
+   → die Band ohne Song; sonst oben wie ohne Band.
+   Ein Song ohne Album liegt bei einer Band mit Alben unter „Sonstige“ (ganz unten), eine Band ohne Alben bleibt
+   ohne Album-Ebene (Band › Song). Alben nach Jahr, Alben ohne Jahr dahinter, „Sonstige“ zuletzt; Songs nach
+   Nummer, Unnummeriertes danach, Namen natürlich sortiert. Ein Albumordner steht für Jahr und Albumname
+   (ohne Groß/Klein, sonst zeichengenau). Die Beschriftung (`Library::entryLabel`) streicht, was die Ordner sagen, auch ohne die
+   Dekoration „jjjj - “ und „nn. “, und stellt Arrangements im Album ihre Nummer voran. Bibliothek-Bausteine
+   haben keine Album-Ansicht. Ordnerstruktur bearbeitet immer die eigenen Ordner (`ownFolders`). Die Zeile
+   „Ansicht: Band › Song“ (eigene Ordner) bzw. „Ansicht: Band › Album › Song“ im Baustein-Menü (unter
+   „Metronom“) und O im offenen Menü (auch mit Feststelltaste; gehalten
+   nur einmal) schalten um und öffnen das Menü neu, eine Hörprobe läuft weiter; das Plattensymbol in der
+   Menü-Pille schaltet bei geschlossenem Menü um (linke Maustaste); Einstellung `albumView` je Rechner. Quellen-Import (`quellen.py`, `installFromSource`) und
+   `install_band.py` holen für Bands, die `alben/alben.json` nicht kennt, die Alben von MusicBrainz
+   (`tools/import/alben_musicbrainz.py`) und ergänzen die eigene `alben.json` um Bands, die weder Liste
+   kennt; `install_band.py` (mit `import_band.py --alben`) trägt außerdem bei bekannten Bands die Songs des
+   Imports ohne Album einzeln mit Album und Nummer nach (`nummern`). Nichts wird überschrieben, ohne Netz
+   bleibt die Band flach. [Code] Gelb umrandet ist der Platz, dessen Auswahl genau den
    jetzigen Haken entspricht. [Code] Benennt man einen ausgeblendeten Ordner um, bleibt er ausgeblendet. Verschwindet ein Name
    von der obersten Ebene, vergisst die Liste ihn. [Bed., Code]
 5. Im Menü fällt vorn weg, was die Ordner schon sagen: „Carcass – CJQ – 01 Intro“ im Ordner Carcass › CJQ

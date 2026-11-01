@@ -270,3 +270,10 @@ juce::AlertWindow* HZLook::createAlertWindow (const juce::String& title, const j
             button->setBounds (button->getBounds() + juce::Point<int> (margin / 2, 40));
     return aw;
 }
+
+void HZLook::preparePopupMenuWindow (juce::Component& window)
+{
+    LookAndFeel_V4::preparePopupMenuWindow (window);
+    if (onPopupMenuWindow)
+        onPopupMenuWindow (window);
+}

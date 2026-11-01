@@ -38,8 +38,9 @@ public:
     void setHiddenFolders (Area area, const juce::StringArray& folders)   { hidden[(size_t) area] = folders; }   // exactly these
     void setHidden (Area, const juce::String& folder, bool hide);
     // after one edit of the tree, with its top-level folder names before and after: a renamed folder stays
-    // hidden under its new name (one name went, one came), names no longer at the top are forgotten
-    void followTopLevel (Area, const juce::StringArray& before, const juce::StringArray& after);
+    // hidden under its new name (one name went, one came), names no longer at the top are forgotten;
+    // keep: names on top in the other view (AlbumView), they stay whatever the edit did
+    void followTopLevel (Area, const juce::StringArray& before, const juce::StringArray& after, const juce::StringArray& keep = {});
 
     // A missing file means no folders yet. A broken one is left as it is: saving is refused then.
     juce::String load (const juce::File&);

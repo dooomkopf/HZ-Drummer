@@ -34,6 +34,8 @@ namespace menufolderslots
     MenuFolderSlot capture (const juce::String& name, const AreaNames& folders, const AreaNames& hidden);
     AreaNames hiddenBy (const MenuFolderSlot&, const AreaNames& folders);   // which of these folders it hides
 
-    // a top-level folder renamed (System → Ordnerstruktur): the stored lists of the own slots take the new name
-    void followRename (FolderTree::Area, const juce::String& from, const juce::String& to, const juce::File& = file());
+    // a top-level folder renamed (System → Ordnerstruktur): the stored lists of the own slots take the new name;
+    // keepFrom: the old name is still a folder of the other view (a band of AlbumView), so it stays as well
+    void followRename (FolderTree::Area, const juce::String& from, const juce::String& to, bool keepFrom = false,
+                       const juce::File& = file());
 }

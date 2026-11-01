@@ -13,6 +13,7 @@ HZ-Drummer kennt drei Formate: **Drum-Tabs** zum Schreiben von Hand, **Pattern-J
 | Papierkorb | `~/.config/HZ-Drummer/trash/<uuid>/` mit `data.json` und `metadata.json` |
 | Arbeitsstand und Ablage des Arrangers | `~/.config/HZ-Drummer/arranger.json`, `ablage.json` |
 | Ordnerstruktur für Songs und eigene Patterns | `~/.config/HZ-Drummer/ordner.json` |
+| Album-Zuordnung für die Ansicht Band › Album › Song | `alben/alben.json` (mitgeliefert), `~/.config/HZ-Drummer/alben.json` (eigene) |
 
 Bei Patterns werden Unterordner mitgelesen. Jede Kennung darf nur einmal vorkommen, Doppelte werden mit Meldung ignoriert.
 
@@ -186,3 +187,41 @@ Abläufe aus dem Arranger. Jeder Block trägt eine eigene **Kopie** seines Patte
 - Ordnernamen gelten ohne Rücksicht auf Groß- und Kleinschreibung; gleichnamige Geschwister werden beim Lesen zusammengelegt.
 - Ein Eintrag, der nirgends steht, kommt an seinen Standardplatz: Songs auf die oberste Ebene, eigene Patterns nach `band:` und `song:`, mitgelieferte Patterns nach ihrem Stil. Kennungen gelöschter Einträge fallen beim nächsten Speichern weg.
 - Ist die Datei nicht lesbar, meldet die App das und überschreibt sie nicht.
+
+## Album-Zuordnung (`alben.json`)
+
+Welches Album ein Song hat, für die Ansicht Band › Album › Song. Zwei Dateien gleichen Aufbaus: die
+mitgelieferte `alben/alben.json` (aus MusicBrainz) und die eigene im Datenordner, die ergänzt und
+überschreibt (je Song gewinnt die eigene). Bands und Songs werden ohne Groß- und Kleinschreibung und ohne
+Satzzeichen verglichen („1,000 Eyes“ = „1000 Eyes“, „&“ = „and“, „ä“ = „a“).
+
+```json
+{
+  "formatVersion": 1,
+  "bands": {
+    "Metallica": [
+      { "album": "Kill ’Em All", "jahr": 1983,
+        "titel": ["Hit the Lights", "The Four Horsemen", "Motorbreath", "Jump in the Fire"] }
+    ],
+    "Black Sabbath": [
+      { "album": "Live Evil", "jahr": 1982, "live": true, "nummern": { "Paranoid (Live Evil)": 12 } }
+    ]
+  }
+}
+```
+
+| Feld | Bedeutung |
+|---|---|
+| `album` | Name, wie er im Ordner „jjjj - Album“ steht |
+| `jahr` | Erstveröffentlichung; fehlt es (oder 0), steht das Album hinter allen mit Jahr, vor „Sonstige“ |
+| `titel` | die ganze Titelliste in Reihenfolge: die Stelle ist die Nummer („01. …“) |
+| `nummern` | einzelne Songs mit Nummer, wenn die ganze Liste nicht gebraucht wird; 0: ohne Nummer, hinter den nummerierten |
+| `live` | ein Live-Album (nur zur Kennzeichnung) |
+
+- In einer Datei behält ein Song das erste Album, das ihn nennt; spätere Nennungen zählen nicht. Die eigene
+  Datei überschreibt die mitgelieferte je Song: Für ein ganzes Album trägst du also die ganze Titelliste ein.
+- Albumname und Jahr bilden den Ordner, der Name zeichengenau bis auf Groß- und Kleinschreibung: Schreib ihn
+  wie in der mitgelieferten Liste („Kill ’Em All“ mit typografischem Apostroph), sonst entsteht ein zweiter
+  Ordner. Ein Titel ohne Buchstaben und Ziffern („???“) ordnet nichts zu.
+- Kann die App eine Datei nicht als JSON lesen oder fehlt `bands`, meldet sie das unter den fehlerhaften Dateien
+  und lässt die Datei unverändert.

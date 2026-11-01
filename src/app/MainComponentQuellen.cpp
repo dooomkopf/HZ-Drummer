@@ -66,6 +66,11 @@ juce::String MainComponent::installFromSource (const juce::File& staging)
     copyAll (staging.getChildFile ("patterns"), Library::userPatternFolder(), patterns, nullptr);
     copyAll (staging.getChildFile ("songs"), Library::songFolder(), songs, &newSongs);
 
+    // albums the import brought for a band nobody knows yet (alben_musicbrainz.py): into the own alben.json
+    int albumBands = 0;
+    const auto albumError = library.albumIndex().mergeNewBands (staging.getChildFile ("alben.json"),
+                                                                 Library::userPatternFolder().getParentDirectory().getChildFile ("alben.json"), albumBands);
+
     // the library knows them now; the main window keeps its selection by id
     const auto selectedId = patternMode() ? library.get (currentPattern).id : std::string();
     library.reload();
@@ -96,6 +101,7 @@ juce::String MainComponent::installFromSource (const juce::File& staging)
             });
         }
     refreshFolders();
+    refreshMenuFolders();   // new bands: new ticks
     updateButtons();
     if (editorWindow != nullptr)
         editorWindow->getArranger().libraryChanged();
@@ -103,6 +109,10 @@ juce::String MainComponent::installFromSource (const juce::File& staging)
     juce::String report = juce::String (patterns) + " Bausteine, " + juce::String (songs) + " Arrangements eingespielt";
     if (skipped > 0)
         report << " (" << skipped << " schon da)";
+    if (albumBands > 0)
+        report << ", Alben f\u00fcr "_u << albumBands << (albumBands == 1 ? " Band" : " Bands") << " in alben.json";
+    if (albumError.isNotEmpty())
+        report << " (alben.json: " << albumError << ")";
     juce::File::getSpecialLocation (juce::File::userHomeDirectory).getChildFile (".cache/HZ-Drummer/import.log")
         .appendText ("Eingespielt: " + report + "\n");
     return report;

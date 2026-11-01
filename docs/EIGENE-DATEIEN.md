@@ -33,8 +33,8 @@ zusammengeführt (z. B. Hände und Füße getrennt notiert). Dateien ohne Schlag
 Im Code-Ordner von HZ-Drummer, nur in einen Vorbereitungsordner (der Datenordner bleibt unberührt):
 
 ```bash
-# Guitar Pro und MuseScore, auch gemischt in einem Ordner
-python3 -I tools/gpdrums/import_band.py ~/tabs/Metallica Metallica /var/tmp/hz-import/metallica --spielweise
+# Guitar Pro und MuseScore, auch gemischt in einem Ordner; --alben holt die Alben der Band von MusicBrainz dazu
+python3 -I tools/gpdrums/import_band.py ~/tabs/Metallica Metallica /var/tmp/hz-import/metallica --spielweise --alben
 
 # MIDI: die Dateien nennen, je Song eine
 python3 -I tools/gpdrums/import_midi_band.py ~/midi/Hendrix "Jimi Hendrix" /var/tmp/hz-import/hendrix \
@@ -72,8 +72,35 @@ python3 -I tools/gpdrums/install_band.py /var/tmp/hz-import/metallica Metallica
 - Vorher wird der Datenordner nach `/var/tmp/hz-daten-backup-<Zeit>-<band>` gesichert.
 - Bausteine und Arrangements mit derselben Kennung werden ersetzt; so bringt ein zweiter Import derselben
   Band sie auf den neuen Stand. Alles andere bleibt.
+- Liegt eine `alben.json` im Vorbereitungsordner (`--alben`), kommen Bands, die weder die mitgelieferte noch
+  deine eigene Liste kennt, in `~/.config/HZ-Drummer/alben.json`; Vorhandenes bleibt unangetastet. Bei einer
+  Band, die eine der Listen schon kennt, kommen nur die Songs dieses Imports dazu, die dort noch kein Album
+  haben, je mit Album und Nummer (etwa ein Song von Exhorders zweitem Album „The Law“); was schon einen Platz
+  hat, bleibt dort.
 - Die Arrangements liegen danach unter **Arrangements** in einem Ordner mit dem Bandnamen, die Bausteine
   finden ihren Ordner über die Tags `band:` und `song:`.
+
+## Alben zuordnen
+
+Die Ansicht Band › Album › Song (Zeile „Ansicht“ oben im Baustein-Menü) ordnet Songs über `alben.json` ein. Für die
+Bands aus System › Quellen liegt die Liste bei (`alben/alben.json`, aus MusicBrainz). Für eigene Importe
+legst du `~/.config/HZ-Drummer/alben.json` an, gleicher Aufbau (siehe [FORMATE.md](FORMATE.md)); je Song
+gewinnt deine Datei. Der Songname muss zum Tag `song:` der Bausteine passen, Groß/Klein und Satzzeichen
+sind egal. Songs ohne Eintrag liegen unter „Sonstige“, eine Band ohne jeden Eintrag bleibt flach: Eine neue
+Quelle zerschießt also nichts, sie ist nur noch nicht sortiert.
+
+Statt die Titellisten abzutippen, holt [`tools/import/alben_musicbrainz.py`](../tools/import/alben_musicbrainz.py)
+sie aus MusicBrainz (Daten CC0, eine Anfrage je Sekunde):
+
+```bash
+python3 -I tools/import/alben_musicbrainz.py Slayer              # zeigt die Alben mit den Songs aus deinem Datenordner
+python3 -I tools/import/alben_musicbrainz.py Slayer --schreiben  # trägt sie in ~/.config/HZ-Drummer/alben.json ein
+```
+
+Bands, die schon in deiner Datei oder in der mitgelieferten Liste stehen, bleiben dabei, wie sie sind
+(`--ersetzen` überschreibt sie; bei einer mitgelieferten Band gilt dann deine Titelliste je Song). Neue Songs
+einer solchen Band trägt `install_band.py` einzeln nach, siehe oben. Was das Skript nicht
+findet, meldet es als `HINWEIS`; das trägst du von Hand nach. HZ-Drummer liest die Datei beim nächsten Start.
 
 ## Rechte
 

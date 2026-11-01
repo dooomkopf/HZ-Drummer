@@ -164,11 +164,11 @@ void MenuFolderSlotsPanel::current (AreaNames& folders, AreaNames& hidden) const
     for (int a = 0; a < FolderTree::NumAreas; ++a)
     {
         const auto area = (FolderTree::Area) a;
-        for (const auto& f : library.folders (area).folders)
+        for (const auto& name : library.topLevelFolders (area))   // of both views: a slot holds the whole state
         {
-            folders[(size_t) a].add (f.name);
-            if (library.folderHidden (area, f.name))
-                hidden[(size_t) a].add (f.name);
+            folders[(size_t) a].add (name);
+            if (library.folderHidden (area, name))
+                hidden[(size_t) a].add (name);
         }
     }
 }

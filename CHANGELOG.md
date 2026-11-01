@@ -11,6 +11,10 @@
 - Abzeichen mit Material Symbols, Menü-Ordner ein- und ausblendbar (Liste alphabetisch, zehn Konfigurationen
   zum Abrufen: Minimal, Maximal und eigene)
 - Ordnerstruktur: Knopf Sortieren (alphabetisch, wahlweise mit Unterordnern)
+- Ansicht Band › „jjjj - Album“ › „nn. Titel“ als zweite Ordnung im Baustein-Menü (die Zeile „Ansicht“ oben im
+  Menü, Taste O im Menü oder das Plattensymbol in der Baustein-Pille schalten um),
+  Alben aus `alben/alben.json` (MusicBrainz) und eigener `alben.json`; `tools/import/alben_musicbrainz.py` holt die
+  Alben einer Band, Quellen-Import und `install_band.py` ergänzen neue Bands von selbst
 - Band-Import nach Spielweise, MIDI, Guitar Pro 6/7/8 und MuseScore als Quelle, Import-Vorlagen unter `tools/import`
 - Player: jede Runde spielt genau ihre Schläge, nichts doppelt oder verloren bei Pause, Sprung und Tempowechsel
 

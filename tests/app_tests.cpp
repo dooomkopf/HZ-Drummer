@@ -1,3 +1,4 @@
+#include "app/AlbumView.h"
 // Tests für die App-Schicht (JUCE): Pattern-Dateiformat
 #include "app/PatternIO.h"
 #include "app/EditorStyle.h"
@@ -13,6 +14,7 @@
 
 #include <cmath>
 #include <cstdio>
+#include <map>
 
 static int failures = 0;
 
@@ -369,8 +371,83 @@ static void testTrainerSlots()
     CHECK (trainerslots::load (file)[0].isFree());
 }
 
+// "alben <datenordner> [<alben.json des Programms>]": wie die Album-Ansicht einen Datenordner einordnet, nur gelesen;
+// Bausteine über ihre Tags, Arrangements über die Stimmen ihrer Teile (albumview::vote), wie Library::placeSongs
+static int dumpAlbumView (const juce::File& data, const juce::File& shipped)
+{
+    AlbumIndex index;
+    if (const auto error = index.load (shipped, data.getChildFile ("alben.json")); error.isNotEmpty())
+        std::printf ("alben.json: %s\n", error.toRawUTF8());
+    std::map<std::string, std::pair<juce::String, juce::String>> tagsOf;   // pattern id -> (band, song)
+    std::vector<albumview::Entry> patterns;
+    for (const auto& f : data.getChildFile ("patterns").findChildFiles (juce::File::findFiles, true, "*.json"))
+    {
+        const auto v = juce::JSON::parse (f);
+        juce::String band, song;
+        if (const auto* tags = v["tags"].getArray())
+            for (const auto& t : *tags)
+            {
+                const auto s = t.toString();
+                if (s.startsWithIgnoreCase ("band:") && band.isEmpty()) band = s.substring (5).trim();
+                if (s.startsWithIgnoreCase ("song:") && song.isEmpty()) song = s.substring (5).trim();
+            }
+        const auto id = v["id"].toString().toStdString();
+        tagsOf[id] = { band, song };
+        patterns.push_back ({ id, v["name"].toString(), band, song, false });
+    }
+    std::vector<albumview::Entry> songs;
+    for (const auto& f : data.getChildFile ("songs").findChildFiles (juce::File::findFiles, false, "*.json"))
+    {
+        const auto v = juce::JSON::parse (f);
+        std::vector<albumview::Vote> votes;
+        if (const auto* parts = v["parts"].getArray())
+            for (const auto& part : *parts)
+            {
+                if (part.hasProperty ("type") && part["type"].toString() != "pattern")
+                    continue;   // v2: a rest or a click votes not
+                if (part["copy"].isObject())   // v2: the part's own copy carries the tags
+                {
+                    juce::String band, song;
+                    if (const auto* tags = part["copy"]["tags"].getArray())
+                        for (const auto& t : *tags)
+                        {
+                            const auto s = t.toString();
+                            if (s.startsWithIgnoreCase ("band:") && band.isEmpty()) band = s.substring (5).trim();
+                            if (s.startsWithIgnoreCase ("song:") && song.isEmpty()) song = s.substring (5).trim();
+                        }
+                    if (band.isNotEmpty())
+                        votes.push_back ({ band, song });
+                    continue;
+                }
+                const auto id = (part.hasProperty ("source") ? part["source"] : part["pattern"]).toString().toStdString();
+                if (const auto it = tagsOf.find (id); it != tagsOf.end() && it->second.first.isNotEmpty())
+                    votes.push_back (it->second);
+            }
+        const auto place = albumview::vote (votes);
+        songs.push_back ({ "song." + v["id"].toString().toStdString(), v["name"].toString(),
+                           place ? place->first : juce::String(), place ? place->second : juce::String(), true });
+    }
+    const auto show = [] (const char* title, const FolderNode& root)
+    {
+        std::printf ("%s: %d oben ohne Ordner\n", title, (int) root.items.size());
+        for (const auto& band : root.folders)
+        {
+            std::printf ("  %s: %d Ordner, %d direkt\n", band.name.toRawUTF8(), (int) band.folders.size(), (int) band.items.size());
+            for (const auto& album : band.folders)
+                std::printf ("    %s: %d Unterordner, %d Eintraege\n", album.name.toRawUTF8(), (int) album.folders.size(), (int) album.items.size());
+        }
+    };
+    show ("Bausteine", albumview::build (patterns, index));
+    show ("Arrangements", albumview::build (songs, index));
+    std::printf ("%d Bausteine, %d Arrangements, %d Bands mit Alben\n", (int) patterns.size(), (int) songs.size(), index.bandCount());
+    return 0;
+}
+
 int main (int argc, char* argv[])
 {
+    if (argc > 2 && juce::String (argv[1]) == "alben")   // the shipped list: given, else alben/alben.json of the working folder
+        return dumpAlbumView (juce::File (juce::String (argv[2])), argc > 3 ? juce::File (juce::String (argv[3]))
+                                                                             : juce::File::getCurrentWorkingDirectory().getChildFile ("alben/alben.json"));
     const auto tabDir = juce::File::getCurrentWorkingDirectory().getChildFile (argc > 1 ? argv[1] : "library-src");
     testLibraryRoundTrip (tabDir);
     testSaveLoadFile();

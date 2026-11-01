@@ -1,5 +1,6 @@
 #pragma once
 
+#include "app/AlbumView.h"
 #include "app/FolderTree.h"
 #include "app/Song.h"
 #include "engine/Pattern.h"
@@ -57,7 +58,18 @@ public:
         const juce::String s (id);
         return s.startsWith ("song.") ? FolderTree::Songs : s.startsWith ("user.") ? FolderTree::Patterns : FolderTree::Bundled;
     }
-    FolderNode folders (FolderTree::Area) const;             // every entry of the area in its place
+    // Two orders of the same entries: the own folders (FolderTree, edited by hand) or the computed view
+    // Band › "yyyy - Album" › "nn. Song" (AlbumView: from the tags and alben.json). Only the order changes.
+    enum class View { Own, Album };
+    void setView (View v)                                    { viewMode = v; }
+    View view() const                                        { return viewMode; }
+    FolderNode folders (FolderTree::Area) const;             // every entry of the area in its place, in the active view
+    FolderNode ownFolders (FolderTree::Area) const;          // the own folders whatever the view: for editing them
+    juce::StringArray topLevelFolders (FolderTree::Area) const;   // of both views together (Menü-Ordner and its slots)
+    // an entry as the menu shows it in its folder: what the folders already say is left out; in the album view an
+    // arrangement carries its track number ("03. Battery (Song)"). An empty path: the whole name
+    juce::String entryLabel (int index, const FolderPath& folder) const;
+    const AlbumIndex& albumIndex() const                     { return albums; }
     // "" on success; renamedTop: a top-level folder renamed by hand (old name, new name), also when it merged into
     // an existing one, so that the stored sets of Menü-Ordner follow
     juce::String editFolders (FolderTree::Area, const std::function<juce::String (FolderNode&)>& edit,
@@ -84,7 +96,13 @@ public:
     static juce::String groupOf (const hz::Pattern&);           // "Carcass CJQ – 01 Intro" -> "Carcass CJQ", "" if none
 
 private:
+    std::vector<albumview::Entry> albumEntries (FolderTree::Area) const;
+    void placeSongs();   // band and song of every arrangement, from the patterns of its parts (at reload)
+
     std::vector<hz::Pattern> entries;
+    AlbumIndex albums;
+    View viewMode = View::Own;
+    std::map<std::string, std::pair<juce::String, juce::String>> songPlaces;   // song id -> (band, song); absent: unknown
     std::map<std::string, std::vector<SongSpan>> spansById;
     std::map<std::string, Song> songsById;
     std::map<std::string, juce::File> songFilesById;   // where each song was loaded from

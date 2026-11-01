@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Bereitet eine Band aus Guitar-Pro- oder MuseScore-Dateien zum Einspielen vor (nur Vorbereitungsordner, keine App-Daten).
 
-Aufruf: import_band.py <ordner mit .gp3/.gp4/.gp5/.gpx/.gp/.mscz/.mscx> <Bandname> <staging-ordner> [--nur "Titel1;Titel2"] [--ohne "Titel;..."] [--spielweise]
+Aufruf: import_band.py <ordner mit .gp3/.gp4/.gp5/.gpx/.gp/.mscz/.mscx> <Bandname> <staging-ordner> [--nur "Titel1;Titel2"] [--ohne "Titel;..."] [--spielweise] [--alben]
 
 - Dekodiert jede Datei mit dem Leser für ihre Version, alle geben dieselben Textzeilen: GP3/4/5 mit
   tools/gpdrums/GpDrums156.java (TuxGuitar 1.5.6), GP6 (.gpx) und GP7/8 (.gp) mit gpif_drums.py, MuseScore
@@ -13,6 +13,8 @@ Aufruf: import_band.py <ordner mit .gp3/.gp4/.gp5/.gpx/.gp/.mscz/.mscx> <Bandnam
 - Schreibt <staging>/auswahl.tsv: welche Datei je Song genommen wurde und warum.
 - Was übersprungen oder vereinfacht wird (Datei defekt oder ohne Schlagzeug, Fassungen nicht genommen, Hinweise der
   Leser und von gp2json.py), steht je Fall in einer Zeile "HINWEIS: <Datei oder Song>: …".
+- --alben: holt danach die Alben der Band von MusicBrainz nach <staging>/alben.json (tools/import/alben_musicbrainz.py,
+  braucht Internet); install_band.py übernimmt sie in die eigene alben.json, für die Ansicht Band › Album › Song.
 """
 import json, os, re, shutil, subprocess, sys, tempfile
 from pathlib import Path
@@ -130,6 +132,9 @@ def main():
     by_style = "--spielweise" in args   # Bausteine nach Spielweise (gp2json.py --spielweise)
     if by_style:
         args.remove("--spielweise")
+    with_albums = "--alben" in args
+    if with_albums:
+        args.remove("--alben")
     src, band, staging = Path(args[0]), args[1], Path(args[2])
     if not src.is_dir():
         sys.exit(f"Ordner fehlt: {src}")
@@ -190,6 +195,14 @@ def main():
             print(result.stderr.strip())
         converted += result.returncode == 0
     (staging / "auswahl.tsv").write_text("\n".join(rows) + "\n", encoding="utf-8")
+    if with_albums and converted:
+        print(f"=== {band}: Alben bei MusicBrainz nachsehen")
+        r = subprocess.run([sys.executable, "-I", str(REPO / "tools" / "import" / "alben_musicbrainz.py"), band,
+                            "--daten", str(staging), "--schreiben", "--vorbereitung"], capture_output=True, text=True,
+                           errors="replace")
+        print("\n".join(l for l in r.stderr.splitlines() if l.startswith(("HINWEIS", "===", "  ")) or "nicht gefunden" in l))
+        if r.returncode != 0:
+            print(f"HINWEIS: {band}: keine Alben von MusicBrainz, die Songs bleiben flach unter der Band")
     print(f"Fertig: {converted} Songs umgewandelt, {skipped} Dateien übersprungen")
 
 

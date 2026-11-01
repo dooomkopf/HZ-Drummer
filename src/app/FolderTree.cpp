@@ -175,7 +175,7 @@ void FolderTree::setHidden (Area area, const juce::String& folder, bool hide)
         list.add (folder);
 }
 
-void FolderTree::followTopLevel (Area area, const juce::StringArray& before, const juce::StringArray& after)
+void FolderTree::followTopLevel (Area area, const juce::StringArray& before, const juce::StringArray& after, const juce::StringArray& keep)
 {
     auto& list = hidden[(size_t) area];
     juce::StringArray gone, came;
@@ -186,9 +186,9 @@ void FolderTree::followTopLevel (Area area, const juce::StringArray& before, con
         if (! before.contains (name, true))
             came.add (name);
     if (gone.size() == 1 && came.size() == 1 && list.contains (gone[0], true))   // renamed
-        list.add (came[0]);
+        list.addIfNotAlreadyThere (came[0], true);
     for (int i = list.size(); --i >= 0;)
-        if (! after.contains (list[i], true))   // removed, merged into another, moved down, or renamed
+        if (! after.contains (list[i], true) && ! keep.contains (list[i], true))   // removed, merged, moved down, or renamed
             list.remove (i);
 }
 
@@ -426,19 +426,29 @@ namespace folders
         const juce::String dash (juce::CharPointer_UTF8 (" \xe2\x80\x93 "));
         // every leading "<folder> – " whose folder lies on the path goes, in any order, so that a deeper tree
         // (R.P. Bardet › Rock, Pop › Rock › 4 Takte) still shows "Pattern 1" for "R.P. Bardet – Rock – 4 Takte – Pattern 1"
+        // a folder of the album view is decorated: "1986 - Master of Puppets", "01. Battery" stand for the bare names
+        const auto bare = [] (const juce::String& part) -> juce::String
+        {
+            if (part.length() > 7 && part.substring (0, 4).containsOnly ("0123456789") && part.substring (4, 7) == " - ")
+                return part.substring (7);
+            if (part.length() > 4 && part.substring (0, 2).containsOnly ("0123456789") && part.substring (2, 4) == ". ")
+                return part.substring (4);
+            return {};
+        };
         auto result = name;
         for (bool stripped = true; stripped;)
         {
             stripped = false;
             for (const auto& part : folder)
-            {
-                const auto prefix = part + dash;
-                if (result.startsWithIgnoreCase (prefix) && result.length() > prefix.length())
+                for (const auto& candidate : { part, bare (part) })
                 {
-                    result = result.substring (prefix.length());
-                    stripped = true;
+                    const auto prefix = candidate + dash;
+                    if (candidate.isNotEmpty() && result.startsWithIgnoreCase (prefix) && result.length() > prefix.length())
+                    {
+                        result = result.substring (prefix.length());
+                        stripped = true;
+                    }
                 }
-            }
         }
         return result;
     }

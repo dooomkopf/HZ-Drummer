@@ -130,7 +130,7 @@ MenuFolderSlot capture (const juce::String& name, const AreaNames& folders, cons
     return s;
 }
 
-void followRename (FolderTree::Area area, const juce::String& from, const juce::String& to, const juce::File& f)
+void followRename (FolderTree::Area area, const juce::String& from, const juce::String& to, bool keepFrom, const juce::File& f)
 {
     if (! f.existsAsFile())
         return;   // only the presets: they keep no lists
@@ -141,7 +141,8 @@ void followRename (FolderTree::Area area, const juce::String& from, const juce::
         auto& shown = slots[(size_t) i].shown[(size_t) area];
         if (isFixed (i) || ! shown.contains (from, true))
             continue;
-        shown.removeString (from, true);
+        if (! keepFrom)
+            shown.removeString (from, true);
         shown.addIfNotAlreadyThere (to, true);
         changed = true;
     }

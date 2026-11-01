@@ -1,0 +1,700 @@
+{
+ "formatVersion": 1,
+ "hinweis": "Studioalben nach Erstveröffentlichung mit der Titelliste der Erstausgabe (Stelle = Nummer); einzelne Songs mit Nummer unter nummern, Live-Alben mit live. Quelle MusicBrainz (CC0), Stand 01.11.2026; eigene Ergänzungen gehören in ~/.config/HZ-Drummer/alben.json.",
+ "bands": {
+  "AC/DC": [
+   {
+    "album": "Back in Black",
+    "jahr": 1980,
+    "titel": [
+     "Hells Bells",
+     "Shoot to Thrill",
+     "What Do You Do for Money Honey",
+     "Given the Dog a Bone",
+     "Let Me Put My Love Into You",
+     "Back in Black",
+     "You Shook Me All Night Long",
+     "Have a Drink on Me",
+     "Shake a Leg",
+     "Rock and Roll Ain’t Noise Pollution"
+    ]
+   }
+  ],
+  "Atheist": [
+   {
+    "album": "Piece of Time",
+    "jahr": 1990,
+    "titel": [
+     "Piece of Time",
+     "Unholy War",
+     "Room With a View",
+     "On They Slay",
+     "Beyond",
+     "I Deny",
+     "Why Bother?",
+     "Life",
+     "No Truth"
+    ]
+   },
+   {
+    "album": "Elements",
+    "jahr": 1993,
+    "titel": [
+     "Green",
+     "Water",
+     "Samba Briza",
+     "Air",
+     "Displacement",
+     "Animal",
+     "Mineral",
+     "Fire",
+     "Fractal Point",
+     "Earth",
+     "See You Again",
+     "Elements"
+    ]
+   }
+  ],
+  "Black Sabbath": [
+   {
+    "album": "Black Sabbath",
+    "jahr": 1970,
+    "titel": [
+     "Black Sabbath",
+     "The Wizard",
+     "Behind the Wall of Sleep",
+     "N.I.B.",
+     "Evil Woman, Don't Play Your Games With Me",
+     "Sleeping Village",
+     "Warning"
+    ]
+   },
+   {
+    "album": "Paranoid",
+    "jahr": 1970,
+    "titel": [
+     "War Pigs",
+     "Paranoid",
+     "Planet Caravan",
+     "Iron Man",
+     "Electric Funeral",
+     "Hand of Doom",
+     "Rat Salad",
+     "Fairies Wear Boots"
+    ]
+   },
+   {
+    "album": "Master of Reality",
+    "jahr": 1971,
+    "titel": [
+     "Sweet Leaf",
+     "After Forever",
+     "Embryo",
+     "Children of the Grave",
+     "Orchid",
+     "Lord of This World",
+     "Solitude",
+     "Into the Void"
+    ]
+   },
+   {
+    "album": "Vol 4",
+    "jahr": 1972,
+    "titel": [
+     "Wheels of Confusion",
+     "Tomorrow’s Dream",
+     "Changes",
+     "FX",
+     "Supernaut",
+     "Snowblind",
+     "Cornucopia",
+     "Laguna Sunrise",
+     "St. Vitus Dance",
+     "Under the Sun"
+    ]
+   },
+   {
+    "album": "Sabbath Bloody Sabbath",
+    "jahr": 1973,
+    "titel": [
+     "Sabbath Bloody Sabbath",
+     "A National Acrobat",
+     "Fluff",
+     "Sabbra Cadabra",
+     "Killing Yourself to Live",
+     "Who Are You?",
+     "Looking for Today",
+     "Spiral Architect"
+    ]
+   },
+   {
+    "album": "Sabotage",
+    "jahr": 1975,
+    "titel": [
+     "Hole in the Sky",
+     "Don't Start (Too Late)",
+     "Symptom of the Universe",
+     "Megalomania",
+     "The Thrill of It All",
+     "Supertzar",
+     "Am I Going Insane (Radio)",
+     "The Writ"
+    ]
+   },
+   {
+    "album": "Technical Ecstasy",
+    "jahr": 1976,
+    "titel": [
+     "Back Street Kids",
+     "You Won't Change Me",
+     "It's Alright",
+     "Gypsy",
+     "All Moving Parts (Stand Still)",
+     "Rock 'n' Roll Doctor",
+     "She's Gone",
+     "Dirty Women"
+    ]
+   },
+   {
+    "album": "Heaven and Hell",
+    "jahr": 1980,
+    "titel": [
+     "Neon Knights",
+     "Children of the Sea",
+     "Lady Evil",
+     "Heaven and Hell",
+     "Wishing Well",
+     "Die Young",
+     "Walk Away",
+     "Lonely Is the Word"
+    ],
+    "nummern": {
+     "Lonely Is The World": 8
+    }
+   },
+   {
+    "album": "Mob Rules",
+    "jahr": 1981,
+    "titel": [
+     "Turn Up the Night",
+     "Voodoo",
+     "The Sign of the Southern Cross",
+     "E5150",
+     "The Mob Rules",
+     "Country Girl",
+     "Slipping Away",
+     "Falling off the Edge of the World",
+     "Over and Over"
+    ]
+   },
+   {
+    "album": "Live Evil",
+    "jahr": 1982,
+    "live": true,
+    "nummern": {
+     "Paranoid (Live Evil)": 12
+    }
+   },
+   {
+    "album": "Born Again",
+    "jahr": 1983,
+    "titel": [
+     "Trashed",
+     "Stonehenge",
+     "Disturbing the Priest",
+     "The Dark",
+     "Zero the Hero",
+     "Digital Bitch",
+     "Born Again",
+     "Hot Line",
+     "Keep It Warm"
+    ]
+   },
+   {
+    "album": "Seventh Star",
+    "jahr": 1986,
+    "titel": [
+     "In for the Kill",
+     "No Stranger to Love",
+     "Turn to Stone",
+     "Sphinx (The Guardian)",
+     "Seventh Star",
+     "Danger Zone",
+     "Heart Like a Wheel",
+     "Angry Heart",
+     "In Memory…"
+    ]
+   },
+   {
+    "album": "Headless Cross",
+    "jahr": 1989,
+    "titel": [
+     "The Gates of Hell",
+     "Headless Cross",
+     "Devil & Daughter",
+     "When Death Calls",
+     "Kill in the Spirit World",
+     "Call of the Wild",
+     "Black Moon",
+     "Nightwing"
+    ]
+   },
+   {
+    "album": "Dehumanizer",
+    "jahr": 1992,
+    "titel": [
+     "Computer God",
+     "After All (The Dead)",
+     "TV Crimes",
+     "Letters From Earth",
+     "Master of Insanity",
+     "Time Machine",
+     "Sins of the Father",
+     "Too Late",
+     "I",
+     "Buried Alive"
+    ]
+   },
+   {
+    "album": "Cross Purposes",
+    "jahr": 1994,
+    "titel": [
+     "I Witness",
+     "Cross of Thorns",
+     "Psychophobia",
+     "Virtual Death",
+     "Immaculate Deception",
+     "Dying for Love",
+     "Back to Eden",
+     "The Hand That Rocks the Cradle",
+     "Cardinal Sin",
+     "Evil Eye"
+    ]
+   },
+   {
+    "album": "Forbidden",
+    "jahr": 1995,
+    "titel": [
+     "The Illusion of Power",
+     "Get a Grip",
+     "Can't Get Close Enough",
+     "Shaking Off the Chains",
+     "I Won't Cry for You",
+     "Guilty as Hell",
+     "Sick and Tired",
+     "Rusty Angels",
+     "Forbidden",
+     "Kiss of Death"
+    ]
+   }
+  ],
+  "Carcass": [
+   {
+    "album": "Necroticism: Descanting the Insalubrious",
+    "jahr": 1991,
+    "titel": [
+     "Inpropagation",
+     "Corporal Jigsore Quandary",
+     "Symposium of Sickness",
+     "Pedigree Butchery",
+     "Incarnated Solvent Abuse",
+     "Carneous Cacoffiny",
+     "Lavaging Expectorate of Lysergide Composition",
+     "Forensic Clinicism / The Sanguine Article"
+    ]
+   },
+   {
+    "album": "Heartwork",
+    "jahr": 1993,
+    "titel": [
+     "Buried Dreams",
+     "Carnal Forge",
+     "No Love Lost",
+     "Heartwork",
+     "Embodiment",
+     "This Mortal Coil",
+     "Arbeit macht Fleisch",
+     "Blind Bleeding the Blind",
+     "Doctrinal Expletives",
+     "Death Certificate"
+    ]
+   }
+  ],
+  "Death": [
+   {
+    "album": "Scream Bloody Gore",
+    "jahr": 1987,
+    "titel": [
+     "Infernal Death",
+     "Zombie Ritual",
+     "Denial of Life",
+     "Sacrificial",
+     "Mutilation",
+     "Regurgitated Guts",
+     "Baptized in Blood",
+     "Torn to Pieces",
+     "Evil Dead",
+     "Scream Bloody Gore"
+    ]
+   },
+   {
+    "album": "Leprosy",
+    "jahr": 1988,
+    "titel": [
+     "Leprosy",
+     "Born Dead",
+     "Forgotten Past",
+     "Left to Die",
+     "Pull the Plug",
+     "Open Casket",
+     "Primitive Ways",
+     "Choke on It"
+    ]
+   },
+   {
+    "album": "Spiritual Healing",
+    "jahr": 1990,
+    "titel": [
+     "Living Monstrosity",
+     "Altering the Future",
+     "Defensive Personalities",
+     "Within the Mind",
+     "Spiritual Healing",
+     "Low Life",
+     "Genetic Reconstruction",
+     "Killing Spree"
+    ]
+   },
+   {
+    "album": "Human",
+    "jahr": 1991,
+    "titel": [
+     "Flattening of Emotions",
+     "Suicide Machine",
+     "Together as One",
+     "Secret Face",
+     "Lack of Comprehension",
+     "See Through Dreams",
+     "Cosmic Sea",
+     "Vacant Planets"
+    ]
+   },
+   {
+    "album": "Individual Thought Patterns",
+    "jahr": 1993,
+    "titel": [
+     "Overactive Imagination",
+     "In Human Form",
+     "Jealousy",
+     "Trapped in a Corner",
+     "Nothing Is Everything",
+     "Mentally Blind",
+     "Individual Thought Patterns",
+     "Destiny",
+     "Out of Touch",
+     "The Philosopher"
+    ]
+   },
+   {
+    "album": "Symbolic",
+    "jahr": 1995,
+    "titel": [
+     "Symbolic",
+     "Zero Tolerance",
+     "Empty Words",
+     "Sacred Serenity",
+     "1,000 Eyes",
+     "Without Judgement",
+     "Crystal Mountain",
+     "Misanthrope",
+     "Perennial Quest"
+    ]
+   },
+   {
+    "album": "The Sound of Perseverance",
+    "jahr": 1998,
+    "titel": [
+     "Scavenger of Human Sorrow",
+     "Bite the Pain",
+     "Spirit Crusher",
+     "Story to Tell",
+     "Flesh and the Power It Holds",
+     "Voice of the Soul",
+     "To Forgive Is to Suffer",
+     "A Moment of Clarity",
+     "Painkiller"
+    ],
+    "nummern": {
+     "Moment Of Clarity": 8
+    }
+   }
+  ],
+  "Exhorder": [
+   {
+    "album": "Slaughter in the Vatican",
+    "jahr": 1990,
+    "titel": [
+     "Death in Vain",
+     "Homicide",
+     "Desecrator",
+     "Exhorder",
+     "The Tragic Period",
+     "Legions of Death",
+     "Anal Lust",
+     "Slaughter in the Vatican"
+    ]
+   },
+   {
+    "album": "Mourn the Southern Skies",
+    "jahr": 2019,
+    "titel": [
+     "My Time",
+     "Asunder",
+     "Hallowed Sound",
+     "Beware the Wolf",
+     "Yesterday’s Bones",
+     "All She Wrote",
+     "Rumination",
+     "The Arms of Man",
+     "Ripping Flesh",
+     "Mourn the Southern Skies"
+    ]
+   }
+  ],
+  "Gorguts": [
+   {
+    "album": "Obscura",
+    "jahr": 1998,
+    "titel": [
+     "Obscura",
+     "Earthly Love",
+     "The Carnal State",
+     "Nostalgia",
+     "The Art of Sombre Ecstasy",
+     "Clouded",
+     "Subtle Body",
+     "Rapturous Grief",
+     "La vie est prélude… (La Mort orgasme)",
+     "Illuminatus",
+     "Faceless Ones",
+     "Sweet Silence"
+    ]
+   },
+   {
+    "album": "From Wisdom to Hate",
+    "jahr": 2001,
+    "titel": [
+     "Inverted",
+     "Behave Through Mythos",
+     "From Wisdom to Hate",
+     "The Quest for Equilibrium",
+     "Unearthing the Past",
+     "Elusive Treasures",
+     "Das Martyrium des…",
+     "Testimonial Ruins"
+    ]
+   }
+  ],
+  "Led Zeppelin": [
+   {
+    "album": "Led Zeppelin III",
+    "jahr": 1970,
+    "titel": [
+     "Immigrant Song",
+     "Friends",
+     "Celebration Day",
+     "Since I’ve Been Loving You",
+     "Out on the Tiles",
+     "Gallows Pole",
+     "Tangerine",
+     "That’s the Way",
+     "Bron‐Yr‐Aur Stomp",
+     "Hats Off to (Roy) Harper"
+    ]
+   }
+  ],
+  "Necrophagist": [
+   {
+    "album": "Epitaph",
+    "jahr": 2004,
+    "titel": [
+     "Stabwound",
+     "The Stillborn One",
+     "Ignominious & Pale",
+     "Diminished to B",
+     "Epitaph",
+     "Only Ash Remains",
+     "Seven",
+     "Symbiotic in Theory"
+    ]
+   }
+  ],
+  "Nirvana": [
+   {
+    "album": "Nevermind",
+    "jahr": 1991,
+    "titel": [
+     "Smells Like Teen Spirit",
+     "In Bloom",
+     "Come as You Are",
+     "Breed",
+     "Lithium",
+     "Polly",
+     "Territorial Pissings",
+     "Drain You",
+     "Lounge Act",
+     "Stay Away",
+     "On a Plain",
+     "Something in the Way"
+    ]
+   }
+  ],
+  "ZZ Top": [
+   {
+    "album": "Tres Hombres",
+    "jahr": 1973,
+    "titel": [
+     "Waitin’ for the Bus",
+     "Jesus Just Left Chicago",
+     "Beer Drinkers & Hell Raisers",
+     "Master of Sparks",
+     "Hot, Blue and Righteous",
+     "Move Me on Down the Line",
+     "Precious and Grace",
+     "La Grange",
+     "Shiek",
+     "Have You Heard?"
+    ]
+   }
+  ],
+  "Jimi Hendrix": [
+   {
+    "album": "Are You Experienced",
+    "jahr": 1967,
+    "titel": [
+     "Purple Haze",
+     "Manic Depression",
+     "Hey Joe",
+     "Love or Confusion",
+     "May This Be Love",
+     "I Don't Live Today",
+     "The Wind Cries Mary",
+     "Fire",
+     "Third Stone From the Sun",
+     "Foxy Lady",
+     "Are You Experienced?"
+    ]
+   },
+   {
+    "album": "Axis: Bold as Love",
+    "jahr": 1967,
+    "titel": [
+     "EXP",
+     "Up From the Skies",
+     "Spanish Castle Magic",
+     "Wait Until Tomorrow",
+     "Ain’t No Telling",
+     "Little Wing",
+     "If 6 Was 9",
+     "You Got Me Floatin’",
+     "Castles Made of Sand",
+     "She’s So Fine",
+     "One Rainy Wish",
+     "Little Miss Lover",
+     "Bold as Love"
+    ]
+   },
+   {
+    "album": "Electric Ladyland",
+    "jahr": 1968,
+    "titel": [
+     "And the Gods Made Love",
+     "Have You Ever Been (to Electric Ladyland)",
+     "Crosstown Traffic",
+     "Voodoo Chile",
+     "Little Miss Strange",
+     "Long Hot Summer Night",
+     "Come On, Part 1",
+     "Gypsy Eyes",
+     "Burning of the Midnight Lamp",
+     "Rainy Day, Dream Away",
+     "1983…(A Merman I Should Turn to Be)",
+     "Moon, Turn the Tides…gently gently away",
+     "Still Raining, Still Dreaming",
+     "House Burning Down",
+     "All Along the Watchtower",
+     "Voodoo Child (slight return)"
+    ]
+   },
+   {
+    "album": "Historic Performances Recorded at the Monterey International Pop Festival",
+    "jahr": 1970,
+    "live": true,
+    "nummern": {
+     "Wild Thing": 4
+    }
+   }
+  ],
+  "Metallica": [
+   {
+    "album": "Kill ’Em All",
+    "jahr": 1983,
+    "titel": [
+     "Hit the Lights",
+     "The Four Horsemen",
+     "Motorbreath",
+     "Jump in the Fire",
+     "(Anesthesia) – Pulling Teeth",
+     "Whiplash",
+     "Phantom Lord",
+     "No Remorse",
+     "Seek & Destroy",
+     "Metal Militia"
+    ]
+   },
+   {
+    "album": "Ride the Lightning",
+    "jahr": 1984,
+    "titel": [
+     "Fight Fire With Fire",
+     "Ride the Lightning",
+     "For Whom the Bell Tolls",
+     "Fade to Black",
+     "Trapped Under Ice",
+     "Escape",
+     "Creeping Death",
+     "The Call of Ktulu"
+    ]
+   },
+   {
+    "album": "Master of Puppets",
+    "jahr": 1986,
+    "titel": [
+     "Battery",
+     "Master of Puppets",
+     "The Thing That Should Not Be",
+     "Welcome Home (Sanitarium)",
+     "Disposable Heroes",
+     "Leper Messiah",
+     "Orion",
+     "Damage, Inc."
+    ]
+   },
+   {
+    "album": "…And Justice for All",
+    "jahr": 1988,
+    "titel": [
+     "Blackened",
+     "…And Justice for All",
+     "Eye of the Beholder",
+     "One",
+     "The Shortest Straw",
+     "Harvester of Sorrow",
+     "The Frayed Ends of Sanity",
+     "To Live Is to Die",
+     "Dyers Eve"
+    ]
+   }
+  ]
+ }
+}

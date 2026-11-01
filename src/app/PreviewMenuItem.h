@@ -115,6 +115,8 @@ public:
     {
         if (key.getKeyCode() == juce::KeyPress::returnKey)
         {
+            if (! isItemHighlighted())
+                return false;   // the arrow keys moved the highlight to another line: the menu triggers that one
             if (allowSelection) *allowSelection = true;
             triggerMenuItem();
             return true;
