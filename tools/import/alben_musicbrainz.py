@@ -69,9 +69,8 @@ def get(path, **params):
             with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": UA}), timeout=60) as r:
                 last_request = time.time()
                 return json.load(r)
-        except Exception as e:   # noqa: BLE001 - 503 and timeouts are normal there, we wait and try again
+        except Exception:   # noqa: BLE001 - 503 and timeouts are normal there: wait and try again, silently
             last_request = time.time()
-            print(f"  Anfrage fehlgeschlagen ({e}), neuer Versuch", file=sys.stderr, flush=True)
             time.sleep(3 * (attempt + 1))
     failed += 1
     return None

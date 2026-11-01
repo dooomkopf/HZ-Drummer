@@ -137,8 +137,11 @@ def run(command, timeout):
         print(f"HINWEIS: {Path(command[2]).name} brauchte länger als {timeout} s, abgebrochen")
         return None
     for line in (r.stdout + r.stderr).splitlines():
-        if line.strip() and not line.startswith(("  user.", "  songs/")):   # not the list of every Baustein
-            print(line)
+        if not line.strip() or line.startswith(("  user.", "  songs/")):   # not the list of every Baustein
+            continue
+        if re.match(r"^\s+\d{4} .*: \d+ Titel, 0 Songs$", line):   # an album of the band without this song: no news
+            continue
+        print(line)
     return r.returncode
 
 
@@ -249,7 +252,7 @@ def main():
     staging.mkdir(parents=True, exist_ok=True)
     songs = convert(source, band, title, staging)
     if not songs:
-        print(f"HINWEIS: {readable(source.name)}: nichts umgewandelt (kein Schlagzeug oder nicht lesbar, Gründe oben)")
+        print(f"HINWEIS: {readable(source.name)}: nichts umgewandelt (kein Schlagzeug oder nicht lesbar)")
         return NOT_USABLE
     suffix = as_new_version(staging, data, songs, band, title)
     if suffix:

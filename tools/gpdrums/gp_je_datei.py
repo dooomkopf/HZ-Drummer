@@ -19,7 +19,18 @@ from fractions import Fraction
 HERE = os.path.dirname(os.path.abspath(__file__))
 TG = os.environ.get("TUXGUITAR", "/opt/tuxguitar")   # TuxGuitar 1.5.6, siehe docs/SETUP.md
 CP = ":".join([f"{TG}/lib/tuxguitar-lib.jar", f"{TG}/lib/tuxguitar.jar", f"{TG}/share/plugins/tuxguitar-gtp.jar"])
-READER = os.path.join(HERE, "GpDrums156.java")
+def _tuxguitar2(tg):
+    """TuxGuitar 2.x hat die Pakete app.tuxguitar statt org.herac.tuxguitar: dann liest GpDrums2.java."""
+    import zipfile
+    try:
+        with zipfile.ZipFile(f"{tg}/lib/tuxguitar-lib.jar") as z:
+            return "app/tuxguitar/song/models/TGSong.class" in z.namelist()
+    except (OSError, zipfile.BadZipFile):
+        return False
+
+
+tuxguitar2 = _tuxguitar2(TG)
+READER = os.path.join(HERE, "GpDrums2.java" if tuxguitar2 else "GpDrums156.java")
 TPQ = 960
 VOICE = {   # wie tools/gpdrums/gp2json.py
     35: "kick", 36: "kick", 38: "snare", 40: "snare", 39: "snare", 37: "snare.side",

@@ -12,7 +12,7 @@ für eigene Dateien (Guitar Pro, MuseScore, MIDI) und für neue Einträge unter 
 
 | Quelle | Skript | Ergebnis |
 |---|---|---|
-| Guitar Pro 3/4/5 | [`../gpdrums/GpDrums156.java`](../gpdrums/GpDrums156.java) (TuxGuitar 1.5.6) bzw. [`GpDrums.java`](../gpdrums/GpDrums.java) (TuxGuitar aus Ubuntu) | Schlagzeugspur als Textzeilen `TRACK`/`BAR`/`MARKER`/`HIT` |
+| Guitar Pro 1–5 | [`../gpdrums/GpDrums2.java`](../gpdrums/GpDrums2.java) (TuxGuitar 2.x, Format nach Dateikopf), [`GpDrums156.java`](../gpdrums/GpDrums156.java) (TuxGuitar 1.5.6) bzw. [`GpDrums.java`](../gpdrums/GpDrums.java) (TuxGuitar aus Ubuntu) | Schlagzeugspur als Textzeilen `TRACK`/`BAR`/`MARKER`/`HIT` |
 | | [`../gpdrums/gp2json.py`](../gpdrums/gp2json.py) | ein Song: Wiederholungen und alternative Enden ausgerollt, Abschnitte nach Markern, gleiche Abschnitte = ein Baustein, dazu das Arrangement; mit `--spielweise` Bausteine nach Spielweise (Blast, Doppelbass, Groove, Tom-Groove, je mit Becken), 2 bis 8 Takte |
 | | [`../gpdrums/import_band.py`](../gpdrums/import_band.py) | ein ganzer Band-Ordner, auch gemischt aus Guitar Pro 3 bis 8 und MuseScore: je Song genau eine Fassung (die mit den meisten verschiedenen Takten), mehrere Schlagzeugspuren zusammengeführt, `auswahl.tsv` sagt warum |
 | | [`../gpdrums/gp_je_datei.py`](../gpdrums/gp_je_datei.py) | vorher prüfen: hat die Datei eine Schlagzeugspur mit echten Figuren? |

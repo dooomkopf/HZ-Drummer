@@ -22,7 +22,18 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[2]
 TG = os.environ.get("TUXGUITAR", "/opt/tuxguitar")   # TuxGuitar 1.5.6 (Archiv von tuxguitar.app), siehe docs/SETUP.md
 CP = f"{TG}/lib/tuxguitar-lib.jar:{TG}/lib/tuxguitar.jar:{TG}/share/plugins/tuxguitar-gtp.jar"
-READER = REPO / "tools/gpdrums/GpDrums156.java"
+def _tuxguitar2(tg):
+    """TuxGuitar 2.x hat die Pakete app.tuxguitar statt org.herac.tuxguitar: dann liest GpDrums2.java."""
+    import zipfile
+    try:
+        with zipfile.ZipFile(f"{tg}/lib/tuxguitar-lib.jar") as z:
+            return "app/tuxguitar/song/models/TGSong.class" in z.namelist()
+    except (OSError, zipfile.BadZipFile):
+        return False
+
+
+tuxguitar2 = _tuxguitar2(TG)
+READER = REPO / "tools/gpdrums" / ("GpDrums2.java" if tuxguitar2 else "GpDrums156.java")
 CONVERTER = REPO / "tools/gpdrums/gp2json.py"
 PY_READERS = {".gpx": "gpif_drums.py", ".gp": "gpif_drums.py", ".mscz": "mscz2gpdrums.py", ".mscx": "mscz2gpdrums.py"}
 FORMATS = (".gp3", ".gp4", ".gp5") + tuple(PY_READERS)   # GP3/4/5: GpDrums156.java

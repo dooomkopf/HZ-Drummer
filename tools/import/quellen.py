@@ -264,7 +264,7 @@ def tuxguitar_missing():
     if shutil.which("java") is None:
         return "Java fehlt (sudo apt install default-jre)"
     if not (TG / "lib" / "tuxguitar-lib.jar").exists():
-        return f"TuxGuitar 1.5.6 fehlt unter {TG} (docs/SETUP.md)"
+        return f"TuxGuitar (1.5.6 oder 2.x) fehlt unter {TG} (docs/SETUP.md)"
     return None
 
 
