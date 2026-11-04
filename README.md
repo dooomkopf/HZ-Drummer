@@ -7,6 +7,7 @@ Drum-Machine zum Üben und Mitspielen, für Gitarre, Bass und Schlagzeug oder Bl
 - **Drummer und Drum-Machine** zur einfachen Erstellung von kleinen Bausteinen bis zu komplexen Arrangements (Songs)
 - **Große Bibliothek**, aktuell mit Fokus auf Metal
 - **Quellenimport**: weitere Bausteine per Klick von ihren Originalquellen
+- **Timing beim Import**: Mikro-Timing von wilden Jazz-Passagen bleibt im 1ms-Raster exakt erhalten. Die Bearbeitung oder die Verschiebung erfolgt (noch) im 10ms-Raster.
 - **Jeder Baustein individuell anpassbar**
 - **Einzählen, Loops und Speed-Trainer** zum Üben
 
