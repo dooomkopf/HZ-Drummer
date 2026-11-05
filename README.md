@@ -83,11 +83,20 @@ Ohne Kit startet das Programm, spielt dann aber nur den Klick. Deshalb einmalig:
 
 ## Drum-Kit einrichten
 
-Die Samples sind nicht Teil dieses Repos. Das Programm nutzt das **Aasimonster**-Kit von [DrumGizmo](https://drumgizmo.org) (CC-BY 4.0), ein mehrfach mikrofoniertes Metal-Kit, auf Stereo-Samples heruntergemischt. Zwei Wege:
+Die Samples sind nicht Teil dieses Repos. Das Programm nutzt das **Aasimonster**-Kit von [DrumGizmo](https://drumgizmo.org) (CC-BY 4.0), ein mehrfach mikrofoniertes Metal-Kit, auf Stereo-Samples heruntergemischt. Drei Wege:
 
-**A) Fertiges Kit kopieren**, etwa von einem Rechner, auf dem es schon eingerichtet ist: den Ordner `kits/aasimonster/` (etwa 400 MB, eine `kit.json` und je ein Unterordner mit WAV-Dateien pro Instrument) in den Ordner `kits/` dieses Klons kopieren. Fertig.
+**A) Fertiges Kit laden** (490 MB, entpackt 590 MB): die Stereo-Fassung, wie das Programm sie braucht, mit Besen aus Karoryfer Swirly Drums (CC0) sowie Sidestick und HiHat-Pedal aus dem CrocellKit (DrumGizmo, CC-BY 4.0). Die Originalquellen, die Lizenzen und was verändert wurde, stehen im Kit-Ordner in `LIZENZ.txt` und `QUELLE-*.txt`.
 
-**B) Selbst erzeugen** mit dem Werkzeug `kitprep` (einmalig, 2,4 GB Download, [Kit-Seite](https://drumgizmo.org/wiki/doku.php?id=kits:the_aasimonster)):
+```bash
+cd kits
+wget https://github.com/dooomkopf/HZ-Drummer/releases/download/kit-aasimonster-1/HZ-Drummer-Kit-Aasimonster.zip
+unzip HZ-Drummer-Kit-Aasimonster.zip          # ergibt kits/aasimonster/
+rm HZ-Drummer-Kit-Aasimonster.zip
+```
+
+**B) Fertiges Kit kopieren**, etwa von einem Rechner, auf dem es schon eingerichtet ist: den Ordner `kits/aasimonster/` (eine `kit.json` und je ein Unterordner mit WAV-Dateien pro Instrument) in den Ordner `kits/` dieses Klons kopieren. Fertig.
+
+**C) Selbst erzeugen** aus dem Original mit dem Werkzeug `kitprep` (einmalig, 2,4 GB Download, [Kit-Seite](https://drumgizmo.org/wiki/doku.php?id=kits:the_aasimonster)), nur nötig, wer selbst neu abmischen will; Besen, Sidestick und HiHat-Pedal sind dann nicht dabei:
 
 ```bash
 mkdir -p kits-src && cd kits-src
