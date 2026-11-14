@@ -79,6 +79,9 @@ MainComponent::MainComponent()
         if (patternMode())
             askRenameEntry (library.get (currentPattern).id);
     };
+    addAndMakeVisible (exportButton);
+    exportButton.setTooltip ("Geladenen Eintrag als MIDI, MP3, WAV oder FLAC in den Ordner ~/HZ-Drummer-Export");
+    exportButton.onClick = [this] { showExportMenu(); };
     addAndMakeVisible (meterButton);
     meterButton.onClick = [this] { showMeterMenu(); };
 
@@ -135,6 +138,7 @@ MainComponent::MainComponent()
     addChildComponent (helpOverlay);
     addAndMakeVisible (activeGlow);
     addChildComponent (noticeDot);   // shows itself when there is news
+    noticeDot.watchProgram();        // a newer build: a message there (this one runs on until restarted)
     addChildComponent (quickSearch);
     addChildComponent (ghostMenu);
     ghostMenu.onAlpha = [this] (float a)   // the ghost takes their place while it shows
@@ -149,7 +153,7 @@ MainComponent::MainComponent()
                                 (juce::Component*) &tempoSlider, (juce::Component*) &meterButton,
                                 (juce::Component*) &patternButton, (juce::Component*) &soundBox, (juce::Component*) &editButton,
                                 (juce::Component*) &mixerButton, (juce::Component*) &searchButton, (juce::Component*) &deleteEntryButton,
-                                (juce::Component*) &renameEntryButton, (juce::Component*) &countInButton })
+                                (juce::Component*) &renameEntryButton, (juce::Component*) &countInButton, (juce::Component*) &exportButton })
     {
         c->setWantsKeyboardFocus (false);
         c->setMouseClickGrabsKeyboardFocus (false);
@@ -193,6 +197,7 @@ MainComponent::~MainComponent()
     audioWindow = nullptr;
     saveSettings();
     shutdownAudio();   // afterwards the audio thread no longer touches kits or plans
+    exportJob = nullptr;   // its thread reads the kit
     kits = nullptr;
 }
 
@@ -216,6 +221,13 @@ void MainComponent::loadSettings()
     ghostSeconds = juce::jlimit (0.5, 5.0, props.getDoubleValue ("ghostSeconds", 1.0));
     ghostMenu.setHoldSeconds (ghostSeconds);
     countIn = (CountIn) juce::jlimit (0, 2, props.getIntValue ("countIn", 0));
+    exportRepeats = juce::jlimit (1, 16, props.getIntValue ("exportRepeats", 4));
+    exportClick = props.getBoolValue ("exportClick", false);
+    exportCountIn = props.getBoolValue ("exportCountIn", false);
+    for (const auto f : { ExportJob::Format::Mp3, ExportJob::Format::Wav, ExportJob::Format::Flac })   // "A" or "B"
+        exportLevel[(size_t) f] = props.getValue ("exportLevel" + ExportJob::extension (f).substring (1).toUpperCase(),
+                                                  f == ExportJob::Format::Mp3 ? "B" : "A") == "B" ? ExportJob::Level::Loudness
+                                                                                                  : ExportJob::Level::Peak;
     beatDisplay.setShowHits (props.getBoolValue ("showBeats", true));
     library.favoritesFromString (props.getValue ("patternFavorites"));
     currentPattern = library.indexOf (props.getValue ("pattern").toStdString());
@@ -245,6 +257,12 @@ void MainComponent::saveSettings()
     props.setValue ("tooltips", tooltipsEnabled);
     props.setValue ("ghostSeconds", ghostSeconds);
     props.setValue ("countIn", (int) countIn);
+    props.setValue ("exportRepeats", exportRepeats);
+    props.setValue ("exportClick", exportClick);
+    props.setValue ("exportCountIn", exportCountIn);
+    for (const auto f : { ExportJob::Format::Mp3, ExportJob::Format::Wav, ExportJob::Format::Flac })
+        props.setValue ("exportLevel" + ExportJob::extension (f).substring (1).toUpperCase(),
+                        exportLevel[(size_t) f] == ExportJob::Level::Loudness ? "B" : "A");
     props.setValue ("pattern", patternMode() ? juce::String (library.get (currentPattern).id) : juce::String());
     props.setValue ("patternFavorites", library.favoritesToString());
     props.setValue ("showBeats", beatDisplay.getShowHits());
@@ -680,6 +698,8 @@ void MainComponent::updateButtons()
     deleteEntryButton.setVisible (patternMode() && (library.isUserPattern (currentPattern) || library.isSong (currentPattern)));
     deleteEntryButton.setEnabled (! editing.has_value() && ! arranging.has_value());
     renameEntryButton.setVisible (deleteEntryButton.isVisible());   // own patterns and songs, like Löschen
+    exportButton.setVisible (patternMode());   // every pattern and song, the shipped ones too
+    exportButton.setEnabled (! editing.has_value() && ! arranging.has_value() && exportJob == nullptr);
 }
 
 //==============================================================================
@@ -726,13 +746,14 @@ void MainComponent::updateView()
 
 void MainComponent::timerCallback()
 {
-    if (kits->poll (engine))
+    if (exportJob == nullptr && kits->poll (engine))   // not while an export reads the kit
     {
         kitLabel.setText (kits->status(), juce::dontSendNotification);
         if (editorWindow != nullptr)
             editorWindow->getEditor().kitChanged();
     }
     engine.collectRetiredPlans();
+    pollExport();
     showLoopAndTrainer();   // also when the workshop opens or closes while nothing plays
 
     // take the keyboard focus back only if our window is active (not from dialogs or menus)
@@ -830,6 +851,8 @@ void MainComponent::resized()
 
     area.removeFromTop (8);
     auto titleRow = area.removeFromTop (40);
+    exportButton.setBounds (titleRow.removeFromRight (94).reduced (0, 3));
+    titleRow.removeFromRight (8);
     deleteEntryButton.setBounds (titleRow.removeFromRight (94).reduced (0, 3));
     titleRow.removeFromRight (8);
     renameEntryButton.setBounds (titleRow.removeFromRight (120).reduced (0, 3));

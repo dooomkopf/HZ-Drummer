@@ -107,6 +107,33 @@ void ImportNoticeDot::add (const juce::String& fileName, const juce::String& tex
     update();
 }
 
+void ImportNoticeDot::watchProgram()
+{
+    program = juce::File::getSpecialLocation (juce::File::currentExecutableFile);
+    programTime = program.getLastModificationTime();
+    programCheck.startTimer (5000);
+}
+
+// a build replaced the program file: told once its time stood still for one look (the linker is done), once per build;
+// the running program stays the old one until it is started again
+void ImportNoticeDot::checkProgram()
+{
+    const auto time = program.getLastModificationTime();
+    if (! program.existsAsFile() || time <= programTime || time == programTold)
+        return;
+    if (time != programSeen)
+    {
+        programSeen = time;
+        return;
+    }
+    programTold = time;
+    notices.push_back ({ juce::Time::getCurrentTime().formatted ("%d.%m. %H:%M"), "HZ-Drummer",
+                         juce::String::fromUTF8 ("Neue Version gebaut – bitte neu starten"), false, false, true });
+    if ((int) notices.size() > keep)
+        notices.erase (notices.begin(), notices.end() - keep);
+    update();
+}
+
 void ImportNoticeDot::setBusy (const juce::String& fileName)
 {
     busyFile = fileName;
@@ -120,7 +147,7 @@ void ImportNoticeDot::update()
         unread += n.read ? 0 : 1;
     setVisible (busyFile.isNotEmpty() || unread > 0);
     setTooltip (busyFile.isNotEmpty() ? juce::String::fromUTF8 ("Eingangsordner: liest ") + busyFile + juce::String::fromUTF8 (" …")
-                                      : "Eingangsordner: " + juce::String (unread) + (unread == 1 ? " neue Meldung" : " neue Meldungen")
+                                      : juce::String (unread) + (unread == 1 ? " neue Meldung" : " neue Meldungen")
                                             + juce::String::fromUTF8 (", Klick zeigt sie"));
     if (busyFile.isNotEmpty())
         startTimerHz (30);   // pulse while reading
@@ -175,6 +202,8 @@ void ImportNoticeDot::save() const
     juce::Array<juce::var> list;
     for (const auto& n : notices)
     {
+        if (n.transient)
+            continue;
         auto* o = new juce::DynamicObject();
         o->setProperty ("zeit", n.time);
         o->setProperty ("datei", n.file);

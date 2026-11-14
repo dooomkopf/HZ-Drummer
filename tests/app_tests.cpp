@@ -21,9 +21,11 @@ static int failures = 0;
 #include "app/Song.h"
 void runSongTests();
 void runFolderTests();
+void runExportTests();
 extern int folderTestFailures;
 void checkSongFolder (const juce::File& songs, const std::vector<hz::Pattern>& library);
 extern int songTestFailures;
+extern int exportTestFailures;
 
 #define CHECK(cond) \
     do { if (! (cond)) { std::printf ("FAIL %s:%d: %s\n", __FILE__, __LINE__, #cond); ++failures; } } while (0)
@@ -467,6 +469,7 @@ int main (int argc, char* argv[])
     testTrainerSlots();
     runSongTests();
     runFolderTests();
+    runExportTests();
 
     // optional: zusätzlich einen Ordner mit Pattern-Dateien prüfen (z.B. eigene/importierte Patterns)
     if (argc > 2)
@@ -486,7 +489,7 @@ int main (int argc, char* argv[])
             checkSongFolder (juce::File::getCurrentWorkingDirectory().getChildFile (argv[3]), all);
         }
     }
-    failures += songTestFailures + folderTestFailures;
+    failures += songTestFailures + folderTestFailures + exportTestFailures;
 
     if (failures == 0)
         std::printf ("Alle App-Tests bestanden.\n");

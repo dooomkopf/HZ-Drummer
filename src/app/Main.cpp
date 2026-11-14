@@ -102,7 +102,8 @@ private:
             glyphs.createPath (letters);
             const auto box = letters.getBounds();
             letters.applyTransform (juce::AffineTransform::scale (1.0f, 1.5f, box.getCentreX(), box.getBottom()));
-            g.setColour (juce::Colour (0xffb8b8be).withMultipliedAlpha (fade));
+            // 75 %: where fill and stroke overlap, the outline shows as a brighter double line
+            g.setColour (juce::Colour (0xffb8b8be).withMultipliedAlpha (0.75f * fade));
             g.fillPath (letters);
             g.strokePath (letters, juce::PathStrokeType (drummerFont.getHeight() * 0.065f, juce::PathStrokeType::curved,
                                                          juce::PathStrokeType::rounded));

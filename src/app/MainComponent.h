@@ -1,6 +1,7 @@
 #pragma once
 
 #include "app/AudioEngine.h"
+#include "app/AudioExport.h"
 #include "app/Text.h"
 #include "app/BadgeRegistry.h"
 #include "app/HelpOverlay.h"
@@ -29,6 +30,7 @@
 
 #include <juce_audio_utils/juce_audio_utils.h>
 
+#include <array>
 #include <deque>
 #include <memory>
 #include <optional>
@@ -286,10 +288,22 @@ private:
     std::unique_ptr<ImportInbox> inbox;
     void startInbox();
     void finishInboxJob (const ImportInbox::Result&);
+    // the export button right of "Löschen" (MainComponentExport.cpp): the loaded entry into ~/HZ-Drummer-Export
+    std::unique_ptr<ExportJob> exportJob;   // while it runs, the kit manager waits (the job reads the kit)
+    int exportRepeats = 4;                  // passes of a pattern or loop range
+    bool exportClick = false, exportCountIn = false;
+    std::array<ExportJob::Level, 4> exportLevel { ExportJob::Level::Peak, ExportJob::Level::Loudness,   // per format:
+                                                  ExportJob::Level::Peak, ExportJob::Level::Peak };     // MP3 B, WAV and FLAC A
+    void showExportMenu();
+    void exportMenuChosen (int result);
+    void startExport (ExportJob::Format);
+    void pollExport();                      // timer: the progress on the button, the result once done
+    static juce::File exportFolder();       // ~/HZ-Drummer-Export
     juce::TextButton playButton { "Start" }, tapButton { "Tap" }, audioButton { "System" },
                      editButton { "Bearbeiten" }, mixerButton { "Mixer" }, searchButton { "Suchen" }, deleteEntryButton { "Löschen"_u },
                      renameEntryButton { "Umbenennen" }, countInButton,
                      loopButton { "Loop (L)" }, trainerButton { "Trainer (S)" };   // left of "Umbenennen", as big as "Löschen"
+    juce::TextButton exportButton { "Export" };   // right of "Löschen", as big as it
     StarButton patternButton, meterButton;
     juce::Slider tempoSlider;
     juce::ComboBox soundBox;

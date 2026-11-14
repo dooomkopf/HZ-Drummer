@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.3 (14.11.2026)
+
+- Knopf **Export** rechts neben „Löschen“: MIDI, MP3, WAV oder FLAC nach `~/HZ-Drummer-Export` (gleicher Name →
+  `-v2`, `-v3` …, nie überschrieben); Wiederholungen eines Bausteins 1/2/4/8/16, wahlweise mit Klick und Einzählen;
+  Pegel je Format wählbar: „A: Spitze −1 dBFS (leiser und dynamischer)“ oder „B: −14 LUFS (lauter mit Limiter)“,
+  Vorgabe MP3 = B, WAV/FLAC = A; MP3 braucht das Paket libmp3lame0
+- Meldepunkt unten rechts meldet „Neue Version gebaut – bitte neu starten“
+- Guitar Pro 3 bis 5 auch mit TuxGuitar 2.x, Format nach Dateikopf statt Endung
+- Hauptmenü träger: Untermenü wechselt erst nach 300 ms auf einem anderen Eintrag
+- Fertiges Drum-Kit als Download (Release kit-aasimonster-1), Startbild-Schrift mit Doppellinien
+
 ## v0.2 (31.10.2026)
 
 - Startpaket beim ersten Start: Community-Sätze (Carcass, Exhorder, Groove MIDI, R.P. Bardet) und drei

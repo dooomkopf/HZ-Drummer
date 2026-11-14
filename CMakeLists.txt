@@ -54,6 +54,12 @@ target_sources(HZDrummer PRIVATE
     src/app/MainComponentBrowse.cpp
     src/app/MainComponentSystem.cpp
     src/app/MainComponentInbox.cpp
+    src/app/MainComponentExport.cpp
+    src/app/AudioExport.cpp
+    src/app/ExportPlan.cpp
+    src/app/MidiExport.cpp
+    src/app/Mp3Encoder.cpp
+    src/app/Loudness.cpp
     src/app/ImportInbox.cpp
     src/app/ImportNotices.cpp
     src/app/MainComponentEditor.cpp
@@ -124,7 +130,7 @@ target_compile_definitions(HZDrummer PRIVATE
     JUCE_APPLICATION_NAME_STRING="$<TARGET_PROPERTY:HZDrummer,JUCE_PRODUCT_NAME>"
     JUCE_APPLICATION_VERSION_STRING="$<TARGET_PROPERTY:HZDrummer,JUCE_VERSION>")
 
-# version v0.2.<number of commits>, counted anew on every build (System window, app log)
+# version v0.3.<number of commits>, counted anew on every build (System window, app log)
 add_custom_target(hzversion
     COMMAND ${CMAKE_COMMAND} -DSOURCE_DIR=${CMAKE_SOURCE_DIR} -DOUTPUT=${CMAKE_BINARY_DIR}/generated/Version.h
             -P ${CMAKE_SOURCE_DIR}/cmake/Version.cmake
@@ -186,7 +192,7 @@ target_link_libraries(patternc
 
 # Tests der App-Schicht (Dateiformat), laufen im Projektordner
 juce_add_console_app(app_tests PRODUCT_NAME "app_tests")
-target_sources(app_tests PRIVATE tests/app_tests.cpp tests/song_tests.cpp tests/folder_tests.cpp tests/album_tests.cpp tests/inbox_probe.cpp src/app/ImportInbox.cpp src/app/FolderTree.cpp src/app/FolderSort.cpp src/app/AlbumIndex.cpp src/app/AlbumView.cpp src/app/MenuFolderSlots.cpp src/app/BrowseOrder.cpp src/app/PatternIO.cpp src/app/LibraryFiles.cpp src/app/QuickSearch.cpp src/app/SearchQuery.cpp src/app/views/SourceBadge.cpp src/app/Song.cpp src/app/SongRename.cpp src/app/ArrangerModel.cpp src/app/BadgeRegistry.cpp src/app/MixState.cpp src/app/TrainerSlots.cpp)
+target_sources(app_tests PRIVATE tests/app_tests.cpp tests/song_tests.cpp tests/folder_tests.cpp tests/album_tests.cpp tests/inbox_probe.cpp tests/export_tests.cpp src/app/ImportInbox.cpp src/app/FolderTree.cpp src/app/FolderSort.cpp src/app/AlbumIndex.cpp src/app/AlbumView.cpp src/app/MenuFolderSlots.cpp src/app/BrowseOrder.cpp src/app/PatternIO.cpp src/app/LibraryFiles.cpp src/app/QuickSearch.cpp src/app/SearchQuery.cpp src/app/views/SourceBadge.cpp src/app/Song.cpp src/app/SongRename.cpp src/app/ArrangerModel.cpp src/app/BadgeRegistry.cpp src/app/MixState.cpp src/app/TrainerSlots.cpp src/app/AudioEngine.cpp src/app/AudioExport.cpp src/app/ExportPlan.cpp src/app/MidiExport.cpp src/app/Mp3Encoder.cpp src/app/Loudness.cpp)
 target_compile_definitions(app_tests PRIVATE JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0)
-target_link_libraries(app_tests PRIVATE hzengine juce::juce_core juce::juce_audio_basics juce::juce_gui_basics PUBLIC juce::juce_recommended_config_flags)
+target_link_libraries(app_tests PRIVATE hzengine juce::juce_core juce::juce_audio_basics juce::juce_audio_formats juce::juce_gui_basics PUBLIC juce::juce_recommended_config_flags)
 add_test(NAME app_tests COMMAND app_tests ${CMAKE_SOURCE_DIR}/library-src)

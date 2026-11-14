@@ -362,7 +362,7 @@ soweit sie hier nicht abweichen; überholte Stellen stehen im vorletzten Abschni
 2. Das Hauptfenster kommt erst auf den Desktop, wenn Größe und Platz feststehen. Es startet immer mit
    1000 × 700 Pixeln in der Bildschirmmitte. [Code]
 3. Die Werkstatt merkt sich Größe und Lage. [Code]
-4. **Version** v0.2.‹Commits›, beim Bauen gesetzt. [E 31.10.]
+4. **Version** v0.3.‹Commits›, beim Bauen gesetzt. [E 31.10.]
 
 ---
 
