@@ -28,7 +28,7 @@ Weg von Hand, etwa für eine ganze Band mit `--nur` oder `--ohne`.
 
 | Format | Endungen | Braucht |
 |---|---|---|
-| Guitar Pro 3, 4, 5 | `.gp3`, `.gp4`, `.gp5` | Python 3, Java und TuxGuitar 1.5.6 ([SETUP.md](SETUP.md)) |
+| Guitar Pro 3, 4, 5 | `.gp3`, `.gp4`, `.gp5` | Python 3, Java und TuxGuitar 1.5.6 oder 2.x ([SETUP.md](SETUP.md)) |
 | Guitar Pro 6, 7, 8 | `.gpx`, `.gp` | nur Python 3 |
 | MuseScore 1 bis 4 | `.mscz`, `.mscx` | nur Python 3 |
 | MIDI | `.mid` | nur Python 3; Schlagzeug auf Kanal 10 |

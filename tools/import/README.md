@@ -54,7 +54,7 @@ Arrangements `<id>-teil1`, `<id>-teil2` … geteilt. Abschnitte ohne Schläge bl
 Für Bausteine ohne Arrangement gibt es [`install_patterns.py`](install_patterns.py). Beide
 Einspiel-Skripte brechen ab, solange HZ-Drummer läuft: Das Programm würde seinen Stand sonst
 darüber schreiben. Der Datenordner ist `~/.config/HZ-Drummer`, bei `install_band.py` auch über
-`HZ_DRUMMER_DATA` wählbar. TuxGuitar 1.5.6 wird unter `/opt/tuxguitar` erwartet, sonst
+`HZ_DRUMMER_DATA` wählbar. TuxGuitar 1.5.6 oder 2.x wird unter `/opt/tuxguitar` erwartet, sonst
 `TUXGUITAR=<ordner>` setzen (siehe docs/SETUP.md).
 
 ## Regeln, nach denen die Vorlagen gebaut sind

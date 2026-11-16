@@ -37,6 +37,7 @@ Gedacht ist es zum Üben, nicht für Studioaufnahmen: Es soll ohne Umwege den ri
 - **Abzeichen** aus Farbe und Form an jedem Baustein, damit man ihn in Menü, Ablage und Ablauf sofort wiedererkennt.
 - **Schnellnavigation per Pfeiltasten** durch Ordner und Favoriten, ein kurz eingeblendetes Menü zeigt, wo man ist; **Verlauf** mit Alt+←/→ wie im Browser, um einen guten Fund wiederzufinden.
 - **Loop und Speed-Trainer**: einen Bereich ganzer Takte per Shift+Ziehen loopen, das Tempo nach jeder Runde stufenweise steigern; zehn benannte **Speicherplätze** für Übestellen mit Bereich und Trainer-Werten.
+- **Export** des geladenen Bausteins oder Arrangements als MIDI, MP3, WAV oder FLAC nach `~/HZ-Drummer-Export`, mit Wiederholungen, Klick und Einzählen und zwei Pegeln zur Wahl, siehe [Bedienung](docs/BEDIENUNG.md).
 - **Suche** über alles mit Filtern wie `7/8` oder `160-190 bpm`, Vorhören direkt im Menü.
 - **Einzählen** vor dem Start, Tap-Tempo, Mixer je Instrument mit Pegelanzeige, Metronom mit eigenen Taktarten.
 - **Ordnerstruktur** und **Papierkorb** für eigene Patterns und Songs, mit Mehrfachauswahl wie im Dateimanager.
@@ -55,9 +56,9 @@ Gedacht ist es zum Üben, nicht für Studioaufnahmen: Es soll ohne Umwege den ri
 | CMake ab 3.22, optional Ninja | Build-System (JUCE verlangt 3.22) |
 | Git | Klonen, JUCE kommt als Submodul mit |
 | ALSA, JACK, FreeType, Fontconfig, X11 (Pakete im Schnellstart) | Audio und Oberfläche |
-| rund 140 MB für `build/`, rund 400 MB für das Drum-Kit | Platz |
+| rund 1 GB: Klon 240 MB, `build/` 150 MB, Drum-Kit 400 bis 590 MB (Weg A braucht beim Entpacken kurz 490 MB mehr) | Platz |
 | Python 3 (bei Ubuntu dabei) | System › Quellen, der Eingangsordner `~/HZ-Drummer-Import` und die Import-Werkzeuge unter `tools/` |
-| optional Java und TuxGuitar 1.5.6 | Guitar Pro 3 bis 5 umwandeln (6 bis 8 und MuseScore brauchen es nicht), siehe [docs/SETUP.md](docs/SETUP.md) |
+| optional Java und TuxGuitar 1.5.6 oder 2.x | Guitar Pro 3 bis 5 umwandeln (6 bis 8 und MuseScore brauchen es nicht), siehe [docs/SETUP.md](docs/SETUP.md) |
 | optional Internet | System › Quellen lädt von den Originalquellen |
 
 ## Schnellstart
@@ -65,21 +66,21 @@ Gedacht ist es zum Üben, nicht für Studioaufnahmen: Es soll ohne Umwege den ri
 Die Schritte sind so geschrieben, dass sie ein Mensch oder ein KI-Assistent direkt ausführen kann. Getestet unter Ubuntu 22.04.
 
 ```bash
-sudo apt install -y build-essential cmake git pkg-config ninja-build libasound2-dev libjack-jackd2-dev libfreetype-dev libfontconfig1-dev libx11-dev libxcursor-dev libxext-dev libxinerama-dev libxrandr-dev libxrender-dev libxi-dev
+sudo apt install -y build-essential cmake git pkg-config ninja-build libasound2-dev libjack-jackd2-dev libfreetype-dev libfontconfig1-dev libx11-dev libxcursor-dev libxext-dev libxinerama-dev libxrandr-dev libxrender-dev libxi-dev libmp3lame0 wget unzip python3
 git clone --recurse-submodules --shallow-submodules https://github.com/dooomkopf/HZ-Drummer.git
 cd HZ-Drummer
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
-cmake --build build                           # einige Minuten, build/ belegt rund 140 MB
+cmake --build build                           # 10 bis 15 Minuten, build/ belegt rund 150 MB
 (cd build && ctest --output-on-failure)       # Engine- und App-Tests
 ./tools/install-desktop.sh                    # Starter im Anwendungsmenü (optional)
 ./tools/run.sh                                # oder direkt starten
 ```
 
-- **Pakete:** Das sind alle, die der Build braucht, geprüft an den System-Headern, die der Compiler tatsächlich liest. `ninja-build` ist nur für `-G Ninja` nötig, ohne den Schalter baut CMake mit make. OpenGL-, Mesa- und XComposite-Pakete braucht HZ-Drummer nicht.
-- **Klonen:** `--shallow-submodules` holt von JUCE nur den aktuellen Stand statt der ganzen Historie. Das Repo selbst bitte **nicht** mit `--depth 1` klonen: Die Versionsnummer (v0.3.‹Anzahl Commits›) zählt die Commits.
-- **Audio:** Gebaut wird mit JACK-Unterstützung, zum Abspielen reicht ALSA. Wer JACK über PipeWire nutzen will, installiert `pipewire-audio-client-libraries` und schaltet es unter 22.04 einmalig frei: `sudo cp /usr/share/doc/pipewire/examples/ld.so.conf.d/pipewire-jack-*.conf /etc/ld.so.conf.d/ && sudo ldconfig`.
+- **Pakete:** Das sind alle, die der Build braucht, geprüft an den System-Headern, die der Compiler tatsächlich liest, dazu drei für danach: `wget` und `unzip` für das Drum-Kit, `python3` für System › Quellen und den Eingangsordner (bei Desktop-Ubuntu schon dabei). `ninja-build` ist nur für `-G Ninja` nötig, ohne den Schalter baut CMake mit make. OpenGL-, Mesa- und XComposite-Pakete braucht HZ-Drummer nicht. `libmp3lame0` braucht nur der MP3-Export und erst zur Laufzeit. Fehlt es, ist MP3 im Export-Menü ausgegraut. Wer es nachinstalliert, startet HZ-Drummer danach neu.
+- **Klonen:** `--shallow-submodules` holt von JUCE nur den aktuellen Stand statt der ganzen Historie. Das Repo selbst bitte **nicht** mit `--depth 1` klonen: Die Versionsnummer (v0.3.‹Anzahl Commits›) zählt die Commits. Nach dem Konfigurieren meldet `git status` ` m libs/JUCE`: CMake spielt die Änderungen aus `libs/patches` in JUCE ein, das ist gewollt.
+- **Audio:** Gebaut wird mit JACK-Unterstützung, zum Abspielen reicht ALSA. Wer JACK über PipeWire nutzen will, installiert `pipewire-audio-client-libraries` und schaltet es unter 22.04 einmalig frei: `sudo cp /usr/share/doc/pipewire/examples/ld.so.conf.d/pipewire-jack-*.conf /etc/ld.so.conf.d/ && sudo ldconfig`. Läuft kein JACK-Server, stehen in `~/.cache/HZ-Drummer/run.log` bei jedem Start einige Zeilen `Cannot connect to server socket`; das ist harmlos.
 
-Ohne Kit startet das Programm, spielt dann aber nur den Klick. Deshalb einmalig:
+Ohne Kit startet das Programm, bleibt aber stumm: Zu hören ist nur das Metronom mit dem Klang „Klick“. Deshalb einmalig:
 
 ## Drum-Kit einrichten
 
@@ -88,13 +89,21 @@ Die Samples sind nicht Teil dieses Repos. Das Programm nutzt das **Aasimonster**
 **A) Fertiges Kit laden** (490 MB, entpackt 590 MB): die Stereo-Fassung, wie das Programm sie braucht, mit Besen aus Karoryfer Swirly Drums (CC0) sowie Sidestick und HiHat-Pedal aus dem CrocellKit (DrumGizmo, CC-BY 4.0). Die Originalquellen, die Lizenzen und was verändert wurde, stehen im Kit-Ordner in `LIZENZ.txt` und `QUELLE-*.txt`.
 
 ```bash
-cd kits
-wget https://github.com/dooomkopf/HZ-Drummer/releases/download/kit-aasimonster-1/HZ-Drummer-Kit-Aasimonster.zip
-unzip HZ-Drummer-Kit-Aasimonster.zip          # ergibt kits/aasimonster/
-rm HZ-Drummer-Kit-Aasimonster.zip
+mkdir -p kits && cd kits
+wget -c https://github.com/dooomkopf/HZ-Drummer/releases/download/kit-aasimonster-1/HZ-Drummer-Kit-Aasimonster.zip
+echo "4c18bea8ab5e196c416b483f40c5880391c2fb397bf40a82bb1f23c46e574ec5  HZ-Drummer-Kit-Aasimonster.zip" | sha256sum -c - \
+  && unzip -q HZ-Drummer-Kit-Aasimonster.zip && rm HZ-Drummer-Kit-Aasimonster.zip   # ergibt kits/aasimonster/
+cd ..
 ```
 
-**B) Fertiges Kit kopieren**, etwa von einem Rechner, auf dem es schon eingerichtet ist: den Ordner `kits/aasimonster/` (eine `kit.json` und je ein Unterordner mit WAV-Dateien pro Instrument) in den Ordner `kits/` dieses Klons kopieren. Fertig.
+Der Download dauert je nach Leitung 15 bis 45 Minuten. Bricht er ab oder meldet `sha256sum` „GESCHEITERT“ (englisch „FAILED“), die Befehle ab `wget` noch einmal ausführen: `wget -c` setzt dort fort, wo es aufgehört hat. Erst wenn die Prüfsumme stimmt, wird entpackt und die Zip-Datei gelöscht. Passt sie auch bei vollständiger Datei (490 MB) nicht, die Zip-Datei löschen und neu laden.
+
+**B) Fertiges Kit kopieren**, etwa von einem Rechner, auf dem es schon eingerichtet ist: den Ordner `aasimonster/` (eine `kit.json` und je ein Unterordner mit WAV-Dateien pro Instrument) nach `kits/` dieses Klons kopieren, sodass `kits/aasimonster/kit.json` entsteht. Der Ordner `kits/` muss vorher da sein, sonst landen die Dateien direkt in `kits/`:
+
+```bash
+mkdir -p kits
+cp -r /pfad/zum/anderen/HZ-Drummer/kits/aasimonster kits/
+```
 
 **C) Selbst erzeugen** aus dem Original mit dem Werkzeug `kitprep` (einmalig, 2,4 GB Download, [Kit-Seite](https://drumgizmo.org/wiki/doku.php?id=kits:the_aasimonster)), nur nötig, wer selbst neu abmischen will; Besen, Sidestick und HiHat-Pedal sind dann nicht dabei:
 
@@ -104,9 +113,10 @@ wget https://drumgizmo.org/kits/Aasimonster/aasimonster2_1.zip
 unzip aasimonster2_1.zip                      # ergibt aasimonster2/ mit aasimonster.xml
 cd aasimonster2
 ../../build/kitprep_artefacts/Release/kitprep aasimonster.xml ../../kits/aasimonster "Aasimonster (Metal)"
+cd ../..
 ```
 
-Danach liegt das fertige Kit unter `kits/aasimonster/`, das Programm findet es beim Start. Ordner `kits/` und `kits-src/` bleiben außerhalb der Versionsverwaltung.
+Bei allen drei Wegen liegt das Kit danach unter `kits/aasimonster/`. **Danach HZ-Drummer neu starten**, denn das Programm sucht das Kit nur beim Start. Unten im Fenster steht dann „Kit: Aasimonster (Metal)“. Ordner `kits/` und `kits-src/` bleiben außerhalb der Versionsverwaltung.
 
 ## Aufbau
 
@@ -127,10 +137,11 @@ Das Programm legt außerhalb seines Ordners nur diese Dateien an:
 
 | Ort | Inhalt |
 |---|---|
-| `~/.config/HZ-Drummer/` | Datenordner: `patterns/` (eigene Bausteine), `songs/` (Arrangements), `trash/` (Papierkorb), `ordner.json` (Ordnerstruktur), `abzeichen.json`, `ablage.json` und `arranger.json` (Arbeitsstand des Arrangers), `trainer.json` (Speicherplätze des Trainers), `menue-ordner.json` (Konfigurationen der Menü-Ordner) |
+| `~/.config/HZ-Drummer/` | Datenordner: `patterns/` (eigene Bausteine), `songs/` (Arrangements), `trash/` (Papierkorb), `ordner.json` (Ordnerstruktur), `alben.json` (eigene Album-Zuordnungen), `abzeichen.json`, `ablage.json` und `arranger.json` (Arbeitsstand des Arrangers), `trainer.json` (Speicherplätze des Trainers), `menue-ordner.json` (Konfigurationen der Menü-Ordner) |
 | `~/.config/HZ-Drummer/HZ-Drummer.settings` | persönliche Einstellungen: Audio-Gerät, Tempo, Fensterlage, Favoriten, Trainer, Tooltips |
 | `~/.cache/HZ-Drummer/` | Protokolle `app.log` (auch Abstürze mit Aufrufstapel), `run.log` (Start), `import.log` (System › Quellen und Eingangsordner); `abzeichen/` (die letzten zehn Abzeichen-Verteilungen); `quellen/` (Downloads und Zwischenstände des Quellen-Imports); `eingang/` (Zwischenstände des Eingangsordners), `eingang-alben-offen.txt` (Bands, deren Alben ohne Netz offen blieben) und `eingang-meldungen.json` (die letzten 50 Meldungen des Punkts rechts unten) |
 | `~/HZ-Drummer-Import/` | Eingangsordner: hineinkopierte Tabs, danach in `erledigt/` bzw. `Fehler/`; `HOWTOIMPORT.txt` (Kurzanleitung, legt das Programm an) |
+| `~/HZ-Drummer-Export/` | Exporte als MIDI, MP3, WAV und FLAC, erst beim ersten Export angelegt |
 | `~/.local/share/applications/hz-drummer.desktop` | Starter, nur wenn `tools/install-desktop.sh` lief |
 
 **Logik:**
@@ -147,6 +158,7 @@ rm -f ~/.local/share/applications/hz-drummer.desktop   # Starter
 rm -rf ~/.cache/HZ-Drummer                             # Protokolle und Downloads
 rm -rf ~/.config/HZ-Drummer                            # Datenordner samt Einstellungen
 rm -rf ~/HZ-Drummer-Import                             # Eingangsordner (vorher eigene Tabs herausnehmen)
+rm -rf ~/HZ-Drummer-Export                             # Exporte (vorher behalten, was du brauchst)
 rm -rf ~/HZ-Drummer                                    # der Klon mit Build und Kit (Pfad anpassen)
 ```
 

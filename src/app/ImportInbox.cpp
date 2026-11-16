@@ -77,7 +77,7 @@ juce::String ImportInbox::howto()
 
 Formate: Guitar Pro .gp3 .gp4 .gp5 .gpx .gp, MuseScore .mscz .mscx, MIDI .mid
 Gelesen wird nur das Schlagzeug, bei MIDI Kanal 10.
-Braucht Python 3; .gp3 bis .gp5 zusätzlich Java und TuxGuitar 1.5.6.
+Braucht Python 3; .gp3 bis .gp5 zusätzlich Java und TuxGuitar 1.5.6 oder 2.x.
 Gibt es den Song schon, entsteht eine zweite Fassung mit -v2.
 Das Album sucht HZ-Drummer bei MusicBrainz im Internet. Ohne Netz steht
 der Song erst direkt unter der Band und bekommt sein Album später.
@@ -118,8 +118,13 @@ void ImportInbox::timerCallback()
 {
     const auto dir = folder();
     const auto howtoFile = dir.getChildFile ("HOWTOIMPORT.txt");
-    if (howtoFile.existsAsFile() && howtoFile.loadFileAsString().replace ("\r\n", "\n") == howtoBefore())
-        writeText (howtoFile, howto());   // the program's own first wording, unchanged: the new one in its place
+    if (howtoFile.existsAsFile())
+    {
+        // one of the program's own earlier wordings, unchanged: the current one in its place
+        const auto text = howtoFile.loadFileAsString().replace ("\r\n", "\n");
+        if (text == howtoBefore() || text == howto().replace ("TuxGuitar 1.5.6 oder 2.x.", "TuxGuitar 1.5.6."))
+            writeText (howtoFile, howto());
+    }
     if (! howtoFile.existsAsFile())   // the first start, or someone cleared the folder
     {
         dir.getChildFile ("erledigt").createDirectory();
